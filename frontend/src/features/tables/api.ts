@@ -1,5 +1,10 @@
 import { request } from '../../api/client'
-import type { CreationContext, PokerTable, TableInput } from './types'
+import type {
+  CreationContext,
+  PokerTable,
+  TableInput,
+  TableList,
+} from './types'
 
 export const getCreationContext = () =>
   request<CreationContext>('/api/tables/creation-context/')
@@ -11,3 +16,6 @@ export const createTable = (input: TableInput, csrfToken: string) =>
     headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
     body: JSON.stringify(input),
   })
+
+export const listTables = (query: string) =>
+  request<TableList>(`/api/tables/?${query}`)

@@ -60,17 +60,29 @@ export function AppLayout({
             <img src={house} alt="" />
             Home
           </Link>
-          {navigation.map(([label, icon]) => (
-            <span
-              key={label}
-              className={`nav-item unavailable ${label === 'Lobby' && pathname.startsWith('/tables') ? 'active' : ''}`}
-              aria-disabled="true"
-              title="Coming in a later story"
-            >
-              <img src={icon} alt="" />
-              {label}
-            </span>
-          ))}
+          {navigation.map(([label, icon]) =>
+            label === 'Lobby' ? (
+              <Link
+                key={label}
+                to="/lobby"
+                className={`nav-item ${pathname === '/lobby' || pathname.startsWith('/tables') ? 'active' : ''}`}
+                aria-current={pathname === '/lobby' ? 'page' : undefined}
+              >
+                <img src={icon} alt="" />
+                Lobby
+              </Link>
+            ) : (
+              <span
+                key={label}
+                className={`nav-item unavailable ${label === 'Lobby' && pathname.startsWith('/tables') ? 'active' : ''}`}
+                aria-disabled="true"
+                title="Coming in a later story"
+              >
+                <img src={icon} alt="" />
+                {label}
+              </span>
+            ),
+          )}
         </nav>
         <div className="sidebar-note">
           <span className="eyebrow">PLAY MONEY ONLY</span>
@@ -96,6 +108,9 @@ export function AppLayout({
             <span className="shortcut">⌘ K</span>
           </div>
           <div className="account-controls">
+            <Link className="mobile-lobby-link" to="/lobby">
+              Lobby
+            </Link>
             <span className="unavailable" title="Notifications coming later">
               <img src={bell} alt="Notifications unavailable" />
             </span>

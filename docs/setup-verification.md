@@ -1,6 +1,6 @@
 # Foundation verification — October 19, 2026
 
-This records the initial foundation checkpoint. See [S13 verification](s13-verification.md) for the later table-creation implementation and current test evidence.
+This records the initial foundation checkpoint. See [S13 verification](s13-verification.md) for the later table-creation checkpoint, and [S10 verification](s10-verification.md) for the latest combined results.
 
 Executed locally during repository setup:
 

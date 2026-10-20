@@ -10,7 +10,7 @@ Read `.agents/shared.md`. Support Chris's S13 (2 points) and S10 (2 points).
 
 ## Decide before schema/API implementation
 
-Read the approved S13 settings and access behavior in `docs/contracts.md` first. Do not ask the student to reconfirm resolved rules. S13 is implemented; use its existing model/API/tests when extending S10.
+Read the approved S13 settings and access behavior in `docs/contracts.md` first. Do not ask the student to reconfirm resolved rules. S13 and S10 are implemented; use their existing model/API/tests and `docs/s10-lobby.md` when extending this area.
 
 Confirm capacity limits, blinds/buy-in relationships, names/defaults, statuses, public access and guest-host policy, initial occupancy, occupancy source, and activity semantics. Do not invent joining or seating behavior to populate the lobby.
 

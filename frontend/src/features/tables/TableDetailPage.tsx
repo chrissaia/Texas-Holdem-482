@@ -29,8 +29,8 @@ function TableRecord({ id }: { id: string }) {
   }, [id])
   return (
     <>
-      <Link className="back-link" to="/tables/create">
-        ← Create a table
+      <Link className="back-link" to="/lobby">
+        ← Back to lobby
       </Link>
       {error ? (
         <div role="alert" className="notice error-notice">

@@ -52,3 +52,29 @@ class TableSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(exc.message_dict) from exc
         attrs["name"] = table.name
         return attrs
+
+
+class TableListQuerySerializer(serializers.Serializer):
+    search = serializers.CharField(required=False, allow_blank=True, max_length=150)
+    max_buy_in = WholeNumberField(required=False, min_value=1, max_value=MAX_CHIPS)
+    big_blind = WholeNumberField(required=False, min_value=1, max_value=MAX_CHIPS)
+    max_players = serializers.ChoiceField(required=False, choices=(2, 4, 6, 8, 9))
+    available_seats = serializers.ChoiceField(required=False, choices=("true", "false"))
+    status = serializers.ChoiceField(required=False, choices=("waiting", "playing"))
+    ordering = serializers.ChoiceField(
+        required=False, default="newest",
+        choices=("newest", "name", "buy_in", "-buy_in", "blinds", "players"),
+    )
+    page = WholeNumberField(required=False, min_value=1, max_value=2_147_483_647)
+    page_size = WholeNumberField(required=False, min_value=1, max_value=50)
+
+    def to_internal_value(self, data):
+        errors = {}
+        for key in data:
+            if key not in self.fields:
+                errors[key] = ["Unknown filter."]
+            elif len(data.getlist(key)) > 1:
+                errors[key] = ["Supply each filter only once."]
+        if errors:
+            raise serializers.ValidationError(errors)
+        return super().to_internal_value(data)

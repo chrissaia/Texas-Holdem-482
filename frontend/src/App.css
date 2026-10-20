@@ -508,3 +508,23 @@ input[aria-invalid='true'] {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.created-lobby-link {
+  display: block;
+  margin-top: 8px;
+}
+.mobile-lobby-link {
+  display: none;
+}
+@media (max-width: 720px) {
+  .mobile-lobby-link {
+    display: inline-flex;
+    margin-right: auto;
+  }
+  .account-controls .mobile-lobby-link + .unavailable {
+    display: none;
+  }
+  .account-controls .account-label {
+    max-width: 140px;
+  }
+}

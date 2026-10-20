@@ -1,6 +1,6 @@
 # S13 — Public table creation
 
-Chris's two selected stories are S13 public table creation (2 points) and S10 browse public tables (2 points). This change implements S13 for team review; professor acceptance remains pending. S10 listing/filtering is separate work.
+Chris's two selected stories are S13 public table creation (2 points) and S10 browse public tables (2 points). This change implements S13 for team review; professor acceptance remains pending. S10 listing/filtering is implemented separately; see [the lobby guide](s10-lobby.md).
 
 ## Try it locally
 
@@ -20,7 +20,7 @@ Skip `createsuperuser` if you already have a local staff account. It prompts for
 2. Select **Sign in**, log in with the local account, and return to the form automatically.
 3. Enter a name, choose seats, and configure chip values. Example: 6 seats, 1,000 buy-in, 1,000 minimum balance, 25 small blind, 50 big blind.
 4. Select **Create Table**. The button disables while saving, and a successful response shows **Table created!**.
-5. Select **View your table** and refresh. The settings are fetched from PostgreSQL again.
+5. Select **View your table** and refresh, or **See it in the lobby** to browse the newly saved table. The settings are fetched from PostgreSQL again.
 6. To exercise validation, try a blank name, 51 big blind with 25 small blind, or a minimum balance below the buy-in. No invalid table is stored.
 
 Anonymous and guest visitors can configure the form but cannot create a table. Session expiry, CSRF failures, unavailable API responses, and field errors produce feedback while retaining inputs. The form does not automatically retry writes after a network failure: check for an existing table before manually retrying if a connection was lost during submission.
@@ -78,7 +78,7 @@ React Router provides `/`, `/tables/create`, and `/tables/:id`. The API uses the
 
 Success is HTTP 201 with those settings plus ID, public host, visibility, occupancy, waiting status, and UTC timestamps. Invalid data is HTTP 400 with arrays of field errors. Unknown and server-controlled input fields (including host and status) are rejected. Anonymous/guest/session/CSRF failures use HTTP 403 under DRF SessionAuthentication.
 
-`GET /api/tables/<id>/` reads public settings. Private/missing IDs return HTTP 404. This supports confirmation and persistence checks, without implementing S10's list API.
+`GET /api/tables/<id>/` reads public settings. Private/missing IDs return HTTP 404. This supports confirmation and persistence checks, alongside S10's public list API.
 
 ## Tests and measured evidence
 

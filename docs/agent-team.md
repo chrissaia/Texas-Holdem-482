@@ -2,7 +2,7 @@
 
 For the reusable repository agents intended for teammates, use [.agents/README.md](../.agents/README.md). The roles below describe the earlier one-time analysis team; the reusable briefs are organized by teammate instead.
 
-Implementation update: S13 now has a tested form/API. The table rules and access policy were approved after the analysis below. Use [contracts.md](contracts.md) and [the S13 guide](s13-public-tables.md) for current behavior; unresolved findings below describe the earlier planning state.
+Implementation update: S13 has a tested form/API and S10 now has a real public lobby. The table rules and access policy were approved after the analysis below. Use [contracts.md](contracts.md) and [the S13 guide](s13-public-tables.md) for current behavior; unresolved findings below describe the earlier planning state.
 
 This team supports the students' existing Sprint 1 ownership. Agents do not take credit for student contributions or change story assignments. Initial assignments are read-only analysis; feature implementation still proceeds one milestone at a time.
 

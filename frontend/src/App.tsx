@@ -3,6 +3,7 @@ import { BrowserRouter, Link, Route, Routes } from 'react-router-dom'
 import { AppLayout } from './components/AppLayout'
 import { getCreationContext } from './features/tables/api'
 import { CreateTablePage } from './features/tables/CreateTablePage'
+import { LobbyPage } from './features/tables/LobbyPage'
 import { TableDetailPage } from './features/tables/TableDetailPage'
 import type { CreationContext } from './features/tables/types'
 import './App.css'
@@ -39,6 +40,7 @@ export function AppRoutes() {
   return (
     <AppLayout host={context?.host ?? null}>
       <Routes>
+        <Route path="/lobby" element={<LobbyPage />} />
         <Route
           path="/"
           element={
@@ -51,6 +53,9 @@ export function AppRoutes() {
               </p>
               <Link className="button primary" to="/tables/create">
                 Create Table →
+              </Link>
+              <Link className="button" to="/lobby">
+                Browse public tables →
               </Link>
             </section>
           }

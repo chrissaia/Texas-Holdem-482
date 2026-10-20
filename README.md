@@ -1,6 +1,6 @@
 # RIVR — Texas Hold’em
 
-CS 482, Team 23: Chris, Finn, Kelechi, Royal. React/TypeScript + Django REST Framework + PostgreSQL. The shared foundation and S13 public-table creation are implemented. S10 lobby browsing is the next story. See [the S13 guide](docs/s13-public-tables.md) for the working flow and local sign-in instructions.
+CS 482, Team 23: Chris, Finn, Kelechi, Royal. React/TypeScript + Django REST Framework + PostgreSQL. The shared foundation, S13 public-table creation, and S10 public lobby are implemented. Browse at `/lobby`; see [the lobby guide](docs/s10-lobby.md). See [the S13 guide](docs/s13-public-tables.md) for the working flow and local sign-in instructions.
 
 Teammates: start with [instructions.md](instructions.md) for setup, feature branches, commits, pushing, and pull requests.
 
@@ -104,9 +104,9 @@ source .venv/bin/activate
 pytest --cov --cov-report=term-missing --cov-report=html
 ```
 
-From `frontend/`, use `npm run build`, `npm run lint`, `npm test`, and `npm run test:coverage`. Frontend tests cover table-form validation, creation, saved details, session failures, and API errors. Backend tests use a real, separate PostgreSQL test database (`test_rivr`), created and removed by pytest-django. The local database user has database-creation privileges; do not point tests at shared or production databases.
+From `frontend/`, use `npm run build`, `npm run lint`, `npm test`, and `npm run test:coverage`. Frontend tests cover creation and lobby behavior, filters/sorting/pagination, saved details, session failures, and API errors. Backend tests use a real, separate PostgreSQL test database (`test_rivr`), created and removed by pytest-django. The local database user has database-creation privileges; do not point tests at shared or production databases.
 
-Backend HTML coverage: `backend/htmlcov/index.html`; frontend coverage: `frontend/coverage/index.html`. Coverage includes the foundation and implemented S13 code; it does not establish coverage of unimplemented sprint stories. The sprint target is above 80% statement and above 50% branch coverage, with buffers of 85% and 55%; foundation results do not establish feature coverage. Expand backend coverage `source` and pytest `testpaths` as apps are added.
+Backend HTML coverage: `backend/htmlcov/index.html`; frontend coverage: `frontend/coverage/index.html`. Coverage includes the foundation and implemented S13/S10 code; it does not establish coverage of unimplemented sprint stories. The sprint target is above 80% statement and above 50% branch coverage, with buffers of 85% and 55%; foundation results do not establish feature coverage. Expand backend coverage `source` and pytest `testpaths` as apps are added.
 
 ## Accounts and migrations
 

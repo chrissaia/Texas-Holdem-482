@@ -18,3 +18,15 @@ export type PokerTable = TableInput & {
   last_activity_at: string
 }
 export type FieldErrors = Partial<Record<keyof TableInput, string[]>>
+
+export type TableList = {
+  count: number
+  next: string | null
+  previous: string | null
+  page: number
+  page_size: number
+  total_pages: number
+  total_tables: number
+  total_players: number
+  results: PokerTable[]
+}

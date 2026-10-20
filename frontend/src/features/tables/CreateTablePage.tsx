@@ -311,6 +311,9 @@ export function CreateTablePage({
                       <Link to={`/tables/${created.id}`}>
                         View your table →
                       </Link>
+                      <Link className="created-lobby-link" to="/lobby">
+                        See it in the lobby →
+                      </Link>
                     </div>
                   </div>
                 )}

@@ -16,7 +16,7 @@ Implemented endpoints:
 
 - `GET /api/tables/creation-context/`: public, returns `{host: {id, username} | null, csrf_token}` and sets the CSRF cookie for the form. This small form-specific interface can later consume Finn's session interface; it does not implement login or registration.
 - `POST /api/tables/`: requires an active registered user's Django session and CSRF token. JSON fields: `name`, `max_players`, `buy_in`, `minimum_balance`, `small_blind`, `big_blind`. Returns HTTP 201 with the saved table. Missing/invalid/unknown/server-controlled fields return HTTP 400 with field-keyed error arrays. Session/CSRF permission failures return HTTP 403.
-- `GET /api/tables/<id>/`: public read-back of a public table. Missing/private tables return HTTP 404. There is no listing/filtering API yet; S10 remains to be implemented.
+- `GET /api/tables/<id>/`: public read-back of a public table. Missing/private tables return HTTP 404. S10 now adds GET listing/filtering on `/api/tables/`; see the lobby contract below.
 
 Server-controlled output fields: `id`, `host` (only ID and username), `is_public`, `player_count`, `status`, `created_at`, and `last_activity_at`. Creation sets public visibility, zero occupancy, waiting status, and UTC timestamps. It does not seat the host, debit chips, start gameplay, or create bots/invitations. All writes use the authenticated host; client-supplied host/occupancy/status fields are rejected.
 
@@ -25,6 +25,16 @@ User references use `settings.AUTH_USER_MODEL` with `PROTECT` on deletion to pre
 For Kelechi: `player_count` is server-owned and constrained to capacity. It stays zero until a future seating service updates it. `last_activity_at` is initialized on creation and indexed; reads do not refresh it. Future seating/game services must update occupancy and activity atomically, locking the table row. Cleanup must recheck occupancy under the same lock. The inactivity threshold and cleanup implementation remain Kelechi's work. `status` permits `waiting`, `playing`, `closed`; only `waiting` is created by this endpoint.
 
 The form is at `/tables/create`; saved settings can be read at `/tables/<id>`. Local development uses Django's existing admin login with a local staff account, then returns to the form. Finn's final login UI remains separate. See [the S13 guide](s13-public-tables.md) for exact commands and acceptance evidence.
+
+## S10 public lobby
+
+`GET /api/tables/` is public and paginated. It includes public tables whose status is not `closed`, using the same safe host serialization as S13. POST remains registered-session-only with CSRF enforcement.
+
+The request supports name/host `search`, `max_buy_in`, exact `big_blind`, exact `max_players`, `available_seats=true|false`, `status=waiting|playing`, fixed `ordering` choices, `page`, and bounded `page_size`. Unknown/repeated/invalid queries are HTTP 400; missing pages are HTTP 404. See [s10-lobby.md](s10-lobby.md) for exact defaults and sort behavior.
+
+Response: `{count, next, previous, page, page_size, total_pages, total_tables, total_players, results}`. `results` uses the existing table response shape. `count` reflects applied filters; the two `total_*` values describe all active public tables. The frontend explicitly filters available seats by default, saves view state in the URL, and supports manual refresh.
+
+No client can request private entries, supply arbitrary sort columns, or mutate occupancy/activity by browsing. Kelechi's eventual cleanup will be reflected on the next fetch. There is no inferred inactivity expiry until an agreed cleanup rule exists. The React lobby is `/lobby`, linked from navigation and S13 success. Row actions read saved settings; joining/gameplay and affordability are still future integration.
 
 ## Ownership
 
@@ -37,4 +47,4 @@ Coordinate user field and migration changes before implementation. Royal and Kel
 
 ## Scope and known document differences
 
-The system design’s 60% coverage baseline is superseded for Sprint 1 by above 80% statement and above 50% branch coverage. Privacy options, bots, gameplay, joining tables, social features, and WebSocket synchronization remain future work. S13 now has a working form/API and tests; professor acceptance remains pending. S10 and other owners’ stories remain separate. The Create Table layout uses inspected Figma frame 12:1619, adapting private/bot areas to the approved public-only scope.
+The system design’s 60% coverage baseline is superseded for Sprint 1 by above 80% statement and above 50% branch coverage. Privacy options, bots, gameplay, joining tables, social features, and WebSocket synchronization remain future work. S13 now has a working form/API and tests; professor acceptance remains pending. S10 now provides real public browsing, filters, sorting, and pagination; other owners’ stories remain separate. The Create Table layout uses inspected Figma frame 12:1619, adapting private/bot areas to the approved public-only scope.
