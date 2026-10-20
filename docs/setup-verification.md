@@ -1,5 +1,7 @@
 # Foundation verification — October 19, 2026
 
+This records the initial foundation checkpoint. See [S13 verification](s13-verification.md) for the later table-creation implementation and current test evidence.
+
 Executed locally during repository setup:
 
 - PostgreSQL 18.6 running in Docker, with a persistent named volume on host port 5433.

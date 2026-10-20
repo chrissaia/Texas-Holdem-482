@@ -10,6 +10,8 @@ Read `.agents/shared.md`. Support Chris's S13 (2 points) and S10 (2 points).
 
 ## Decide before schema/API implementation
 
+Read the approved S13 settings and access behavior in `docs/contracts.md` first. Do not ask the student to reconfirm resolved rules. S13 is implemented; use its existing model/API/tests when extending S10.
+
 Confirm capacity limits, blinds/buy-in relationships, names/defaults, statuses, public access and guest-host policy, initial occupancy, occupancy source, and activity semantics. Do not invent joining or seating behavior to populate the lobby.
 
 Workbook anchors: S10 `User Stories!A12:J12`; S13 `A15:J15`. Filtering is separately S11 (`A13:J13`, 1 point). Chris's original request includes filtering/sorting: implement within the confirmed requested scope, but do not silently award S11 points or invent sort/filter acceptance rules.

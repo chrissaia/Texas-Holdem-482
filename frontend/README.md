@@ -11,4 +11,4 @@ npm test
 npm run test:coverage
 ```
 
-Vitest, jsdom, and Testing Library are configured. Feature tests will be added with the table UI; test commands currently report no tests. The visible app is still the original Vite starter.
+S13 public-table creation is implemented at `/tables/create`, with persisted table details at `/tables/:id`. Vitest, jsdom, and Testing Library cover creation, validation, session and API errors, and recovery. See the [S13 guide](../docs/s13-public-tables.md).
