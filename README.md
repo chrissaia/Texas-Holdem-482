@@ -1,6 +1,6 @@
 # RIVR — Texas Hold’em
 
-CS 482, Team 23: Chris, Finn, Kelechi, Royal. React/TypeScript + Django REST Framework + PostgreSQL. This repository currently contains the development foundation; public tables and the lobby are the next milestones. The UI is still the original Vite starter.
+CS 482, Team 23: Chris, Finn, Kelechi, Royal. React/TypeScript + Django REST Framework + PostgreSQL. The shared foundation and S13 public-table creation are implemented. S10 lobby browsing is the next story. See [the S13 guide](docs/s13-public-tables.md) for the working flow and local sign-in instructions.
 
 Teammates: start with [instructions.md](instructions.md) for setup, feature branches, commits, pushing, and pull requests.
 
@@ -12,6 +12,7 @@ backend/                  Django, REST Framework, PostgreSQL driver, pytest
   config/                 Settings, routing, WSGI/ASGI entry points
   accounts/               Minimal custom Django user and initial migration
   core/                   Database readiness endpoint and tests
+  tables/                 S13 settings, API, constraints, tests, migrations
 docs/contracts.md         Shared interfaces and teammate boundaries
 docs/reference/           System design PDF and user stories workbook
 compose.yaml              Local PostgreSQL, backend, frontend services
@@ -103,9 +104,9 @@ source .venv/bin/activate
 pytest --cov --cov-report=term-missing --cov-report=html
 ```
 
-From `frontend/`, use `npm run build`, `npm run lint`, `npm test`, and `npm run test:coverage`. No frontend feature tests exist yet: Vitest intentionally reports no tests rather than claiming a passing suite. Add tests with the table UI. Backend tests use a real, separate PostgreSQL test database (`test_rivr`), created and removed by pytest-django. The local database user has database-creation privileges; do not point tests at shared or production databases.
+From `frontend/`, use `npm run build`, `npm run lint`, `npm test`, and `npm run test:coverage`. Frontend tests cover table-form validation, creation, saved details, session failures, and API errors. Backend tests use a real, separate PostgreSQL test database (`test_rivr`), created and removed by pytest-django. The local database user has database-creation privileges; do not point tests at shared or production databases.
 
-Backend HTML coverage: `backend/htmlcov/index.html`; frontend coverage: `frontend/coverage/index.html`. Coverage currently concerns only implemented foundation code. The sprint target is above 80% statement and above 50% branch coverage, with buffers of 85% and 55%; foundation results do not establish feature coverage. Expand backend coverage `source` and pytest `testpaths` as apps are added.
+Backend HTML coverage: `backend/htmlcov/index.html`; frontend coverage: `frontend/coverage/index.html`. Coverage includes the foundation and implemented S13 code; it does not establish coverage of unimplemented sprint stories. The sprint target is above 80% statement and above 50% branch coverage, with buffers of 85% and 55%; foundation results do not establish feature coverage. Expand backend coverage `source` and pytest `testpaths` as apps are added.
 
 ## Accounts and migrations
 
