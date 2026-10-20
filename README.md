@@ -120,7 +120,7 @@ Use `/admin/` for Django's normal session login. This does not implement Sprint 
 
 ## Team workflow
 
-Keep `main` stable. Create feature branches, e.g. `git switch -c feature/S13-public-tables`. Make small commits referencing the story and actual GitHub issue number when available; never invent issue numbers or teammates’ authorship. Run relevant tests and request peer review before merging.
+Keep `main` stable. Create feature branches using your name, e.g. `git switch -c saia`. Make small commits referencing the story and actual GitHub issue number when available; never invent issue numbers or teammates’ authorship. Run relevant tests and request peer review before merging.
 
 Commit source, migrations, lockfiles, and configuration examples. Do not commit `.env`, virtual environments, dependencies, uploaded media, or local coverage output. Finn will commit the final sprint coverage evidence deliberately under `docs/`.
 
