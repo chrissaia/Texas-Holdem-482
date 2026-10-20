@@ -2,11 +2,38 @@
 
 ## Implemented interfaces
 
-- User: `accounts.User`, initially Django `AbstractUser` without extra fields. Its primary key is an integer (`BigAutoField`). Finn owns account validation, uniqueness policies, registration, login/logout, guest representation, and the eventual session endpoint. Email is not uniquely constrained in this foundation; Finn must decide and implement that policy before registration.
+- User: `accounts.User`, initially Django `AbstractUser` without extra fields. Its primary key is an integer (`BigAutoField`). Finn owns account validation, uniqueness policies, registration, login/logout, guest representation, and the eventual session endpoint. Usernames and non-blank emails are unique case-insensitively at the database level; see the accounts section below.
 - User references: foreign keys use `settings.AUTH_USER_MODEL`; runtime code uses `get_user_model()`. Passwords use Django’s hashing APIs.
 - Authentication: DRF session authentication; endpoints require authenticated users by default. The readiness endpoint explicitly permits anonymous GET requests. Cookie-authenticated writes must retain CSRF protection. No client-supplied host ID or development identity headers will be trusted.
 - `GET /api/health/`: HTTP 200 with `{"status":"ok","database":"ok"}` after a PostgreSQL query; HTTP 503 with `{"status":"unavailable","database":"unavailable"}` when the database is inaccessible. It does not expose connection errors or credentials.
 - Datetimes: timezone-aware UTC. Database credentials and Django configuration come from the root `.env`. Vite uses same-origin relative `/api/` requests through its development proxy.
+
+## S2/S1/S4 accounts and sessions
+
+Finn owns `backend/accounts/`. All endpoints live under `/api/auth/`, allow anonymous access, and enforce CSRF on every POST, including anonymous ones (DRF normally skips CSRF for anonymous requests).
+
+- `GET session/`: sets the CSRF cookie and returns the session contract below.
+- `POST register/`: `{username, email, password}`. Usernames are 3–30 characters of letters, numbers, `.`, `-`, `_`. Emails are stored lowercase. Both are unique case-insensitively, enforced by validation and by database constraints (concurrent duplicates return HTTP 400). Passwords use Django's validators and hashing. Success returns HTTP 201 and signs the new user in. Signed-in users get HTTP 400.
+- `POST login/`: `{username, password}`; the username match is case-insensitive. Wrong passwords, unknown usernames, and inactive accounts all return HTTP 400 `{"non_field_errors": ["Invalid username or password."]}`. Login rotates the session key and CSRF token.
+- `POST logout/`: deletes the server-side session; the old cookie no longer authenticates.
+- `POST guest/`: `{name}`, trimmed, 2–20 characters of letters, numbers, spaces, `-`, `_`. Creates no database user. Guest names may repeat among guests but cannot match a registered username. The guest session expires after 24 hours or on logout. Signed-in users get HTTP 400.
+
+Every response returns the session contract, including the current `csrf_token` because login and logout rotate it:
+
+```json
+{"state": "anonymous" | "guest" | "registered",
+ "user": {"id": 1, "username": "...", "email": "...", "is_admin": false} | null,
+ "guest": {"name": "..."} | null,
+ "csrf_token": "..."}
+```
+
+Guests stay anonymous Django users with `request.session["is_guest"] = True` and `request.session["guest_name"]`, so `tables.permissions.can_host` already denies them. Logging in or registering removes both guest keys. `is_admin` maps to Django `is_staff`. `user.email` is only returned to the account's own session; public responses must keep using `{id, username}`.
+
+Registration runs inside `accounts.services.register_user`, a single transaction. Royal's starting-chip grant should be called there so a failed grant rolls back the account.
+
+Shared pytest fixtures live in `backend/conftest.py`: `registered_user`, `rivr_admin` (a superuser), `registered_client`, `rivr_admin_client`, and `guest_client`. The clients sign in through the real endpoints with CSRF enforced. They are named to avoid pytest-django's built-in `admin_user`/`admin_client`.
+
+Open decisions: these username, guest-name, and guest-lifetime rules are Finn's implementation choices pending team agreement. Login rate limiting is not implemented.
 
 ## S13 public-table creation
 
