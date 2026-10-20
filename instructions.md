@@ -71,7 +71,7 @@ The first build downloads dependencies and may take several minutes. Press Ctrl+
 - Backend directly: http://localhost:8000/api/health/
 - PostgreSQL from your machine: `127.0.0.1:5433`, using your `.env` credentials.
 
-The health endpoint should return `{"status":"ok","database":"ok"}`. The frontend currently shows the Vite starter until feature screens are implemented. Each teammate has a separate local database; your database records are not shared through Git.
+The health endpoint should return `{"status":"ok","database":"ok"}`. The frontend includes S10 browsing at `/lobby` and S13 public-table creation at `/tables/create`; see [the S13 guide](docs/s13-public-tables.md) for local sign-in and a walkthrough. Each teammate has a separate local database; your database records are not shared through Git.
 
 Useful commands:
 
@@ -138,7 +138,7 @@ docker compose exec frontend npm test
 docker compose exec frontend npm run test:coverage
 ```
 
-Currently no frontend tests exist, so Vitest reports no tests and exits with code 1. Do not report that as passing. Backend tests use a separate PostgreSQL test database. Write tests for your feature's successful behavior, invalid input, and permission checks.
+Frontend tests now cover S13 creation and S10 browsing, including filters, sorting, pagination, API communication, validation, and error states. Backend tests use a separate PostgreSQL test database. Write tests for your feature's successful behavior, invalid input, and permission checks.
 
 The sprint requires above 80% code coverage and above 50% branch coverage; aim for 85% and 55%. Report measured results and scope. Local coverage reports are ignored; coordinate the final committed coverage evidence with Finn.
 

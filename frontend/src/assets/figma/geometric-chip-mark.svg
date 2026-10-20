@@ -1,0 +1,13 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Geometric chip mark" clip-path="url(#clip0_0_22)">
+<circle id="Chip" cx="16" cy="16" r="16" fill="#4169FF"/>
+<path id="Lettermark" d="M7.68 6.72H15.0857C22.4914 6.72 24.3429 14.3624 18.1714 17.0918L24.96 25.28H18.7886L12.6171 17.6376V25.28H7.68V6.72ZM12.6171 10.5412V13.8165H15.0857C19.4057 13.8165 19.4057 10.5412 15.0857 10.5412H12.6171Z" fill-rule="evenodd" clip-rule="evenodd" fill="#F3F5FA"/>
+<rect id="Chip notch" x="14.72" width="3" height="4" fill="#090F1B"/>
+<rect id="Chip notch_2" x="14.72" y="28" width="3" height="4" fill="#090F1B"/>
+</g>
+<defs>
+<clipPath id="clip0_0_22">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>
