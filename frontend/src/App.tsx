@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
-import { BrowserRouter, Link, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Link, Outlet, Route, Routes } from 'react-router-dom'
 import { AppLayout } from './components/AppLayout'
+import { GuestPage } from './features/auth/GuestPage'
+import { RegisterPage } from './features/auth/RegisterPage'
+import { SignInPage } from './features/auth/SignInPage'
 import { getCreationContext } from './features/tables/api'
 import { CreateTablePage } from './features/tables/CreateTablePage'
 import { LobbyPage } from './features/tables/LobbyPage'
@@ -38,8 +41,18 @@ export function AppRoutes() {
     }
   }, [attempt])
   return (
-    <AppLayout host={context?.host ?? null}>
-      <Routes>
+    <Routes>
+      {/* Account screens use their own full-page layout from Figma, without the sidebar. */}
+      <Route path="/login" element={<SignInPage onSignedIn={refresh} />} />
+      <Route path="/register" element={<RegisterPage onSignedIn={refresh} />} />
+      <Route path="/guest" element={<GuestPage onSignedIn={refresh} />} />
+      <Route
+        element={
+          <AppLayout host={context?.host ?? null}>
+            <Outlet />
+          </AppLayout>
+        }
+      >
         <Route path="/lobby" element={<LobbyPage />} />
         <Route
           path="/"
@@ -81,8 +94,8 @@ export function AppRoutes() {
             </section>
           }
         />
-      </Routes>
-    </AppLayout>
+      </Route>
+    </Routes>
   )
 }
 
