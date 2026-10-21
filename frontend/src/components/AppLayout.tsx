@@ -95,9 +95,13 @@ export function AppLayout({
             {host && <img className="presence" src={online} alt="Signed in" />}
           </div>
           <p>{host?.username || 'Not signed in'}</p>
-          <span className="muted">
-            {host ? 'Registered player' : 'Sign in to host a table'}
-          </span>
+          {host ? (
+            <span className="muted">Registered player</span>
+          ) : (
+            <Link className="muted" to="/login">
+              Sign in to host a table
+            </Link>
+          )}
         </div>
       </aside>
       <div className="app-body">
