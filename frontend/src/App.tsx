@@ -6,6 +6,8 @@ import { CreateTablePage } from './features/tables/CreateTablePage'
 import { LobbyPage } from './features/tables/LobbyPage'
 import { TableDetailPage } from './features/tables/TableDetailPage'
 import type { CreationContext } from './features/tables/types'
+import { ThemeProvider } from './features/themes/ThemeProvider'
+import { SettingsPage } from './features/themes/SettingsPage'
 import './App.css'
 
 export function AppRoutes() {
@@ -38,51 +40,54 @@ export function AppRoutes() {
     }
   }, [attempt])
   return (
-    <AppLayout host={context?.host ?? null}>
-      <Routes>
-        <Route path="/lobby" element={<LobbyPage />} />
-        <Route
-          path="/"
-          element={
-            <section className="panel home-panel">
-              <span className="eyebrow">WELCOME TO RIVR</span>
-              <h1>Make room for your next poker night.</h1>
-              <p className="muted">
-                Choose your seats, set your stakes, and create a public Texas
-                Hold’em table. All stakes use virtual chips.
-              </p>
-              <Link className="button primary" to="/tables/create">
-                Create Table →
-              </Link>
-              <Link className="button" to="/lobby">
-                Browse public tables →
-              </Link>
-            </section>
-          }
-        />
-        <Route
-          path="/tables/create"
-          element={
-            <CreateTablePage
-              context={context}
-              loading={loading}
-              error={error}
-              refresh={refresh}
-            />
-          }
-        />
-        <Route path="/tables/:id" element={<TableDetailPage />} />
-        <Route
-          path="*"
-          element={
-            <section className="panel">
-              <h1>Page not found</h1>
-              <Link to="/">Back to RIVR</Link>
-            </section>
-          }
-        />
-      </Routes>
-    </AppLayout>
+    <ThemeProvider>
+      <AppLayout host={context?.host ?? null}>
+        <Routes>
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/lobby" element={<LobbyPage />} />
+          <Route
+            path="/"
+            element={
+              <section className="panel home-panel">
+                <span className="eyebrow">WELCOME TO RIVR</span>
+                <h1>Make room for your next poker night.</h1>
+                <p className="muted">
+                  Choose your seats, set your stakes, and create a public Texas
+                  Hold’em table. All stakes use virtual chips.
+                </p>
+                <Link className="button primary" to="/tables/create">
+                  Create Table →
+                </Link>
+                <Link className="button" to="/lobby">
+                  Browse public tables →
+                </Link>
+              </section>
+            }
+          />
+          <Route
+            path="/tables/create"
+            element={
+              <CreateTablePage
+                context={context}
+                loading={loading}
+                error={error}
+                refresh={refresh}
+              />
+            }
+          />
+          <Route path="/tables/:id" element={<TableDetailPage />} />
+          <Route
+            path="*"
+            element={
+              <section className="panel">
+                <h1>Page not found</h1>
+                <Link to="/">Back to RIVR</Link>
+              </section>
+            }
+          />
+        </Routes>
+      </AppLayout>
+    </ThemeProvider>
   )
 }
 

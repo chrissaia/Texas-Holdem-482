@@ -12,6 +12,8 @@
   --muted: #9aaac1;
   --subtle: #8193ac;
   --accent: #4169ff;
+  --on-accent: #ffffff;
+  --available-bg: #19392f;
   --accent-soft: #192c59;
   --cyan: #71c8e3;
   --green: #66c69b;
@@ -97,4 +99,25 @@ fieldset {
 img {
   display: block;
   max-width: none;
+}
+
+/* S35: the existing Figma dark navy palette is the default. */
+:root[data-theme='light'] {
+  color-scheme: light;
+  --bg: #f4f7fc;
+  --sidebar: #ffffff;
+  --panel: #ffffff;
+  --surface: #e8eef8;
+  --border: #b7c4d8;
+  --text: #18263d;
+  --muted: #4d5e78;
+  --subtle: #586982;
+  --accent: #3155df;
+  --accent-soft: #e5ecff;
+  --cyan: #17617e;
+  --green: #176343;
+  --green-bg: #e5f4ec;
+  --available-bg: #e5f4ec;
+  --error: #a72438;
+  --error-bg: #fff0f2;
 }
