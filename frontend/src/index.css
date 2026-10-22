@@ -11,6 +11,7 @@
   --text: #f2f5fc;
   --muted: #9aaac1;
   --subtle: #8193ac;
+  --faint: #61748f;
   --accent: #4169ff;
   --on-accent: #ffffff;
   --available-bg: #19392f;
@@ -112,6 +113,7 @@ img {
   --text: #18263d;
   --muted: #4d5e78;
   --subtle: #586982;
+  --faint: #586982;
   --accent: #3155df;
   --accent-soft: #e5ecff;
   --cyan: #17617e;

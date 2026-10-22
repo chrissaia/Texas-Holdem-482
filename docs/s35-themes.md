@@ -51,3 +51,20 @@ Remaining review: approve the proposed light palette and try both themes in your
 normal browser. Real account sign-in/sign-out was not browser-tested; theme state
 does not consume account identity, and unit tests cover anonymous/registered
 session-shaped contexts. Cross-device preference syncing is outside this scope.
+
+
+## Integration with updated main
+
+Resolved the App.tsx routing conflict with main's account screens by retaining
+their standalone layout and wrapping all routes in ThemeProvider. Settings stays
+inside AppLayout. Added a light-mode value for main's new --faint text token.
+
+After integration, build and lint passed and all 78 frontend tests passed.
+Configured frontend coverage measured 98.34% statements and 93.55% branches;
+theme modules remained at 95.65% statements and 90% branches.
+
+Headless Edge checked login, register, and guest routes in both themes (six
+combinations), their standalone layout, navigation back to Settings, and theme
+persistence. No JavaScript page errors occurred. These browser checks did not
+submit real account forms. Restarted the frontend to clear stale Vite source
+after the merge.
