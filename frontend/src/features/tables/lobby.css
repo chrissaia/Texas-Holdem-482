@@ -150,7 +150,7 @@
 }
 .table-status.available {
   color: var(--green);
-  background: #19392f;
+  background: var(--available-bg);
 }
 .table-status.full {
   background: var(--surface);

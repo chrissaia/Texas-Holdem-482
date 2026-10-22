@@ -61,15 +61,15 @@ export function AppLayout({
             Home
           </Link>
           {navigation.map(([label, icon]) =>
-            label === 'Lobby' ? (
+            (label === 'Lobby' || label === 'Settings') ? (
               <Link
                 key={label}
-                to="/lobby"
-                className={`nav-item ${pathname === '/lobby' || pathname.startsWith('/tables') ? 'active' : ''}`}
-                aria-current={pathname === '/lobby' ? 'page' : undefined}
+                to={label === 'Settings' ? '/settings' : '/lobby'}
+                className={`nav-item ${(label === 'Settings' ? pathname === '/settings' : pathname === '/lobby' || pathname.startsWith('/tables')) ? 'active' : ''}`}
+                aria-current={pathname === (label === 'Settings' ? '/settings' : '/lobby') ? 'page' : undefined}
               >
                 <img src={icon} alt="" />
-                Lobby
+                {label}
               </Link>
             ) : (
               <span
@@ -115,6 +115,7 @@ export function AppLayout({
             <Link className="mobile-lobby-link" to="/lobby">
               Lobby
             </Link>
+            <Link className="mobile-settings-link" to="/settings">Settings</Link>
             <span className="unavailable" title="Notifications coming later">
               <img src={bell} alt="Notifications unavailable" />
             </span>
