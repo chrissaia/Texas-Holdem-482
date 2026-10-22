@@ -9,7 +9,7 @@ class User(AbstractUser):
 
     class Meta(AbstractUser.Meta):
         constraints = [
-            # "Mira" and "mira" are the same player name.
+            
             models.UniqueConstraint(
                 Lower("username"),
                 name="accounts_user_username_ci_unique",

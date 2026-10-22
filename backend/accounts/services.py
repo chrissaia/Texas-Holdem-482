@@ -12,7 +12,7 @@ def register_user(*, username, email, password):
     user = get_user_model().objects.create_user(
         username=username, email=email, password=password
     )
-    # Integration point: Royal's starting-chip grant runs here, inside this
+    
     # transaction, so a failed grant also rolls back the new account.
     return user
 
