@@ -49,7 +49,7 @@ Server-controlled output fields: `id`, `host` (only ID and username), `is_public
 
 User references use `settings.AUTH_USER_MODEL` with `PROTECT` on deletion to prevent an accidental account delete from removing tables. Finn must coordinate account deletion behavior with Chris if adding it later. Registered accounts currently mean active Django users; guests must remain anonymous/session-only or expose an explicit `user.is_guest` or session `is_guest` marker. Both markers deny creation. Finn owns the eventual permanent guest representation and must preserve this boundary.
 
-For Kelechi: `player_count` is server-owned and constrained to capacity. It stays zero until a future seating service updates it. `last_activity_at` is initialized on creation and indexed; reads do not refresh it. Future seating/game services must update occupancy and activity atomically, locking the table row. Cleanup must recheck occupancy under the same lock. The inactivity threshold and cleanup implementation remain Kelechi's work. `status` permits `waiting`, `playing`, `closed`; only `waiting` is created by this endpoint.
+For Kelechi: `player_count` is server-owned and constrained to capacity. It stays zero until a future seating service updates it. `last_activity_at` is initialized on creation and indexed; reads do not refresh it. Future seating/game services must update occupancy and activity atomically, locking the table row. Cleanup must recheck occupancy under the same lock. S23 now provides manual admin cleanup with a configurable 30-minute default; see the S23 section below. `status` permits `waiting`, `playing`, `closed`; only `waiting` is created by this endpoint.
 
 The form is at `/tables/create`; saved settings can be read at `/tables/<id>`. Local development uses Django's existing admin login with a local staff account, then returns to the form. Finn's final login UI remains separate. See [the S13 guide](s13-public-tables.md) for exact commands and acceptance evidence.
 
@@ -61,8 +61,31 @@ The request supports name/host `search`, `max_buy_in`, exact `big_blind`, exact 
 
 Response: `{count, next, previous, page, page_size, total_pages, total_tables, total_players, results}`. `results` uses the existing table response shape. `count` reflects applied filters; the two `total_*` values describe all active public tables. The frontend explicitly filters available seats by default, saves view state in the URL, and supports manual refresh.
 
-No client can request private entries, supply arbitrary sort columns, or mutate occupancy/activity by browsing. Kelechi's eventual cleanup will be reflected on the next fetch. There is no inferred inactivity expiry until an agreed cleanup rule exists. The React lobby is `/lobby`, linked from navigation and S13 success. Row actions read saved settings; joining/gameplay and affordability are still future integration.
+No client can request private entries, supply arbitrary sort columns, or mutate occupancy/activity by browsing. Kelechi's eventual cleanup will be reflected on the next fetch. Browsing never expires tables; S23 removes eligible tables only when an authorized administrator confirms the cleanup action. The React lobby is `/lobby`, linked from navigation and S13 success. Row actions read saved settings; joining/gameplay and affordability are still future integration.
 
+
+## S23 administrator cleanup
+
+Kelechi owns tables/cleanup.py and the cleanup admin action. At /admin/tables/pokertable/,
+staff with tables.delete_pokertable permission (and normal admin view access) select
+tables and choose "Clean up selected old empty public tables". The action requires
+a CSRF-protected confirmation POST. Anonymous, ordinary, inactive, and staff users
+without table-delete permission cannot invoke the cleanup service.
+
+The configurable TABLE_CLEANUP_INACTIVITY_MINUTES default is 30. Only selected,
+public, zero-player tables with waiting/closed status and last_activity_at strictly
+older than the cutoff are deleted. Exact-cutoff, recent, private, occupied, and
+playing tables survive. Eligibility is checked on locked rows in one PostgreSQL
+transaction. Future seating/activity writers must acquire the same row lock and
+update player_count/last_activity_at atomically; cleanup cannot reconstruct
+activity that another service has not recorded. Browsing does not count as activity.
+
+Each deletion has a Django admin LogEntry containing the actor, table ID/name,
+and cleanup cutoff. Auditing and deletion commit or roll back together. Cleanup
+reports deleted/skipped counts, is repeat-safe, and is reflected in the next
+lobby API fetch. This is manual cleanup, not a scheduled job or a new public API.
+No table/user schema changes were introduced. Kelechi approved these defaults
+for implementation; teammate review and professor acceptance remain pending.
 ## Ownership
 
 - Chris: tables, lobby, table fixtures, API contracts, creation/browsing tests.

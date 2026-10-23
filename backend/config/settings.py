@@ -83,3 +83,9 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+# S23 manual cleanup uses server-controlled activity, never a browser timestamp.
+TABLE_CLEANUP_INACTIVITY_MINUTES = int(
+    os.environ.get("TABLE_CLEANUP_INACTIVITY_MINUTES", "30")
+)
