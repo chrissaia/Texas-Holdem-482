@@ -1,4 +1,4 @@
-# S13 — Public table creation
+# S13 - Public table creation
 
 Chris's two selected stories are S13 public table creation (2 points) and S10 browse public tables (2 points). This change implements S13 for team review; professor acceptance remains pending. S10 listing/filtering is implemented separately; see [the lobby guide](s10-lobby.md).
 

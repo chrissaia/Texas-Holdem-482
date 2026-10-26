@@ -24,7 +24,7 @@ export type ContextState = {
   refresh: () => void
 }
 const format = (n: number) =>
-  Number.isFinite(n) ? n.toLocaleString('en-US') : '—'
+  Number.isFinite(n) ? n.toLocaleString('en-US') : '-'
 
 export function CreateTablePage({
   context,

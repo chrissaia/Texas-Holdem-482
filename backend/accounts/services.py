@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import transaction
+from profiles.rewards import grant_starting_chips
 
 GUEST_SESSION_KEYS = ("is_guest", "guest_name")
 # Guests are session-only; their name lasts one day or until they log out.
@@ -12,9 +13,7 @@ def register_user(*, username, email, password):
     user = get_user_model().objects.create_user(
         username=username, email=email, password=password
     )
-    
-    # transaction, so a failed grant also rolls back the new account.
-    return user
+    return grant_starting_chips(user.pk)
 
 
 def clear_guest(session):

@@ -1,6 +1,8 @@
-# RIVR — Texas Hold’em
+# RIVR - Texas Hold’em
 
 CS 482, Team 23: Chris, Finn, Kelechi, Royal. React/TypeScript + Django REST Framework + PostgreSQL. The shared foundation, S13 public-table creation, and S10 public lobby are implemented. Browse at `/lobby`; see [the lobby guide](docs/s10-lobby.md). See [the S13 guide](docs/s13-public-tables.md) for the working flow and local sign-in instructions.
+
+Avatars, 1,000 starting chips on registration, and daily 500-chip rewards are available at `/settings` and `/rewards`; see [the profile and rewards guide](docs/profile-rewards.md).
 
 Teammates: start with [instructions.md](instructions.md) for setup, feature branches, commits, pushing, and pull requests.
 
@@ -11,6 +13,7 @@ frontend/                 React, TypeScript, Vite, Vitest
 backend/                  Django, REST Framework, PostgreSQL driver, pytest
   config/                 Settings, routing, WSGI/ASGI entry points
   accounts/               Minimal custom Django user and initial migration
+  profiles/               Avatar validation, atomic chip rewards, private API and tests
   core/                   Database readiness endpoint and tests
   tables/                 S13 settings, API, constraints, tests, migrations
 docs/contracts.md         Shared interfaces and teammate boundaries

@@ -1,4 +1,4 @@
-# Chris — public tables and lobby
+# Chris - public tables and lobby
 
 Read `.agents/shared.md`. Support Chris's S13 (2 points) and S10 (2 points).
 

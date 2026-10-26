@@ -1,4 +1,4 @@
-# S10 verification — October 19, 2026
+# S10 verification - October 19, 2026
 
 ## Executed checks
 

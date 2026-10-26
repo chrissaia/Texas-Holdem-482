@@ -71,7 +71,7 @@ The first build downloads dependencies and may take several minutes. Press Ctrl+
 - Backend directly: http://localhost:8000/api/health/
 - PostgreSQL from your machine: `127.0.0.1:5433`, using your `.env` credentials.
 
-The health endpoint should return `{"status":"ok","database":"ok"}`. The frontend includes S10 browsing at `/lobby` and S13 public-table creation at `/tables/create`; see [the S13 guide](docs/s13-public-tables.md) for local sign-in and a walkthrough. Each teammate has a separate local database; your database records are not shared through Git.
+The health endpoint should return `{"status":"ok","database":"ok"}`. The frontend includes S10 browsing at `/lobby` and S13 public-table creation at `/tables/create`; see [the S13 guide](docs/s13-public-tables.md) for local sign-in and a walkthrough. For avatars and chip rewards, see [the feature guide](docs/profile-rewards.md). After pulling model changes, run `docker compose exec backend python manage.py migrate`. Each teammate has a separate local database; your database records are not shared through Git.
 
 Useful commands:
 

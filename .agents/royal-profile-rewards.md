@@ -1,4 +1,4 @@
-# Royal — avatars and virtual-chip rewards
+# Royal - avatars and virtual-chip rewards
 
 Read `.agents/shared.md`. Support Royal's S5, S14, and S29.
 

@@ -1,0 +1,211 @@
+.profile-settings-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  align-items: start;
+}
+.profile-settings-grid .appearance-panel {
+  max-width: none;
+}
+.account-panel h2,
+.rewards-page h2 {
+  font-size: 18px;
+  font-weight: 600;
+}
+.profile-identity {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.profile-identity > div:nth-child(2) {
+  flex: 1;
+  min-width: 100px;
+  overflow-wrap: anywhere;
+}
+.profile-identity .muted {
+  font-size: 12px;
+  margin-top: 6px;
+}
+.profile-identity .button {
+  height: 34px;
+  padding: 0 12px;
+  font-size: 12px;
+}
+.profile-avatar {
+  width: 64px;
+  height: 64px;
+  position: relative;
+  flex-shrink: 0;
+}
+.profile-avatar > img {
+  position: absolute;
+  inset: 0;
+}
+.profile-avatar .uploaded-avatar {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+.profile-avatar > span {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #f2f5fc;
+  font-size: 20px;
+  font-weight: 700;
+}
+.avatar-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+.avatar-form label {
+  font-size: 13px;
+  font-weight: 600;
+}
+.avatar-form input[type='file'] {
+  height: auto;
+  padding: 10px;
+  width: 100%;
+}
+.avatar-form > .button {
+  align-self: flex-start;
+}
+.rewards-page {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+.rewards-page .page-intro {
+  margin: 0;
+}
+.rewards-page .reward-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--accent-soft);
+  margin: 0;
+}
+.reward-notice > img {
+  flex-shrink: 0;
+}
+.reward-notice p {
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 4px;
+}
+.balance-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.balance-value {
+  font-family: var(--mono);
+  font-size: 27px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.balance-help {
+  flex: 1;
+  min-width: 180px;
+  font-size: 13px;
+  margin-left: 24px;
+}
+.virtual-chip {
+  position: relative;
+  flex-shrink: 0;
+}
+.virtual-chip > img {
+  position: absolute;
+  inset: 0;
+}
+.virtual-chip .chip-inset {
+  top: 5px;
+  left: 5px;
+}
+.chip-large {
+  width: 60px;
+  height: 60px;
+}
+.chip-large > img:first-child {
+  width: 60px;
+  height: 60px;
+}
+.chip-small > img:first-child {
+  width: 38px;
+  height: 38px;
+}
+.chip-small {
+  width: 38px;
+  height: 38px;
+}
+.reward-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.daily-reward-tile {
+  padding: 16px;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  background: var(--accent-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: flex-start;
+  max-width: 240px;
+}
+.daily-reward-tile > span {
+  font-size: 12px;
+  color: var(--muted);
+}
+.daily-reward-tile strong {
+  font-family: var(--mono);
+  font-size: 18px;
+}
+.reward-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.refresh-profile {
+  align-self: flex-start;
+}
+.shell-uploaded-avatar {
+  object-fit: cover;
+  border-radius: 50%;
+}
+.avatar-large .shell-uploaded-avatar {
+  width: 38px;
+  height: 38px;
+}
+.avatar-small .shell-uploaded-avatar {
+  width: 34px;
+  height: 34px;
+}
+.shell-balance {
+  color: var(--cyan);
+  font-family: var(--mono);
+  font-size: 12px;
+}
+@media (max-width: 1000px) {
+  .profile-settings-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 720px) {
+  .balance-help {
+    margin-left: 0;
+  }
+  .account-controls .shell-balance {
+    display: none;
+  }
+}
