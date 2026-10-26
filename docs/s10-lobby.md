@@ -1,4 +1,4 @@
-# S10 — Browse public tables
+# S10 - Browse public tables
 
 Implemented on `saia` for Chris's second selected story (2 points). Professor acceptance is pending. Search/filter/sort behavior also fulfills the technical scope from Chris's original request; filtering remains S11 in the workbook and no additional accepted points are claimed automatically.
 

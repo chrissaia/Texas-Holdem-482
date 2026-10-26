@@ -1,6 +1,6 @@
 [run]
 branch = True
-source = accounts,core,tables
+source = accounts,core,tables,profiles
 omit = */migrations/*,*/tests/*,*/test_*.py
 
 [report]

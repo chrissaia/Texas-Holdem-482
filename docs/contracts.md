@@ -2,7 +2,7 @@
 
 ## Implemented interfaces
 
-- User: `accounts.User`, initially Django `AbstractUser` without extra fields. Its primary key is an integer (`BigAutoField`). Finn owns account validation, uniqueness policies, registration, login/logout, guest representation, and the eventual session endpoint. Usernames and non-blank emails are unique case-insensitively at the database level; see the accounts section below.
+- User: `accounts.User`, Django `AbstractUser` with avatar, chip balance, and reward timestamps. Its primary key is an integer (`BigAutoField`). Finn owns account validation, uniqueness policies, registration, login/logout, guest representation, and the eventual session endpoint. Usernames and non-blank emails are unique case-insensitively at the database level; see the accounts section below.
 - User references: foreign keys use `settings.AUTH_USER_MODEL`; runtime code uses `get_user_model()`. Passwords use Django’s hashing APIs.
 - Authentication: DRF session authentication; endpoints require authenticated users by default. The readiness endpoint explicitly permits anonymous GET requests. Cookie-authenticated writes must retain CSRF protection. No client-supplied host ID or development identity headers will be trusted.
 - `GET /api/health/`: HTTP 200 with `{"status":"ok","database":"ok"}` after a PostgreSQL query; HTTP 503 with `{"status":"unavailable","database":"unavailable"}` when the database is inaccessible. It does not expose connection errors or credentials.
@@ -29,7 +29,7 @@ Every response returns the session contract, including the current `csrf_token` 
 
 Guests stay anonymous Django users with `request.session["is_guest"] = True` and `request.session["guest_name"]`, so `tables.permissions.can_host` already denies them. Logging in or registering removes both guest keys. `is_admin` maps to Django `is_staff`. `user.email` is only returned to the account's own session; public responses must keep using `{id, username}`.
 
-Registration runs inside `accounts.services.register_user`, a single transaction. Royal's starting-chip grant should be called there so a failed grant rolls back the account.
+Registration runs inside `accounts.services.register_user`, a single transaction. The starting-chip grant runs there; a failed grant rolls back the account.
 
 Shared pytest fixtures live in `backend/conftest.py`: `registered_user`, `rivr_admin` (a superuser), `registered_client`, `rivr_admin_client`, and `guest_client`. The clients sign in through the real endpoints with CSRF enforced. They are named to avoid pytest-django's built-in `admin_user`/`admin_client`.
 
@@ -41,7 +41,7 @@ Chris owns `backend/tables/` and the table feature UI. The student approved the 
 
 Implemented endpoints:
 
-- `GET /api/tables/creation-context/`: public, returns `{host: {id, username} | null, csrf_token}` and sets the CSRF cookie for the form. This small form-specific interface can later consume Finn's session interface; it does not implement login or registration.
+- `GET /api/tables/creation-context/`: public, returns `{host: {id, username} | null, profile_summary: {avatar_url, chip_balance} | null, csrf_token}` and sets the CSRF cookie for the form. This small form-specific interface can later consume Finn's session interface; it does not implement login or registration.
 - `POST /api/tables/`: requires an active registered user's Django session and CSRF token. JSON fields: `name`, `max_players`, `buy_in`, `minimum_balance`, `small_blind`, `big_blind`. Returns HTTP 201 with the saved table. Missing/invalid/unknown/server-controlled fields return HTTP 400 with field-keyed error arrays. Session/CSRF permission failures return HTTP 403.
 - `GET /api/tables/<id>/`: public read-back of a public table. Missing/private tables return HTTP 404. S10 now adds GET listing/filtering on `/api/tables/`; see the lobby contract below.
 
@@ -91,10 +91,24 @@ for implementation; teammate review and professor acceptance remain pending.
 - Chris: tables, lobby, table fixtures, API contracts, creation/browsing tests.
 - Finn: accounts and session/guest contracts, authentication tests, team test and coverage coordination.
 - Kelechi: saved theme preference and shared theme styles; admin cleanup after agreeing on inactivity threshold and authoritative occupancy. Cleanup must check current occupancy and permissions.
-- Royal: avatar storage and validation, starting-chip and daily-reward fields/services. Reward amount/reset rules and atomic grant behavior require agreement.
+- Royal: avatar storage and validation, starting-chip and daily-reward fields/services. Approved rewards are 1,000 starting chips and 500 daily chips per UTC calendar day; see the profile contract below.
 
 Coordinate user field and migration changes before implementation. Royal and Kelechi extend the shared user model with their own reviewed migrations. Django staff/superuser flags support framework administration; any application-specific role mapping remains to be agreed with Finn.
 
 ## Scope and known document differences
 
 The system design’s 60% coverage baseline is superseded for Sprint 1 by above 80% statement and above 50% branch coverage. Privacy options, bots, gameplay, joining tables, social features, and WebSocket synchronization remain future work. S13 now has a working form/API and tests; professor acceptance remains pending. S10 now provides real public browsing, filters, sorting, and pagination; other owners’ stories remain separate. The Create Table layout uses inspected Figma frame 12:1619, adapting private/bot areas to the approved public-only scope.
+
+## S5/S14/S29 profiles and virtual chips
+
+Implemented on `saia` at Chris's request, covering Royal's three feature stories. Human story ownership and professor acceptance remain unchanged. See [the feature guide](profile-rewards.md).
+
+`accounts.User` adds `avatar`, `chip_balance`, `starting_chips_granted_at`, and `daily_chips_claimed_at` in migration `0003`. Existing accounts retain their balance (initially zero); no retroactive starting grant runs. Real registration grants 1,000 chips in the account-creation transaction. `profiles.rewards.grant_starting_chips` is retry-safe through a locked timestamp marker. Every future balance writer must lock the same user row and update atomically. Balances are nonnegative integers capped at 9,007,199,254,740,991.
+
+All `/api/profile/` endpoints require an active registered session; guests and anonymous requests receive 403. Writes enforce CSRF and use only the session's user. Responses are private and not cached.
+
+- `GET /api/profile/`: `{id, username, avatar_url, chip_balance, starting_chips_granted_at, daily_reward: {amount, available, next_claim_at}, csrf_token}`. Sets the CSRF cookie. `next_claim_at` is null when currently available.
+- `POST /api/profile/avatar/`: multipart with exactly one `avatar` file, no extra fields. JPEG/PNG/WebP, up to 2 MiB and 4096×4096 pixels. Actual content and matching MIME type are validated; animations and corrupt images are rejected. Applies EXIF orientation, strips metadata, crops/resizes to 256×256 WebP with a generated filename. Replacement deletes the old image after commit and cleans a newly written image on database failure. Returns the profile payload without `csrf_token`; invalid files return 400.
+- `POST /api/profile/daily-chips/`: empty JSON object `{}`. Server time is read after acquiring the account row lock. Grants exactly 500 once per UTC calendar date; no streak or rolling cooldown. Repeat claims and balance-limit failures return 409. Success returns the profile payload without `csrf_token`. Client-supplied user IDs, amounts, and timestamps are rejected (400).
+
+The creation-context `profile_summary` is private to the signed-in user and null for guests/anonymous users. Public table hosts remain `{id, username}`. Settings at `/settings` supports avatar changes alongside Kelechi's theme picker; `/rewards` supports claiming and refreshing the persisted balance. Uploaded media is served by Django only in DEBUG; Vite proxies `/media`. Production must supply a media-serving/storage configuration.

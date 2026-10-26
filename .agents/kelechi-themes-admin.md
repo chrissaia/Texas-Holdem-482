@@ -1,4 +1,4 @@
-# Kelechi — themes and administrator cleanup
+# Kelechi - themes and administrator cleanup
 
 Read `.agents/shared.md`. Support Kelechi's S35 (2 points) and S23 (2 points).
 

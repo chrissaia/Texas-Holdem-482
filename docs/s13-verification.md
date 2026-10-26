@@ -1,4 +1,4 @@
-# S13 verification — October 19, 2026
+# S13 verification - October 19, 2026
 
 This is the earlier S13 checkpoint. See [S10 verification](s10-verification.md) for the latest combined regression results.
 

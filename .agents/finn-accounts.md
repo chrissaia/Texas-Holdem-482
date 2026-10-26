@@ -1,4 +1,4 @@
-# Finn — accounts and sessions
+# Finn - accounts and sessions
 
 Read `.agents/shared.md`. Support Finn's S2 (2 points), S1 (1 point), and S4 (1 point).
 
