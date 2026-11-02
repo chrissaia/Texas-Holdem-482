@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     "profiles",
     "core",
     "tables",
+    "friends",
 ]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
