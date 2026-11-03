@@ -135,3 +135,30 @@ test("late response from a previous account cannot reveal their collection", asy
   });
   expect(screen.queryByText("Picture Perfect")).not.toBeInTheDocument();
 });
+
+test("reveals repeat XP only for an earned repeatable trophy", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi
+      .fn()
+      .mockResolvedValue(
+        respond({
+          total_xp: 400,
+          total_achievements: 20,
+          earned: [
+            {
+              ...earned,
+              code: "seven_two",
+              name: "Against the Odds",
+              repeat_xp: 50,
+            },
+          ],
+        }),
+      ),
+  );
+  render(page());
+  expect(await screen.findByText("Against the Odds")).toBeInTheDocument();
+  expect(screen.getByText(/50 XP on repeat wins/)).toBeInTheDocument();
+  expect(screen.getByText("400")).toBeInTheDocument();
+  expect(screen.getAllByText("Hidden achievement")).toHaveLength(19);
+});

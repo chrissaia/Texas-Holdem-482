@@ -7,7 +7,7 @@ There is deliberately no HTTP endpoint for submitting events or claiming XP.
 from django.contrib.auth import get_user_model
 from django.db import transaction
 
-from .catalog import ACHIEVEMENT_XP
+from .catalog import ACHIEVEMENT_XP, REPEATABLE_XP
 from .facts import normalize_facts, hand_achievements
 from .models import Achievement, Event, Progress
 
@@ -59,6 +59,8 @@ def record_event(user_id, kind, source, *, outcome="", facts=None):
         _, created = Achievement.objects.get_or_create(user=user, code=code)
         if created:
             earned.append(code)
+        else:
+            event.xp += REPEATABLE_XP.get(code, 0)
     event.xp += ACHIEVEMENT_XP * len(earned)
     event.save(update_fields=["xp"])
     return earned

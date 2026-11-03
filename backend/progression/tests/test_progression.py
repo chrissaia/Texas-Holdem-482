@@ -242,3 +242,37 @@ def test_multiple_new_trophies_stack(registered_user):
     codes = record_event(registered_user.pk, "hand", "stack", outcome="win", facts={"hole_cards": ["7s", "2h"], "preflop_all_in": True, "showdown": True, "category": "full_house"})
     assert set(codes) == {"welcome", "first_win", "seven_two", "preflop_all_in", "full_house"}
     assert xp(registered_user) == 350
+
+
+def test_seven_two_repeat_bonus_stacks_without_duplicate_trophy(registered_user, registered_client):
+    facts = {"hole_cards": ["7s", "2h"]}
+    record_event(registered_user.pk, "hand", "first72", outcome="win", facts=facts)
+    assert xp(registered_user) == 250
+    assert record_event(registered_user.pk, "hand", "second72", outcome="win", facts=facts) == []
+    assert Event.objects.get(source="second72").xp == 150
+    assert xp(registered_user) == 400
+    record_event(registered_user.pk, "hand", "second72", outcome="win", facts=facts)
+    assert xp(registered_user) == 400
+    assert Achievement.objects.filter(user=registered_user, code="seven_two").count() == 1
+    payload = registered_client.get("/api/achievements/").data
+    assert payload["total_xp"] == 400
+    assert next(a for a in payload["earned"] if a["code"] == "seven_two")["repeat_xp"] == 50
+
+
+@pytest.mark.parametrize("outcome", ["split", "loss"])
+def test_repeat_seven_two_requires_an_outright_win(registered_user, outcome):
+    facts = {"hole_cards": ["7s", "2h"]}
+    record_event(registered_user.pk, "hand", "won72", outcome="win", facts=facts)
+    record_event(registered_user.pk, "hand", "notwon72", outcome=outcome, facts=facts)
+    assert Event.objects.get(source="notwon72").xp == 0
+    assert xp(registered_user) == 250
+
+
+@pytest.mark.parametrize(("kind", "base_xp"), [("hand", 100), ("tournament", 1000)])
+def test_repeated_wins_pay_base_xp_once_per_source(registered_user, kind, base_xp):
+    record_event(registered_user.pk, kind, "win1", outcome="win")
+    initial = xp(registered_user)
+    record_event(registered_user.pk, kind, "win2", outcome="win")
+    assert xp(registered_user) == initial + base_xp
+    record_event(registered_user.pk, kind, "win2", outcome="win")
+    assert xp(registered_user) == initial + base_xp

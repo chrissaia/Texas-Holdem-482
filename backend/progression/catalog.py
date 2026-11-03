@@ -25,3 +25,6 @@ ACHIEVEMENTS.update({
     "tournament_debut": ("Tournament Debut", "Complete your first tournament."),
     "tournament_champion": ("Champion", "Win your first tournament."),
 })
+
+# The first award is the trophy's 50 XP; subsequent qualifying events pay again.
+REPEATABLE_XP = {"seven_two": 50}

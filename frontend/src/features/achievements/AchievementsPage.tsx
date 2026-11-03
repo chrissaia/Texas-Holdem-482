@@ -10,6 +10,7 @@ type EarnedAchievement = {
   name: string;
   description: string;
   xp: number;
+  repeat_xp?: number;
   earned_at: string;
 };
 type Collection = {
@@ -123,7 +124,9 @@ export function AchievementsPage() {
                   </div>
                   <p className="achievement-xp">
                     +{achievement.xp} XP
-
+                    {achievement.repeat_xp
+                      ? ` · +${achievement.repeat_xp} XP on repeat wins`
+                      : ""}
                   </p>
                   <p className="field-hint">
                     Unlocked{" "}
@@ -163,7 +166,9 @@ export function AchievementsPage() {
               )}
             </div>
             <p className="notice">
-              Every trophy awards 50 XP once. Achievements can stack. Split pots do not count as wins.
+              Trophies unlock once. Hand wins earn 100 XP and tournament wins
+              earn 1,000 XP each. Some earned trophies also award repeat XP.
+              Awards can stack. Split pots do not count as wins.
             </p>
           </>
         )

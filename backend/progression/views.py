@@ -4,7 +4,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 
 from profiles.views import RegisteredAccountPermission
-from .catalog import ACHIEVEMENTS, ACHIEVEMENT_XP
+from .catalog import ACHIEVEMENTS, ACHIEVEMENT_XP, REPEATABLE_XP
 from .models import Achievement, Event
 
 
@@ -22,6 +22,6 @@ def collection(request):
     return Response({
         "total_xp": total, "total_achievements": len(ACHIEVEMENTS),
         "earned": [{"code": a.code, "name": ACHIEVEMENTS[a.code][0],
-                    "description": ACHIEVEMENTS[a.code][1], "xp": ACHIEVEMENT_XP,
+                    "description": ACHIEVEMENTS[a.code][1], "xp": ACHIEVEMENT_XP, "repeat_xp": REPEATABLE_XP.get(a.code, 0),
                     "earned_at": a.earned_at} for a in earned],
     })
