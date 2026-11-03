@@ -9,6 +9,7 @@ urlpatterns = [
     path("api/profile/", include("profiles.urls")),
     path("api/auth/", include("accounts.urls")),
     path("api/tables/", include("tables.urls")),
+    path("api/friends/", include("friends.urls")),
     path("admin/", admin.site.urls),
     path("api/health/", health, name="health"),
 ]

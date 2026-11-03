@@ -9,6 +9,7 @@ import {
 } from 'react-router-dom'
 import { AppLayout } from './components/AppLayout'
 import { GuestPage } from './features/auth/GuestPage'
+import { FriendsPage } from './features/friends/FriendsPage'
 import { RegisterPage } from './features/auth/RegisterPage'
 import { SignInPage } from './features/auth/SignInPage'
 import { getCreationContext } from './features/tables/api'
@@ -81,6 +82,7 @@ export function AppRoutes() {
             <Route path="/rewards" element={<RewardsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/lobby" element={<LobbyPage />} />
+            <Route path="/friends" element={<FriendsPage />} />
             <Route
               path="/"
               element={

@@ -35,6 +35,13 @@ const navigation = [
   ['Store / Get Chips', chips],
   ['Settings', settings],
 ]
+// Navigation items without a route stay visible but unavailable.
+const routes: Record<string, string> = {
+  Lobby: '/lobby',
+  Friends: '/friends',
+  'Store / Get Chips': '/rewards',
+  Settings: '/settings',
+}
 
 export function AppLayout({
   host,
@@ -67,46 +74,36 @@ export function AppLayout({
             <img src={house} alt="" />
             Home
           </Link>
-          {navigation.map(([label, icon]) =>
-            label === 'Lobby' ||
-            label === 'Settings' ||
-            label === 'Store / Get Chips' ? (
+          {navigation.map(([label, icon]) => {
+            const to = routes[label]
+            if (!to)
+              return (
+                <span
+                  key={label}
+                  className="nav-item unavailable"
+                  aria-disabled="true"
+                  title="Coming in a later story"
+                >
+                  <img src={icon} alt="" />
+                  {label}
+                </span>
+              )
+            // Table pages belong to the lobby section.
+            const active =
+              pathname === to ||
+              (label === 'Lobby' && pathname.startsWith('/tables'))
+            return (
               <Link
                 key={label}
-                to={
-                  label === 'Store / Get Chips'
-                    ? '/rewards'
-                    : label === 'Settings'
-                      ? '/settings'
-                      : '/lobby'
-                }
-                className={`nav-item ${(label === 'Store / Get Chips' ? pathname === '/rewards' : label === 'Settings' ? pathname === '/settings' : pathname === '/lobby' || pathname.startsWith('/tables')) ? 'active' : ''}`}
-                aria-current={
-                  pathname ===
-                  (label === 'Store / Get Chips'
-                    ? '/rewards'
-                    : label === 'Settings'
-                      ? '/settings'
-                      : '/lobby')
-                    ? 'page'
-                    : undefined
-                }
+                to={to}
+                className={`nav-item ${active ? 'active' : ''}`}
+                aria-current={pathname === to ? 'page' : undefined}
               >
                 <img src={icon} alt="" />
                 {label}
               </Link>
-            ) : (
-              <span
-                key={label}
-                className={`nav-item unavailable ${label === 'Lobby' && pathname.startsWith('/tables') ? 'active' : ''}`}
-                aria-disabled="true"
-                title="Coming in a later story"
-              >
-                <img src={icon} alt="" />
-                {label}
-              </span>
-            ),
-          )}
+            )
+          })}
         </nav>
         <div className="sidebar-note">
           <span className="eyebrow">PLAY MONEY ONLY</span>
@@ -149,6 +146,9 @@ export function AppLayout({
           <div className="account-controls">
             <Link className="mobile-lobby-link" to="/lobby">
               Lobby
+            </Link>
+            <Link className="mobile-settings-link" to="/friends">
+              Friends
             </Link>
             <Link className="mobile-settings-link" to="/rewards">
               Chips
