@@ -1,4 +1,4 @@
-# S32: XP and twenty achievements
+# S32: XP and twenty-four achievements
 
 Trophies unlock once per registered account and may stack. Most award 50 XP once; Against the Odds awards 50 XP on each qualifying 7–2 offsuit win. Its first 50 XP is the unlock reward, not an additional second bonus. Winning a completed hand outright awards 100 XP per unique hand. Split pots award no win XP, cannot unlock First Pot, and reset the consecutive-win streak. A split or folded hand still counts as a completed dealt hand. Tournament wins award 1,000 XP per unique completed tournament, plus one-time trophies. No participation XP, levels, or leaderboard are added.
 
@@ -69,7 +69,7 @@ docker compose exec backend python manage.py migrate
 ```json
 {
   "total_xp": 50,
-  "total_achievements": 20,
+  "total_achievements": 24,
   "earned": [
     {
       "code": "picture",
@@ -131,3 +131,38 @@ Twenty-achievement extension verification: 58 focused backend progression tests 
 The trophy collection still has one entry per achievement. The first 7–2 win awards its trophy's 50 XP; subsequent qualifying wins award a repeat bonus of 50 XP. There is no double 50 XP payment on the first win. First Pot and Champion keep their one-time trophy bonuses in addition to the repeatable base win XP. Other achievements stay one-time. Split/loss events and retries cannot receive repeat win XP. Existing recorded events are not backfilled.
 
 Earned API entries include `repeat_xp` (50 for Against the Odds, otherwise zero). Only earned repeatable trophies display the repeat reward in the UI. Total XP includes all repeat rewards; Achievement XP in the summary counts trophy-unlock bonuses only. Gameplay and tournament hooks still await real engine integration.
+
+
+## Remaining collection: four more trophies
+
+The collection contains 24 achievements from the brainstorm. Sharing the Spoils is excluded because split-pot achievements were rejected. All four additional trophy bonuses are one-time, 50 XP, hidden until earned:
+
+| Trophy | Rule | Integration |
+| --- | --- | --- |
+| Comeback Kid | Outright win after starting with the unique smallest stack among dealt participants; ties for smallest do not qualify | Trusted completed-hand hook |
+| Final Table | Reach the final table in a tournament that began with at least two tables | Trusted stage-transition hook |
+| Heads-Up Hero | Reach the final two in a tournament with at least three entrants | Trusted stage-transition hook |
+| Make It Yours | Change the recorded theme choice | Real Settings theme picker and private API |
+
+For Comeback Kid, provide `starting_stack` and `starting_stacks` in hand facts. Include the player's stack in the list of 2–9 dealt participants' positive starting stacks, before blinds/antes or bets. Values must be whole chips. Stack lists are normalized on retry. Split and loss outcomes cannot earn this trophy.
+
+```python
+record_event(user.pk, "hand", str(hand.pk), outcome="win", facts={
+    "starting_stack": 100,
+    "starting_stacks": [100, 500, 1000],
+})
+record_event(user.pk, "tournament_stage", f"{tournament.pk}:final_table", facts={
+    "stage": "final_table", "entrants": 18, "starting_tables": 2,
+})
+record_event(user.pk, "tournament_stage", f"{tournament.pk}:heads_up", facts={
+    "stage": "heads_up", "entrants": 18, "starting_tables": 2,
+})
+```
+
+The authoritative tournament service must verify actual player advancement and emit each transition separately. Stage events do not grant Tournament Debut, Champion, or the 1,000 XP winner reward; those wait for the completed tournament event. Stable stage-specific IDs prevent replay awards; all trophies remain lifetime-once across tournaments.
+
+`POST /api/profile/theme/` accepts exactly `{"theme":"light"}` or `{"theme":"dark"}`, requires a registered active session and CSRF, and derives the account from the session. Migration `progression.0003_progress_theme` adds the recorded choice, initially dark. A different choice updates the record and awards Make It Yours atomically. Unchanged choices do not award XP. Subsequent changes remain allowed without paying again. Browser rendering still follows the existing local preference; the account record tracks explicit choices and does not override local preferences at login. An existing browser already set to light can select dark without changing the initially dark account record; choosing light afterward earns the trophy. Anonymous/guest changes remain local only. Failed account updates retain the browser theme and display an error, with no automatic trophy announcement.
+
+The gameplay and tournament trophies are service contracts with automated tests, not completed integration with a poker/tournament engine. The new trophies require no UI redesign; the existing collection automatically shows 24 slots and reveals only earned details.
+
+Remaining-collection verification: 341 backend tests and 107 frontend tests passed; production build, lint, system checks and migration checks passed. The isolated browser verified 24 hidden slots, avatar earning 50 XP, a completed authenticated theme update earning Make It Yours (100 XP total), desktop/mobile widths and both themes without page errors or overflow. The theme picker now waits for identity/profile loading so an early selection cannot be mistaken for an anonymous local-only change. Browser fixtures were removed afterward.
