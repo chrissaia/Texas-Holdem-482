@@ -28,3 +28,11 @@ ACHIEVEMENTS.update({
 
 # The first award is the trophy's 50 XP; subsequent qualifying events pay again.
 REPEATABLE_XP = {"seven_two": 50}
+
+
+ACHIEVEMENTS.update({
+    "comeback": ("Comeback Kid", "Win outright after starting the hand with the unique smallest stack."),
+    "final_table": ("Final Table", "Reach the final table of a tournament that started with multiple tables."),
+    "heads_up": ("Heads-Up Hero", "Reach the final two in a tournament with at least three entrants."),
+    "theme": ("Make It Yours", "Choose a different theme for the first time."),
+})

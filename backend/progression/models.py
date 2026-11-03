@@ -6,6 +6,7 @@ class Progress(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     hands_played = models.PositiveBigIntegerField(default=0)
     win_streak = models.PositiveBigIntegerField(default=0)
+    theme = models.CharField(max_length=5, choices=[("dark", "Dark navy"), ("light", "Light")], default="dark")
 
 
 class Achievement(models.Model):

@@ -20,7 +20,7 @@ def xp(user):
 
 
 def test_catalog_preserves_first_ten():
-    assert len(ACHIEVEMENTS) == 20
+    assert len(ACHIEVEMENTS) == 24
     assert list(ACHIEVEMENTS)[:10] == ["welcome", "picture", "host", "friend", "message", "hands_10", "hands_100", "hands_1000", "first_win", "streak"]
 
 
@@ -105,7 +105,7 @@ def test_collection_hides_locked_details_and_other_users(registered_client, regi
     response = registered_client.get("/api/achievements/")
     assert response.status_code == 200
     assert response.data["total_xp"] == 50
-    assert response.data["total_achievements"] == 20
+    assert response.data["total_achievements"] == 24
     assert [a["name"] for a in response.data["earned"]] == ["Picture Perfect"]
     assert "House Rules" not in str(response.data)
     assert "Welcome to the Table" not in str(response.data)
@@ -276,3 +276,99 @@ def test_repeated_wins_pay_base_xp_once_per_source(registered_user, kind, base_x
     assert xp(registered_user) == initial + base_xp
     record_event(registered_user.pk, kind, "win2", outcome="win")
     assert xp(registered_user) == initial + base_xp
+
+
+@pytest.mark.parametrize(("outcome", "stack", "stacks", "eligible"), [
+    ("win", 10, [10, 100, 200], True),
+    ("win", 10, [10, 10, 200], False),
+    ("win", 100, [10, 100, 200], False),
+    ("split", 10, [10, 100, 200], False),
+    ("loss", 10, [10, 100, 200], False),
+])
+def test_comeback_uses_unique_smallest_starting_stack(registered_user, outcome, stack, stacks, eligible):
+    codes = record_event(registered_user.pk, "hand", "comeback", outcome=outcome, facts={"starting_stack": stack, "starting_stacks": stacks})
+    assert ("comeback" in codes) == eligible
+    if eligible:
+        record_event(registered_user.pk, "hand", "comeback2", outcome=outcome, facts={"starting_stack": stack, "starting_stacks": list(reversed(stacks))})
+        assert Achievement.objects.filter(user=registered_user, code="comeback").count() == 1
+        assert Event.objects.get(source="comeback2").xp == 100
+
+
+@pytest.mark.parametrize("facts", [
+    {"starting_stack": 10}, {"starting_stacks": [10, 20]},
+    {"starting_stack": True, "starting_stacks": [1, 20]},
+    {"starting_stack": 0, "starting_stacks": [0, 20]},
+    {"starting_stack": 10, "starting_stacks": [10]},
+    {"starting_stack": 10, "starting_stacks": [20, 30]},
+    {"starting_stack": 10, "starting_stacks": [10, "20"]},
+    {"starting_stack": 10, "starting_stacks": [10] * 10},
+])
+def test_invalid_starting_stack_facts(registered_user, facts):
+    with pytest.raises(ValueError):
+        record_event(registered_user.pk, "hand", "badstacks", outcome="win", facts=facts)
+    assert not Event.objects.exists()
+
+
+@pytest.mark.parametrize(("stage", "entrants", "tables", "code"), [
+    ("final_table", 12, 2, "final_table"),
+    ("final_table", 9, 1, None),
+    ("heads_up", 3, 1, "heads_up"),
+    ("heads_up", 2, 1, None),
+])
+def test_tournament_stage_rewards_do_not_award_completion_or_win_xp(registered_user, stage, entrants, tables, code):
+    facts = {"stage": stage, "entrants": entrants, "starting_tables": tables}
+    earned = record_event(registered_user.pk, "tournament_stage", "t1:" + stage, facts=facts)
+    assert earned == ([code] if code else [])
+    assert xp(registered_user) == (50 if code else 0)
+    assert record_event(registered_user.pk, "tournament_stage", "t1:" + stage, facts=facts) == []
+    record_event(registered_user.pk, "tournament_stage", "t2:" + stage, facts=facts)
+    assert xp(registered_user) == (50 if code else 0)
+    assert not Achievement.objects.filter(code__in=["tournament_debut", "tournament_champion"]).exists()
+
+
+@pytest.mark.parametrize("facts", [None, {}, {"stage": "heads_up"},
+    {"stage": "heads_up", "entrants": True, "starting_tables": 1},
+    {"stage": "heads_up", "entrants": 3, "starting_tables": 4},
+    {"stage": "heads_up", "entrants": 3, "starting_tables": 0},
+    {"stage": "unknown", "entrants": 3, "starting_tables": 1},
+])
+def test_invalid_tournament_stage(registered_user, facts):
+    with pytest.raises(ValueError):
+        record_event(registered_user.pk, "tournament_stage", "bad-stage", facts=facts)
+    assert not Event.objects.exists()
+
+
+def test_theme_endpoint_awards_once_for_real_change(registered_user, registered_client):
+    endpoint = "/api/profile/theme/"
+    assert registered_client.post(endpoint, {"theme": "dark"}, format="json").status_code == 200
+    assert xp(registered_user) == 0
+    assert registered_client.post(endpoint, {"theme": "light"}, format="json").status_code == 200
+    assert xp(registered_user) == 50
+    assert Progress.objects.get(user=registered_user).theme == "light"
+    for theme in ("light", "dark", "light"):
+        assert registered_client.post(endpoint, {"theme": theme}, format="json").status_code == 200
+    assert xp(registered_user) == 50
+    assert Achievement.objects.filter(user=registered_user, code="theme").count() == 1
+
+
+@pytest.mark.parametrize("body", [{}, {"theme": "purple"}, {"theme": "light", "user_id": 1}, {"theme": ["light"]}])
+def test_theme_endpoint_rejects_untrusted_fields(registered_client, body):
+    assert registered_client.post("/api/profile/theme/", body, format="json").status_code == 400
+    assert not Achievement.objects.exists()
+
+
+def test_theme_endpoint_requires_registered_session_and_csrf(registered_user, guest_client):
+    endpoint = "/api/profile/theme/"
+    assert guest_client.post(endpoint, {"theme": "light"}, format="json").status_code == 403
+    assert APIClient().post(endpoint, {"theme": "light"}, format="json").status_code == 403
+    client = APIClient(enforce_csrf_checks=True)
+    client.force_login(registered_user)
+    assert client.post(endpoint, {"theme": "light"}, format="json").status_code == 403
+    assert not Achievement.objects.exists()
+
+
+def test_theme_award_failure_rolls_back_choice(registered_user):
+    from progression.services import save_theme_choice
+    with patch("progression.services.record_event", side_effect=RuntimeError("failed")), pytest.raises(RuntimeError):
+        save_theme_choice(registered_user.pk, "light")
+    assert not Progress.objects.filter(user=registered_user).exists()

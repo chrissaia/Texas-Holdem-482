@@ -14,7 +14,7 @@ from .models import Achievement, Event, Progress
 
 @transaction.atomic
 def record_event(user_id, kind, source, *, outcome="", facts=None):
-    if kind not in {"hand", "avatar", "game", "friend", "message", "tournament"}:
+    if kind not in {"hand", "avatar", "game", "friend", "message", "tournament", "tournament_stage", "theme"}:
         raise ValueError("Unknown event kind")
     if not isinstance(source, str) or not source.strip() or len(source) > 100:
         raise ValueError("A stable source ID of 1–100 characters is required")
@@ -47,13 +47,18 @@ def record_event(user_id, kind, source, *, outcome="", facts=None):
             candidates.append("first_win")
         if progress.win_streak >= 3:
             candidates.append("streak")
+    elif kind == "tournament_stage":
+        if facts["stage"] == "final_table" and facts["starting_tables"] > 1:
+            candidates.append("final_table")
+        if facts["stage"] == "heads_up" and facts["entrants"] >= 3:
+            candidates.append("heads_up")
     elif kind == "tournament":
         candidates.append("tournament_debut")
         if outcome == "win":
             candidates.append("tournament_champion")
             event.xp = 1000
     else:
-        candidates.append({"avatar": "picture", "game": "host", "friend": "friend", "message": "message"}[kind])
+        candidates.append({"avatar": "picture", "game": "host", "friend": "friend", "message": "message", "theme": "theme"}[kind])
     earned = []
     for code in candidates:
         _, created = Achievement.objects.get_or_create(user=user, code=code)
@@ -64,3 +69,19 @@ def record_event(user_id, kind, source, *, outcome="", facts=None):
     event.xp += ACHIEVEMENT_XP * len(earned)
     event.save(update_fields=["xp"])
     return earned
+
+
+@transaction.atomic
+def save_theme_choice(user_id, theme):
+    """Persist an explicit choice and award only on a change from the stored choice."""
+    if theme not in ("dark", "light"):
+        raise ValueError("Choose dark or light")
+    user = get_user_model().objects.select_for_update().get(pk=user_id)
+    if not user.is_active:
+        raise ValueError("Theme rewards require an active account")
+    progress, _ = Progress.objects.get_or_create(user=user)
+    if progress.theme != theme:
+        progress.theme = theme
+        progress.save(update_fields=["theme"])
+        record_event(user_id, "theme", "first-change")
+    return theme
