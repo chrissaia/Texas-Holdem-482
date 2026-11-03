@@ -5,7 +5,10 @@ from django.urls import include, path
 
 from core.views import health
 
+from progression.views import collection
+
 urlpatterns = [
+    path("api/achievements/", collection, name="achievements"),
     path("api/profile/", include("profiles.urls")),
     path("api/auth/", include("accounts.urls")),
     path("api/tables/", include("tables.urls")),
