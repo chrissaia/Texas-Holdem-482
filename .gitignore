@@ -43,3 +43,11 @@ backend/staticfiles/
 
 # Local test runner output (release copies live under docs/quality/evidence)
 backend/test-results.xml
+
+# Personal report authoring stays outside application pull requests.
+docs/report/
+*.tex
+*.aux
+*.toc
+*.synctex.gz
+*overleaf*.zip

@@ -37,7 +37,7 @@ Professor acceptance: **pending**.
 
 - Full backend and frontend tests, build, lint, system/migration checks pass.
 - Tool-generated full-scope report, per-file images, manifest and exclusions are committed.
-- LaTeX source and visually checked PDF include both iterations, coverage images and the gameplay sequence diagram.
+- Prepare the separately maintained course report with both iterations, coverage images and the gameplay sequence diagram.
 - Every selected story has actual issue links and accurate planned owner/points; actual hours and acceptance evidence are supplied by humans.
 - Branches preserve each author's work. Main contains the reviewed deliverable before the verified cutoff.
 - Planning email sent timestamp and Moodle/demo dates are confirmed.
