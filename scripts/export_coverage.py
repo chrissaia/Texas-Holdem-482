@@ -10,6 +10,7 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 
 from PIL import Image, ImageDraw, ImageFont
@@ -50,6 +51,14 @@ def screenshot(title, rows, totals, destination, source_commit):
     image.save(destination)
 
 
+def junit_counts(path):
+    root = ET.parse(path).getroot()
+    suites = [root] if root.tag == "testsuite" else root.findall("testsuite")
+    if not suites:
+        raise ValueError("Missing JUnit test suites: " + str(path))
+    return {key: sum(int(suite.get(key, "0")) for suite in suites) for key in ("tests", "failures", "errors", "skipped")}
+
+
 def source_manifest():
     names = subprocess.check_output(["git", "ls-files"], cwd=ROOT, text=True).splitlines()
     prefixes = ("backend/", "frontend/", "scripts/", ".github/")
@@ -68,6 +77,18 @@ def main():
     backend = load(ROOT / "backend/coverage.json")
     frontend_summary = load(ROOT / "frontend/coverage/coverage-summary.json")
     frontend = load(ROOT / "frontend/coverage/coverage-final.json")
+    backend_tests = junit_counts(ROOT / "backend/test-results.xml")
+    frontend_tests = junit_counts(ROOT / "frontend/coverage/test-results.xml")
+    for tests in (backend_tests, frontend_tests):
+        if tests["failures"] or tests["errors"]:
+            raise SystemExit("Refusing to describe a failing test run as passing")
+    tracked = subprocess.check_output(["git", "ls-files", "backend"], cwd=ROOT, text=True).splitlines()
+    expected = {name.removeprefix("backend/") for name in tracked if name.endswith(".py") and "/tests/" not in name and "/migrations/" not in name and not Path(name).name.startswith("test_")}
+    missing = expected - set(backend["files"])
+    if missing:
+        raise SystemExit("Runtime Python files omitted from coverage: " + str(sorted(missing)))
+    if not any(name.endswith("/src/main.tsx") for name in frontend):
+        raise SystemExit("Frontend bootstrap is missing from the coverage report")
     frontend_normalized = {}
     for name, value in frontend.items():
         relative = os.path.relpath(name, ROOT / "frontend")
@@ -81,6 +102,8 @@ def main():
     (OUT / "frontend-report.json").write_text(json.dumps(frontend_normalized, indent=2) + "\n")
     (OUT / "frontend-summary.json").write_text(json.dumps(summary_normalized, indent=2) + "\n")
     shutil.copyfile(ROOT / "backend/coverage.xml", OUT / "backend-report.xml")
+    shutil.copyfile(ROOT / "backend/test-results.xml", OUT / "backend-tests.xml")
+    shutil.copyfile(ROOT / "frontend/coverage/test-results.xml", OUT / "frontend-tests.xml")
     b = backend["totals"]
     f = frontend_summary["total"]
     metrics = {
@@ -89,8 +112,8 @@ def main():
     }
     commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
     manifest = {"generated_at_utc": datetime.now(timezone.utc).isoformat(), "source_commit": commit,
-                "source": source_manifest(), "tools": {"backend": backend["meta"]}, "metrics": metrics,
-                "commands": ["cd backend && python -m pytest --cov --cov-report=json --cov-report=xml --cov-report=html --cov-report=term-missing", "cd frontend && npm run test:coverage", "backend/.venv/bin/python scripts/export_coverage.py"],
+                "source": source_manifest(), "tests": {"backend": backend_tests, "frontend": frontend_tests}, "tools": {"backend": backend["meta"]}, "metrics": metrics,
+                "commands": ["cd backend && python -m pytest --junitxml=test-results.xml --cov --cov-report=json --cov-report=xml --cov-report=html --cov-report=term-missing", "cd frontend && npm run test:coverage -- --reporter=default --reporter=junit --outputFile=coverage/test-results.xml", "backend/.venv/bin/python scripts/export_coverage.py"],
                 "scope": {"backend": "All Python under backend, including config and launchers; excludes virtualenv, tests and generated migrations.", "frontend": "src/**/*.{ts,tsx}, including main.tsx; excludes tests, test setup and .d.ts declarations. Type-only modules compile to no executable code."}}
     (OUT / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
     for side, raw in (("backend", backend), ("frontend", summary_normalized)):

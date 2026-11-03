@@ -30,6 +30,7 @@ def main():
     for side, m in metrics.items():
         text.append(f'{side.capitalize()} & {m["files"]} & {m["covered_statements"]}/{m["statements_total"]} ({m["statements"]:.2f}\\%) & {m["covered_branches"]}/{m["branches_total"]} ({m["branches"]:.2f}\\%)\\\\')
     text += ["\\bottomrule\\end{tabularx}",
+             f'JUnit evidence: backend {data["tests"]["backend"]["tests"]} tests; frontend {data["tests"]["frontend"]["tests"]} tests. Failures/errors: 0 on each side.\\par',
              f'Equal-weight means: statements {sum(m["statements"] for m in metrics.values())/2:.2f}\\%; branches {sum(m["branches"] for m in metrics.values())/2:.2f}\\%.\\par',
              "The manifest and raw reports provide exact denominators, missing code and exclusions."]
     (REPORT / "coverage-data.tex").write_text("\n".join(text) + "\n")

@@ -40,9 +40,9 @@ jobs:
         working-directory: frontend
       - run: python manage.py check && python manage.py makemigrations --check --dry-run
         working-directory: backend
-      - run: python -m pytest --cov --cov-report=json --cov-report=xml --cov-report=html --cov-report=term-missing
+      - run: python -m pytest --junitxml=test-results.xml --cov --cov-report=json --cov-report=xml --cov-report=html --cov-report=term-missing
         working-directory: backend
-      - run: npm run test:coverage && npm run build && npm run lint
+      - run: npm run test:coverage -- --reporter=default --reporter=junit --outputFile=coverage/test-results.xml && npm run build && npm run lint
         working-directory: frontend
       - run: python scripts/export_coverage.py
       - uses: actions/upload-artifact@v4
