@@ -1,0 +1,4 @@
+# Documentation tooling only; keep out of application runtime dependencies.
+reportlab==5.1.0
+PyMuPDF==2.1
+pypdf==6.21.4

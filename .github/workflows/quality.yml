@@ -1,0 +1,56 @@
+name: Application tests and coverage
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_DB: rivr_ci
+          POSTGRES_USER: rivr_ci
+          POSTGRES_PASSWORD: ci-only-local-password
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U rivr_ci -d rivr_ci"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      DJANGO_SECRET_KEY: ci-only-not-a-deployment-secret
+      DJANGO_DEBUG: 'true'
+      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,testserver
+      POSTGRES_DB: rivr_ci
+      POSTGRES_USER: rivr_ci
+      POSTGRES_PASSWORD: ci-only-local-password
+      POSTGRES_HOST: 127.0.0.1
+      POSTGRES_PORT: '5432'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: python -m pip install -r backend/requirements.txt
+      - run: npm ci
+        working-directory: frontend
+      - run: python manage.py check && python manage.py makemigrations --check --dry-run
+        working-directory: backend
+      - run: python -m pytest --cov --cov-report=json --cov-report=xml --cov-report=html --cov-report=term-missing
+        working-directory: backend
+      - run: npm run test:coverage && npm run build && npm run lint
+        working-directory: frontend
+      - run: python scripts/export_coverage.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: full-application-coverage
+          path: |
+            docs/quality/evidence/
+            backend/htmlcov/
+            frontend/coverage/
+          retention-days: 14
