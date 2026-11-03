@@ -1,8 +1,8 @@
 {
-  "generated_at_utc": "2026-11-03T20:28:33.902615+00:00",
-  "source_commit": "06063bc902d8eae7ec3c4e6f21221bbfd054e49b",
+  "generated_at_utc": "2026-11-03T20:54:42.191515+00:00",
+  "source_commit": "1af0df00c3705298a7ae9c316a7ea330507ac55e",
   "source": {
-    "sha256": "eef5e913c1b62ef4894ef07e35b6dba741e30b29d1270e20d0908dae63da5019",
+    "sha256": "d50ca627f136cb564214e5c317bab1d2dd71297062ae6c4b08e99714fcaea1ac",
     "files": {
       ".github/PULL_REQUEST_TEMPLATE.md": "c8f38e0f728ed22c442a8bd84ceb6dc3f297425c1dab4252558eff49e5e0c4fe",
       ".github/workflows/quality.yml": "72baaef0603b4432f157faf39f93abaf7eaaf9e957708553c65ffe0d3f7193d0",
@@ -48,14 +48,14 @@
       "backend/progression/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "backend/progression/catalog.py": "6917be3a42152adcbe91a2ab20b5083c81a0b0ff170460f525b399dd890db1d4",
       "backend/progression/facts.py": "13cd220b4e36020c0127b4fb97adeaf27b537cec1a31c5e141fcd23b46301caa",
-      "backend/progression/leaderboard.py": "d25f6f4cd447efdda3585a6065f4023af1d241bb8c4e22c4720bc1d0e56dd65f",
+      "backend/progression/leaderboard.py": "c1b4fa9eb16e820bf190627c03ed470f129f8c9f152199e4fbc2c26e4fad10fa",
       "backend/progression/migrations/0001_initial.py": "9872c67f489835c469ed485ba490575b68494f397b68e576a312119bdfd967db",
       "backend/progression/migrations/0002_event_facts.py": "e44106a269be61705a2c32edd9bb89c2af1598324433e29d201fec4f085d129b",
       "backend/progression/migrations/0003_progress_theme.py": "f034a4bfac08066eff3362d4518871a4275bce7d05eb35e2195c94834eeac0b1",
       "backend/progression/migrations/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "backend/progression/models.py": "5b7d8fc47927c65ba05d47c9931bcc182d214fc11245021f4ed0ac00e0ec2c04",
       "backend/progression/services.py": "c413738fdc430a22c312e1ef7f7789d7e9fd89945a8fdfe10721e00023a73373",
-      "backend/progression/tests/test_leaderboard.py": "5fd5d6713f7bb856813d35d1007fdaef3f34872b8a938ef4e68362a54ddf82d7",
+      "backend/progression/tests/test_leaderboard.py": "48a8d566c194d9900c6d5ed712e3065bd4add52f6a19779ed9a4812b197cacb9",
       "backend/progression/tests/test_progression.py": "efb39fb4b665863162bd8a6f36d387143d31cbe483a13805682b5ef14a4514fe",
       "backend/progression/views.py": "6ad4731673b2ff736cfe3d3ea35d5eb21a422eb96688d95ad2bc8bca173baf54",
       "backend/pytest.ini": "ac8027bcf7c806e4dcd433bdc39c22586370d4b0fbd9a547330312f2a01aa023",
@@ -143,13 +143,14 @@
       "scripts/build_report.py": "3398843724f73ef21973324460b50806f5bfe934c06fd570d9702fe3dc63b7f8",
       "scripts/capture_branch_evidence.py": "74d2a4660e7ebf12f20e0d15352cb607c4fa6e0954faccc6b85b2f9d2b2e62e8",
       "scripts/export_coverage.py": "cf787abde7219fbc0c60a96ddccbc60fa1c7d21b4f40180eef5a0cff7b1b5268",
+      "scripts/package_overleaf.py": "6fbb09de9df998a3f783c21c44158f6ba33990ab5ecba16e8fe8d33e999c90e5",
       "scripts/render_gameplay_diagram.py": "1eff3e325a62e09b484835f679730e77f57fb1903977ae754901fceb5773840a",
       "scripts/run_quality.sh": "2f10434b20d1252c6801163e0cd942906332b50b57453427ca33bde472a765ef"
     }
   },
   "tests": {
     "backend": {
-      "tests": 362,
+      "tests": 363,
       "failures": 0,
       "errors": 0,
       "skipped": 0
@@ -165,20 +166,20 @@
     "backend": {
       "format": 3,
       "version": "7.16.2",
-      "timestamp": "2026-11-03T20:28:22.142311",
+      "timestamp": "2026-11-03T20:54:22.954931",
       "branch_coverage": true,
       "show_contexts": false
     }
   },
   "metrics": {
     "backend": {
-      "statements": 97.8865,
-      "branches": 96.6346,
+      "statements": 97.8889,
+      "branches": 96.6667,
       "files": 37,
-      "covered_statements": 880,
-      "statements_total": 899,
-      "covered_branches": 201,
-      "branches_total": 208
+      "covered_statements": 881,
+      "statements_total": 900,
+      "covered_branches": 203,
+      "branches_total": 210
     },
     "frontend": {
       "statements": 96.43,

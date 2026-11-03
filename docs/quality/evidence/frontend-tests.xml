@@ -1,255 +1,255 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuites name="vitest tests" tests="115" failures="0" errors="0" time="20.124706581">
-    <testsuite name="src/api/client.test.ts" timestamp="2026-11-03T20:28:32.236Z" hostname="Christophers-MacBook-Air.local" tests="2" failures="0" errors="0" skipped="0" time="0.012690458">
-        <testcase classname="src/api/client.test.ts" name="non-JSON server errors retain HTTP status without leaking raw HTML" time="0.010363042">
+<testsuites name="vitest tests" tests="115" failures="0" errors="0" time="29.213613374">
+    <testsuite name="src/api/client.test.ts" timestamp="2026-11-03T20:54:39.795Z" hostname="Christophers-MacBook-Air.local" tests="2" failures="0" errors="0" skipped="0" time="0.013926458">
+        <testcase classname="src/api/client.test.ts" name="non-JSON server errors retain HTTP status without leaking raw HTML" time="0.011227167">
         </testcase>
-        <testcase classname="src/api/client.test.ts" name="API errors expose field data and optional detail safely" time="0.000568959">
-        </testcase>
-    </testsuite>
-    <testsuite name="src/features/achievements/AchievementsPage.test.tsx" timestamp="2026-11-03T20:28:32.237Z" hostname="Christophers-MacBook-Air.local" tests="7" failures="0" errors="0" skipped="0" time="1.196319084">
-        <testcase classname="src/features/achievements/AchievementsPage.test.tsx" name="shows only earned details, hidden trophy slots and real XP" time="0.328192042">
-        </testcase>
-        <testcase classname="src/features/achievements/AchievementsPage.test.tsx" name="empty collection reveals no requirements" time="0.0649525">
-        </testcase>
-        <testcase classname="src/features/achievements/AchievementsPage.test.tsx" name="anonymous users receive sign in link without fetching" time="0.28199475">
-        </testcase>
-        <testcase classname="src/features/achievements/AchievementsPage.test.tsx" name="identity loading displays a status" time="0.041114084">
-        </testcase>
-        <testcase classname="src/features/achievements/AchievementsPage.test.tsx" name="failed fetch supports retry and manual refresh without awarding XP" time="0.258757167">
-        </testcase>
-        <testcase classname="src/features/achievements/AchievementsPage.test.tsx" name="late response from a previous account cannot reveal their collection" time="0.081275958">
-        </testcase>
-        <testcase classname="src/features/achievements/AchievementsPage.test.tsx" name="reveals repeat XP only for an earned repeatable trophy" time="0.137446291">
+        <testcase classname="src/api/client.test.ts" name="API errors expose field data and optional detail safely" time="0.000773583">
         </testcase>
     </testsuite>
-    <testsuite name="src/features/auth/AuthPages.test.tsx" timestamp="2026-11-03T20:28:32.238Z" hostname="Christophers-MacBook-Air.local" tests="14" failures="0" errors="0" skipped="0" time="4.160300291">
-        <testcase classname="src/features/auth/AuthPages.test.tsx" name="signs in with the session CSRF token and returns home as that player" time="1.377602">
+    <testsuite name="src/features/achievements/AchievementsPage.test.tsx" timestamp="2026-11-03T20:54:39.797Z" hostname="Christophers-MacBook-Air.local" tests="7" failures="0" errors="0" skipped="0" time="1.387294917">
+        <testcase classname="src/features/achievements/AchievementsPage.test.tsx" name="shows only earned details, hidden trophy slots and real XP" time="0.28461925">
         </testcase>
-        <testcase classname="src/features/auth/AuthPages.test.tsx" name="shows the generic invalid-credentials message and stays on sign in" time="0.285393292">
+        <testcase classname="src/features/achievements/AchievementsPage.test.tsx" name="empty collection reveals no requirements" time="0.0630955">
         </testcase>
-        <testcase classname="src/features/auth/AuthPages.test.tsx" name="blank sign-in fields are flagged without calling the API" time="0.282879875">
+        <testcase classname="src/features/achievements/AchievementsPage.test.tsx" name="anonymous users receive sign in link without fetching" time="0.251566917">
         </testcase>
-        <testcase classname="src/features/auth/AuthPages.test.tsx" name="features without backend support are visibly unavailable" time="0.232546">
+        <testcase classname="src/features/achievements/AchievementsPage.test.tsx" name="identity loading displays a status" time="0.028757875">
         </testcase>
-        <testcase classname="src/features/auth/AuthPages.test.tsx" name="registers with only the three API fields and signs the player in" time="0.31446525">
+        <testcase classname="src/features/achievements/AchievementsPage.test.tsx" name="failed fetch supports retry and manual refresh without awarding XP" time="0.368325166">
         </testcase>
-        <testcase classname="src/features/auth/AuthPages.test.tsx" name="mismatched passwords and a missing age confirmation block registration" time="0.232450375">
+        <testcase classname="src/features/achievements/AchievementsPage.test.tsx" name="late response from a previous account cannot reveal their collection" time="0.201535625">
         </testcase>
-        <testcase classname="src/features/auth/AuthPages.test.tsx" name="server field errors appear under the matching registration field" time="0.242796209">
-        </testcase>
-        <testcase classname="src/features/auth/AuthPages.test.tsx" name="starts a guest session with the trimmed name" time="0.276730625">
-        </testcase>
-        <testcase classname="src/features/auth/AuthPages.test.tsx" name="rejects too-short guest names locally and shows server name errors" time="0.243297333">
-        </testcase>
-        <testcase classname="src/features/auth/AuthPages.test.tsx" name="a CSRF failure asks the player to retry and fetches a fresh token" time="0.169963583">
-        </testcase>
-        <testcase classname="src/features/auth/AuthPages.test.tsx" name="a network failure while submitting shows a connection message" time="0.151507625">
-        </testcase>
-        <testcase classname="src/features/auth/AuthPages.test.tsx" name="a failed session check can be retried" time="0.122314334">
-        </testcase>
-        <testcase classname="src/features/auth/AuthPages.test.tsx" name="signed-in players see who they are and can sign out" time="0.103302083">
-        </testcase>
-        <testcase classname="src/features/auth/AuthPages.test.tsx" name="guests are labelled as guests, and a failed sign-out is reported" time="0.120435292">
+        <testcase classname="src/features/achievements/AchievementsPage.test.tsx" name="reveals repeat XP only for an earned repeatable trophy" time="0.187290875">
         </testcase>
     </testsuite>
-    <testsuite name="src/features/auth/validation.test.ts" timestamp="2026-11-03T20:28:32.240Z" hostname="Christophers-MacBook-Air.local" tests="14" failures="0" errors="0" skipped="0" time="0.006656">
-        <testcase classname="src/features/auth/validation.test.ts" name="a complete registration form passes" time="0.002942875">
+    <testsuite name="src/features/auth/AuthPages.test.tsx" timestamp="2026-11-03T20:54:39.798Z" hostname="Christophers-MacBook-Air.local" tests="14" failures="0" errors="0" skipped="0" time="5.828947958">
+        <testcase classname="src/features/auth/AuthPages.test.tsx" name="signs in with the session CSRF token and returns home as that player" time="1.594912416">
         </testcase>
-        <testcase classname="src/features/auth/validation.test.ts" name="registration rejects { email: &apos;  &apos; }" time="0.000315542">
+        <testcase classname="src/features/auth/AuthPages.test.tsx" name="shows the generic invalid-credentials message and stays on sign in" time="0.428011792">
         </testcase>
-        <testcase classname="src/features/auth/validation.test.ts" name="registration rejects { username: &apos;ab&apos; }" time="0.000143333">
+        <testcase classname="src/features/auth/AuthPages.test.tsx" name="blank sign-in fields are flagged without calling the API" time="0.306276208">
         </testcase>
-        <testcase classname="src/features/auth/validation.test.ts" name="registration rejects { …(1) }" time="0.000118584">
+        <testcase classname="src/features/auth/AuthPages.test.tsx" name="features without backend support are visibly unavailable" time="0.331335959">
         </testcase>
-        <testcase classname="src/features/auth/validation.test.ts" name="registration rejects { username: &apos;Finn!&apos; }" time="0.000105708">
+        <testcase classname="src/features/auth/AuthPages.test.tsx" name="registers with only the three API fields and signs the player in" time="0.483073125">
         </testcase>
-        <testcase classname="src/features/auth/validation.test.ts" name="registration rejects { password: &apos;&apos;, confirm: &apos;&apos; }" time="0.000107083">
+        <testcase classname="src/features/auth/AuthPages.test.tsx" name="mismatched passwords and a missing age confirmation block registration" time="0.312090084">
         </testcase>
-        <testcase classname="src/features/auth/validation.test.ts" name="registration rejects { confirm: &apos;different&apos; }" time="0.000096875">
+        <testcase classname="src/features/auth/AuthPages.test.tsx" name="server field errors appear under the matching registration field" time="0.350285291">
         </testcase>
-        <testcase classname="src/features/auth/validation.test.ts" name="registration rejects { age: false }" time="0.000096041">
+        <testcase classname="src/features/auth/AuthPages.test.tsx" name="starts a guest session with the trimmed name" time="0.353846167">
         </testcase>
-        <testcase classname="src/features/auth/validation.test.ts" name="login requires both fields" time="0.000387417">
+        <testcase classname="src/features/auth/AuthPages.test.tsx" name="rejects too-short guest names locally and shows server name errors" time="0.376254166">
         </testcase>
-        <testcase classname="src/features/auth/validation.test.ts" name="guest name &quot;River Jay&quot;" time="0.00017775">
+        <testcase classname="src/features/auth/AuthPages.test.tsx" name="a CSRF failure asks the player to retry and fetches a fresh token" time="0.283497958">
         </testcase>
-        <testcase classname="src/features/auth/validation.test.ts" name="guest name &quot;  Ri  &quot;" time="0.000131792">
+        <testcase classname="src/features/auth/AuthPages.test.tsx" name="a network failure while submitting shows a connection message" time="0.469744375">
         </testcase>
-        <testcase classname="src/features/auth/validation.test.ts" name="guest name &quot;R&quot;" time="0.000110375">
+        <testcase classname="src/features/auth/AuthPages.test.tsx" name="a failed session check can be retried" time="0.196084083">
         </testcase>
-        <testcase classname="src/features/auth/validation.test.ts" name="guest name &quot;xxxxxxxxxxxxxxxxxxxxx&quot;" time="0.000100625">
+        <testcase classname="src/features/auth/AuthPages.test.tsx" name="signed-in players see who they are and can sign out" time="0.219764208">
         </testcase>
-        <testcase classname="src/features/auth/validation.test.ts" name="guest name &quot;River.Jay&quot;" time="0.000099083">
-        </testcase>
-    </testsuite>
-    <testsuite name="src/features/leaderboard/LeaderboardPage.test.tsx" timestamp="2026-11-03T20:28:32.241Z" hostname="Christophers-MacBook-Air.local" tests="8" failures="0" errors="0" skipped="0" time="1.180506875">
-        <testcase classname="src/features/leaderboard/LeaderboardPage.test.tsx" name="renders real XP, shared rank and current user without fake stats" time="0.728642875">
-        </testcase>
-        <testcase classname="src/features/leaderboard/LeaderboardPage.test.tsx" name="empty leaderboard has no made-up podium" time="0.014480708">
-        </testcase>
-        <testcase classname="src/features/leaderboard/LeaderboardPage.test.tsx" name="anonymous viewing omits personal ranking and supports dynamic avatars" time="0.028864959">
-        </testcase>
-        <testcase classname="src/features/leaderboard/LeaderboardPage.test.tsx" name="pagination requests page 2 and preserves server ranks" time="0.105703042">
-        </testcase>
-        <testcase classname="src/features/leaderboard/LeaderboardPage.test.tsx" name="bad page errors allow page 1 recovery" time="0.068989541">
-        </testcase>
-        <testcase classname="src/features/leaderboard/LeaderboardPage.test.tsx" name="failed load supports retry and manual refresh" time="0.138187541">
-        </testcase>
-        <testcase classname="src/features/leaderboard/LeaderboardPage.test.tsx" name="late response from prior account is ignored after remount" time="0.032330917">
-        </testcase>
-        <testcase classname="src/features/leaderboard/LeaderboardPage.test.tsx" name="three podium entries use the server competition ranks" time="0.060229959">
+        <testcase classname="src/features/auth/AuthPages.test.tsx" name="guests are labelled as guests, and a failed sign-out is reported" time="0.121208959">
         </testcase>
     </testsuite>
-    <testsuite name="src/features/profile/ProfilePages.test.tsx" timestamp="2026-11-03T20:28:32.242Z" hostname="Christophers-MacBook-Air.local" tests="16" failures="0" errors="0" skipped="0" time="2.787922208">
-        <testcase classname="src/features/profile/ProfilePages.test.tsx" name="avatar upload uses multipart CSRF and updates account plus both shell avatars" time="0.890936208">
+    <testsuite name="src/features/auth/validation.test.ts" timestamp="2026-11-03T20:54:39.800Z" hostname="Christophers-MacBook-Air.local" tests="14" failures="0" errors="0" skipped="0" time="0.009210416">
+        <testcase classname="src/features/auth/validation.test.ts" name="a complete registration form passes" time="0.004132334">
         </testcase>
-        <testcase classname="src/features/profile/ProfilePages.test.tsx" name="rejects invalid avatar before upload" time="0.12633025">
+        <testcase classname="src/features/auth/validation.test.ts" name="registration rejects { email: &apos;  &apos; }" time="0.000452333">
         </testcase>
-        <testcase classname="src/features/profile/ProfilePages.test.tsx" name="rejects invalid avatar before upload" time="0.161345875">
+        <testcase classname="src/features/auth/validation.test.ts" name="registration rejects { username: &apos;ab&apos; }" time="0.000369083">
         </testcase>
-        <testcase classname="src/features/profile/ProfilePages.test.tsx" name="avatar server error 400 preserves retry feedback" time="0.195395584">
+        <testcase classname="src/features/auth/validation.test.ts" name="registration rejects { …(1) }" time="0.00029125">
         </testcase>
-        <testcase classname="src/features/profile/ProfilePages.test.tsx" name="avatar server error 403 preserves retry feedback" time="0.164263875">
+        <testcase classname="src/features/auth/validation.test.ts" name="registration rejects { username: &apos;Finn!&apos; }" time="0.00016175">
         </testcase>
-        <testcase classname="src/features/profile/ProfilePages.test.tsx" name="avatar server error 500 preserves retry feedback" time="0.186187667">
+        <testcase classname="src/features/auth/validation.test.ts" name="registration rejects { password: &apos;&apos;, confirm: &apos;&apos; }" time="0.000309875">
         </testcase>
-        <testcase classname="src/features/profile/ProfilePages.test.tsx" name="daily claim sends empty JSON and CSRF, updates displayed balance and disables repeats" time="0.150502959">
+        <testcase classname="src/features/auth/validation.test.ts" name="registration rejects { confirm: &apos;different&apos; }" time="0.000282334">
         </testcase>
-        <testcase classname="src/features/profile/ProfilePages.test.tsx" name="existing account balance and already claimed reward persist on reload" time="0.100441375">
+        <testcase classname="src/features/auth/validation.test.ts" name="registration rejects { age: false }" time="0.000147875">
         </testcase>
-        <testcase classname="src/features/profile/ProfilePages.test.tsx" name="daily error 403 does not invent a successful payout" time="0.152043542">
+        <testcase classname="src/features/auth/validation.test.ts" name="login requires both fields" time="0.000505667">
         </testcase>
-        <testcase classname="src/features/profile/ProfilePages.test.tsx" name="daily error 409 does not invent a successful payout" time="0.152282708">
+        <testcase classname="src/features/auth/validation.test.ts" name="guest name &quot;River Jay&quot;" time="0.000232917">
         </testcase>
-        <testcase classname="src/features/profile/ProfilePages.test.tsx" name="daily error 503 does not invent a successful payout" time="0.140845959">
+        <testcase classname="src/features/auth/validation.test.ts" name="guest name &quot;  Ri  &quot;" time="0.000175167">
         </testcase>
-        <testcase classname="src/features/profile/ProfilePages.test.tsx" name="duplicate clicks are blocked while a claim is pending" time="0.138741125">
+        <testcase classname="src/features/auth/validation.test.ts" name="guest name &quot;R&quot;" time="0.000137">
         </testcase>
-        <testcase classname="src/features/profile/ProfilePages.test.tsx" name="anonymous and guest views require a registered account" time="0.049011792">
+        <testcase classname="src/features/auth/validation.test.ts" name="guest name &quot;xxxxxxxxxxxxxxxxxxxxx&quot;" time="0.000126958">
         </testcase>
-        <testcase classname="src/features/profile/ProfilePages.test.tsx" name="profile loading errors are retryable" time="0.123093667">
-        </testcase>
-        <testcase classname="src/features/profile/ProfilePages.test.tsx" name="midnight timer refreshes eligibility rather than granting client-side chips" time="0.029414958">
-        </testcase>
-        <testcase classname="src/features/profile/ProfilePages.test.tsx" name="switching accounts ignores an in-flight previous owner response" time="0.021408">
+        <testcase classname="src/features/auth/validation.test.ts" name="guest name &quot;River.Jay&quot;" time="0.000125958">
         </testcase>
     </testsuite>
-    <testsuite name="src/features/tables/CreateTablePage.test.tsx" timestamp="2026-11-03T20:28:32.244Z" hostname="Christophers-MacBook-Air.local" tests="12" failures="0" errors="0" skipped="0" time="4.316214917">
-        <testcase classname="src/features/tables/CreateTablePage.test.tsx" name="creates a real-shaped public table request with CSRF and reads saved details" time="1.334643958">
+    <testsuite name="src/features/leaderboard/LeaderboardPage.test.tsx" timestamp="2026-11-03T20:54:39.802Z" hostname="Christophers-MacBook-Air.local" tests="8" failures="0" errors="0" skipped="0" time="0.994969">
+        <testcase classname="src/features/leaderboard/LeaderboardPage.test.tsx" name="renders real XP, shared rank and current user without fake stats" time="0.471899333">
         </testcase>
-        <testcase classname="src/features/tables/CreateTablePage.test.tsx" name="validates empty name, blind relationship and minimum balance before sending" time="0.391417458">
+        <testcase classname="src/features/leaderboard/LeaderboardPage.test.tsx" name="empty leaderboard has no made-up podium" time="0.018816791">
         </testcase>
-        <testcase classname="src/features/tables/CreateTablePage.test.tsx" name="seat selection updates summary, and create another resets the form" time="0.465831583">
+        <testcase classname="src/features/leaderboard/LeaderboardPage.test.tsx" name="anonymous viewing omits personal ranking and supports dynamic avatars" time="0.041864042">
         </testcase>
-        <testcase classname="src/features/tables/CreateTablePage.test.tsx" name="anonymous users may configure but cannot submit" time="0.2341705">
+        <testcase classname="src/features/leaderboard/LeaderboardPage.test.tsx" name="pagination requests page 2 and preserves server ranks" time="0.218237958">
         </testcase>
-        <testcase classname="src/features/tables/CreateTablePage.test.tsx" name="context error is retryable and loading disables creation" time="0.246133917">
+        <testcase classname="src/features/leaderboard/LeaderboardPage.test.tsx" name="bad page errors allow page 1 recovery" time="0.061573708">
         </testcase>
-        <testcase classname="src/features/tables/CreateTablePage.test.tsx" name="handles server error 400 without losing form values" time="0.33251925">
+        <testcase classname="src/features/leaderboard/LeaderboardPage.test.tsx" name="failed load supports retry and manual refresh" time="0.127669375">
         </testcase>
-        <testcase classname="src/features/tables/CreateTablePage.test.tsx" name="handles server error 403 without losing form values" time="0.361067791">
+        <testcase classname="src/features/leaderboard/LeaderboardPage.test.tsx" name="late response from prior account is ignored after remount" time="0.013180875">
         </testcase>
-        <testcase classname="src/features/tables/CreateTablePage.test.tsx" name="handles server error 503 without losing form values" time="0.318306959">
-        </testcase>
-        <testcase classname="src/features/tables/CreateTablePage.test.tsx" name="network failure reports a useful error without automatic POST retry" time="0.167017459">
-        </testcase>
-        <testcase classname="src/features/tables/CreateTablePage.test.tsx" name="disables duplicate submissions while waiting" time="0.229409541">
-        </testcase>
-        <testcase classname="src/features/tables/CreateTablePage.test.tsx" name="cancel returns home without creating, and home opens creation" time="0.171014417">
-        </testcase>
-        <testcase classname="src/features/tables/CreateTablePage.test.tsx" name="missing table and unknown route have useful recovery links" time="0.062675625">
+        <testcase classname="src/features/leaderboard/LeaderboardPage.test.tsx" name="three podium entries use the server competition ranks" time="0.039442542">
         </testcase>
     </testsuite>
-    <testsuite name="src/features/tables/LobbyPage.test.tsx" timestamp="2026-11-03T20:28:32.245Z" hostname="Christophers-MacBook-Air.local" tests="13" failures="0" errors="0" skipped="0" time="4.901629791">
-        <testcase classname="src/features/tables/LobbyPage.test.tsx" name="loads public database-shaped data and opens saved table details" time="1.254556375">
+    <testsuite name="src/features/profile/ProfilePages.test.tsx" timestamp="2026-11-03T20:54:39.803Z" hostname="Christophers-MacBook-Air.local" tests="16" failures="0" errors="0" skipped="0" time="3.934654166">
+        <testcase classname="src/features/profile/ProfilePages.test.tsx" name="avatar upload uses multipart CSRF and updates account plus both shell avatars" time="1.2063615">
         </testcase>
-        <testcase classname="src/features/tables/LobbyPage.test.tsx" name="search submits trimmed terms and filters/sort combine in URL requests" time="0.754786041">
+        <testcase classname="src/features/profile/ProfilePages.test.tsx" name="rejects invalid avatar before upload" time="0.241776375">
         </testcase>
-        <testcase classname="src/features/tables/LobbyPage.test.tsx" name="filter changes reset page and browser back restores previous filters" time="0.650546459">
+        <testcase classname="src/features/profile/ProfilePages.test.tsx" name="rejects invalid avatar before upload" time="0.269117125">
         </testcase>
-        <testcase classname="src/features/tables/LobbyPage.test.tsx" name="pagination preserves filters and updates the matching range" time="0.272737">
+        <testcase classname="src/features/profile/ProfilePages.test.tsx" name="avatar server error 400 preserves retry feedback" time="0.341871167">
         </testcase>
-        <testcase classname="src/features/tables/LobbyPage.test.tsx" name="empty lobby invites creation without fake rows" time="0.175827542">
+        <testcase classname="src/features/profile/ProfilePages.test.tsx" name="avatar server error 403 preserves retry feedback" time="0.22201625">
         </testcase>
-        <testcase classname="src/features/tables/LobbyPage.test.tsx" name="no-match message and reset clear search, filters, sorting, and page" time="0.168774583">
+        <testcase classname="src/features/profile/ProfilePages.test.tsx" name="avatar server error 500 preserves retry feedback" time="0.263786667">
         </testcase>
-        <testcase classname="src/features/tables/LobbyPage.test.tsx" name="server error 400 is actionable and retryable" time="0.268979333">
+        <testcase classname="src/features/profile/ProfilePages.test.tsx" name="daily claim sends empty JSON and CSRF, updates displayed balance and disables repeats" time="0.237122208">
         </testcase>
-        <testcase classname="src/features/tables/LobbyPage.test.tsx" name="server error 404 is actionable and retryable" time="0.268455666">
+        <testcase classname="src/features/profile/ProfilePages.test.tsx" name="existing account balance and already claimed reward persist on reload" time="0.136136125">
         </testcase>
-        <testcase classname="src/features/tables/LobbyPage.test.tsx" name="server error 503 is actionable and retryable" time="0.210976833">
+        <testcase classname="src/features/profile/ProfilePages.test.tsx" name="daily error 403 does not invent a successful payout" time="0.156953125">
         </testcase>
-        <testcase classname="src/features/tables/LobbyPage.test.tsx" name="network failure can recover and manual refresh gets current occupancy" time="0.216415625">
+        <testcase classname="src/features/profile/ProfilePages.test.tsx" name="daily error 409 does not invent a successful payout" time="0.2774755">
         </testcase>
-        <testcase classname="src/features/tables/LobbyPage.test.tsx" name="out-of-order responses cannot replace the latest search" time="0.19860825">
+        <testcase classname="src/features/profile/ProfilePages.test.tsx" name="daily error 503 does not invent a successful payout" time="0.154771417">
         </testcase>
-        <testcase classname="src/features/tables/LobbyPage.test.tsx" name="full and playing statuses are distinct and unimplemented actions remain disabled" time="0.137138708">
+        <testcase classname="src/features/profile/ProfilePages.test.tsx" name="duplicate clicks are blocked while a claim is pending" time="0.146540458">
         </testcase>
-        <testcase classname="src/features/tables/LobbyPage.test.tsx" name="creation appears in lobby through the new success link" time="0.321750833">
+        <testcase classname="src/features/profile/ProfilePages.test.tsx" name="anonymous and guest views require a registered account" time="0.067208375">
         </testcase>
-    </testsuite>
-    <testsuite name="src/features/tables/validation.test.ts" timestamp="2026-11-03T20:28:32.246Z" hostname="Christophers-MacBook-Air.local" tests="12" failures="0" errors="0" skipped="0" time="0.038869708">
-        <testcase classname="src/features/tables/validation.test.ts" name="accepts 2 seats with valid chip settings" time="0.003781291">
+        <testcase classname="src/features/profile/ProfilePages.test.tsx" name="profile loading errors are retryable" time="0.161342875">
         </testcase>
-        <testcase classname="src/features/tables/validation.test.ts" name="accepts 4 seats with valid chip settings" time="0.000244042">
+        <testcase classname="src/features/profile/ProfilePages.test.tsx" name="midnight timer refreshes eligibility rather than granting client-side chips" time="0.02822375">
         </testcase>
-        <testcase classname="src/features/tables/validation.test.ts" name="accepts 6 seats with valid chip settings" time="0.000378459">
-        </testcase>
-        <testcase classname="src/features/tables/validation.test.ts" name="accepts 8 seats with valid chip settings" time="0.00014725">
-        </testcase>
-        <testcase classname="src/features/tables/validation.test.ts" name="accepts 9 seats with valid chip settings" time="0.00012425">
-        </testcase>
-        <testcase classname="src/features/tables/validation.test.ts" name="rejects invalid chip value 0" time="0.029471667">
-        </testcase>
-        <testcase classname="src/features/tables/validation.test.ts" name="rejects invalid chip value -1" time="0.000222625">
-        </testcase>
-        <testcase classname="src/features/tables/validation.test.ts" name="rejects invalid chip value 0.5" time="0.000183667">
-        </testcase>
-        <testcase classname="src/features/tables/validation.test.ts" name="rejects invalid chip value NaN" time="0.000390667">
-        </testcase>
-        <testcase classname="src/features/tables/validation.test.ts" name="rejects invalid chip value Infinity" time="0.000199334">
-        </testcase>
-        <testcase classname="src/features/tables/validation.test.ts" name="rejects invalid chip value 2147483648" time="0.000170334">
-        </testcase>
-        <testcase classname="src/features/tables/validation.test.ts" name="rejects invalid seat counts, long names and unaffordable starting stacks" time="0.001179125">
+        <testcase classname="src/features/profile/ProfilePages.test.tsx" name="switching accounts ignores an in-flight previous owner response" time="0.021738792">
         </testcase>
     </testsuite>
-    <testsuite name="src/features/themes/themeAchievement.test.tsx" timestamp="2026-11-03T20:28:32.247Z" hostname="Christophers-MacBook-Air.local" tests="6" failures="0" errors="0" skipped="0" time="0.305853791">
-        <testcase classname="src/features/themes/themeAchievement.test.tsx" name="explicit theme change persists with CSRF, without a trophy announcement" time="0.102551083">
+    <testsuite name="src/features/tables/CreateTablePage.test.tsx" timestamp="2026-11-03T20:54:39.805Z" hostname="Christophers-MacBook-Air.local" tests="12" failures="0" errors="0" skipped="0" time="6.72121425">
+        <testcase classname="src/features/tables/CreateTablePage.test.tsx" name="creates a real-shaped public table request with CSRF and reads saved details" time="1.986585833">
         </testcase>
-        <testcase classname="src/features/themes/themeAchievement.test.tsx" name="anonymous themes remain local and cannot claim an achievement" time="0.013203333">
+        <testcase classname="src/features/tables/CreateTablePage.test.tsx" name="validates empty name, blind relationship and minimum balance before sending" time="0.500870083">
         </testcase>
-        <testcase classname="src/features/themes/themeAchievement.test.tsx" name="unchanged theme does not submit an action" time="0.007105334">
+        <testcase classname="src/features/tables/CreateTablePage.test.tsx" name="seat selection updates summary, and create another resets the form" time="0.539323833">
         </testcase>
-        <testcase classname="src/features/themes/themeAchievement.test.tsx" name="failed account update preserves the browser theme and reports failure" time="0.159259584">
+        <testcase classname="src/features/tables/CreateTablePage.test.tsx" name="anonymous users may configure but cannot submit" time="0.4114005">
         </testcase>
-        <testcase classname="src/features/themes/themeAchievement.test.tsx" name="fetches a CSRF token when the profile is still loading" time="0.016166458">
+        <testcase classname="src/features/tables/CreateTablePage.test.tsx" name="context error is retryable and loading disables creation" time="0.276137125">
         </testcase>
-        <testcase classname="src/features/themes/themeAchievement.test.tsx" name="waits for account identity before accepting theme changes" time="0.005244917">
+        <testcase classname="src/features/tables/CreateTablePage.test.tsx" name="handles server error 400 without losing form values" time="0.416262625">
+        </testcase>
+        <testcase classname="src/features/tables/CreateTablePage.test.tsx" name="handles server error 403 without losing form values" time="0.549389083">
+        </testcase>
+        <testcase classname="src/features/tables/CreateTablePage.test.tsx" name="handles server error 503 without losing form values" time="0.639299833">
+        </testcase>
+        <testcase classname="src/features/tables/CreateTablePage.test.tsx" name="network failure reports a useful error without automatic POST retry" time="0.244162625">
+        </testcase>
+        <testcase classname="src/features/tables/CreateTablePage.test.tsx" name="disables duplicate submissions while waiting" time="0.318629208">
+        </testcase>
+        <testcase classname="src/features/tables/CreateTablePage.test.tsx" name="cancel returns home without creating, and home opens creation" time="0.43966075">
+        </testcase>
+        <testcase classname="src/features/tables/CreateTablePage.test.tsx" name="missing table and unknown route have useful recovery links" time="0.396910292">
         </testcase>
     </testsuite>
-    <testsuite name="src/features/themes/themes.test.tsx" timestamp="2026-11-03T20:28:32.248Z" hostname="Christophers-MacBook-Air.local" tests="11" failures="0" errors="0" skipped="0" time="1.217743458">
-        <testcase classname="src/features/themes/themes.test.tsx" name="defaults to dark and initializes the document before React renders" time="0.418934375">
+    <testsuite name="src/features/tables/LobbyPage.test.tsx" timestamp="2026-11-03T20:54:39.807Z" hostname="Christophers-MacBook-Air.local" tests="13" failures="0" errors="0" skipped="0" time="8.099488042">
+        <testcase classname="src/features/tables/LobbyPage.test.tsx" name="loads public database-shaped data and opens saved table details" time="1.680729959">
         </testcase>
-        <testcase classname="src/features/themes/themes.test.tsx" name="restores saved dark on a new mount" time="0.018299792">
+        <testcase classname="src/features/tables/LobbyPage.test.tsx" name="search submits trimmed terms and filters/sort combine in URL requests" time="1.137574334">
         </testcase>
-        <testcase classname="src/features/themes/themes.test.tsx" name="restores saved light on a new mount" time="0.015357209">
+        <testcase classname="src/features/tables/LobbyPage.test.tsx" name="filter changes reset page and browser back restores previous filters" time="0.817543375">
         </testcase>
-        <testcase classname="src/features/themes/themes.test.tsx" name="falls back for invalid saved value invalid" time="0.000807542">
+        <testcase classname="src/features/tables/LobbyPage.test.tsx" name="pagination preserves filters and updates the matching range" time="0.360133334">
         </testcase>
-        <testcase classname="src/features/themes/themes.test.tsx" name="falls back for invalid saved value LIGHT" time="0.000627875">
+        <testcase classname="src/features/tables/LobbyPage.test.tsx" name="empty lobby invites creation without fake rows" time="0.21091875">
         </testcase>
-        <testcase classname="src/features/themes/themes.test.tsx" name="falls back for invalid saved value " time="0.000369875">
+        <testcase classname="src/features/tables/LobbyPage.test.tsx" name="no-match message and reset clear search, filters, sorting, and page" time="0.329030875">
         </testcase>
-        <testcase classname="src/features/themes/themes.test.tsx" name="switches both ways and restores the saved selection after remounting" time="0.051949417">
+        <testcase classname="src/features/tables/LobbyPage.test.tsx" name="server error 400 is actionable and retryable" time="0.447674916">
         </testcase>
-        <testcase classname="src/features/themes/themes.test.tsx" name="unreadable storage does not prevent startup" time="0.014023834">
+        <testcase classname="src/features/tables/LobbyPage.test.tsx" name="server error 404 is actionable and retryable" time="0.557102083">
         </testcase>
-        <testcase classname="src/features/themes/themes.test.tsx" name="changes the current theme and explains failed persistence, then recovers" time="0.083105041">
+        <testcase classname="src/features/tables/LobbyPage.test.tsx" name="server error 503 is actionable and retryable" time="0.397796208">
         </testcase>
-        <testcase classname="src/features/themes/themes.test.tsx" name="keeps browser preference across navigation for host null" time="0.359695875">
+        <testcase classname="src/features/tables/LobbyPage.test.tsx" name="network failure can recover and manual refresh gets current occupancy" time="0.715280417">
         </testcase>
-        <testcase classname="src/features/themes/themes.test.tsx" name="keeps browser preference across navigation for host {&quot;id&quot;:7,&quot;username&quot;:&quot;Kelechi&quot;}" time="0.252539292">
+        <testcase classname="src/features/tables/LobbyPage.test.tsx" name="out-of-order responses cannot replace the latest search" time="0.510269">
+        </testcase>
+        <testcase classname="src/features/tables/LobbyPage.test.tsx" name="full and playing statuses are distinct and unimplemented actions remain disabled" time="0.240918708">
+        </testcase>
+        <testcase classname="src/features/tables/LobbyPage.test.tsx" name="creation appears in lobby through the new success link" time="0.692271625">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/features/tables/validation.test.ts" timestamp="2026-11-03T20:54:39.809Z" hostname="Christophers-MacBook-Air.local" tests="12" failures="0" errors="0" skipped="0" time="0.04467375">
+        <testcase classname="src/features/tables/validation.test.ts" name="accepts 2 seats with valid chip settings" time="0.004393833">
+        </testcase>
+        <testcase classname="src/features/tables/validation.test.ts" name="accepts 4 seats with valid chip settings" time="0.000294">
+        </testcase>
+        <testcase classname="src/features/tables/validation.test.ts" name="accepts 6 seats with valid chip settings" time="0.000409875">
+        </testcase>
+        <testcase classname="src/features/tables/validation.test.ts" name="accepts 8 seats with valid chip settings" time="0.000150208">
+        </testcase>
+        <testcase classname="src/features/tables/validation.test.ts" name="accepts 9 seats with valid chip settings" time="0.000126458">
+        </testcase>
+        <testcase classname="src/features/tables/validation.test.ts" name="rejects invalid chip value 0" time="0.031354541">
+        </testcase>
+        <testcase classname="src/features/tables/validation.test.ts" name="rejects invalid chip value -1" time="0.0002495">
+        </testcase>
+        <testcase classname="src/features/tables/validation.test.ts" name="rejects invalid chip value 0.5" time="0.000190917">
+        </testcase>
+        <testcase classname="src/features/tables/validation.test.ts" name="rejects invalid chip value NaN" time="0.000991209">
+        </testcase>
+        <testcase classname="src/features/tables/validation.test.ts" name="rejects invalid chip value Infinity" time="0.000248958">
+        </testcase>
+        <testcase classname="src/features/tables/validation.test.ts" name="rejects invalid chip value 2147483648" time="0.000227625">
+        </testcase>
+        <testcase classname="src/features/tables/validation.test.ts" name="rejects invalid seat counts, long names and unaffordable starting stacks" time="0.002489333">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/features/themes/themeAchievement.test.tsx" timestamp="2026-11-03T20:54:39.810Z" hostname="Christophers-MacBook-Air.local" tests="6" failures="0" errors="0" skipped="0" time="0.382853625">
+        <testcase classname="src/features/themes/themeAchievement.test.tsx" name="explicit theme change persists with CSRF, without a trophy announcement" time="0.130710542">
+        </testcase>
+        <testcase classname="src/features/themes/themeAchievement.test.tsx" name="anonymous themes remain local and cannot claim an achievement" time="0.018181167">
+        </testcase>
+        <testcase classname="src/features/themes/themeAchievement.test.tsx" name="unchanged theme does not submit an action" time="0.009185291">
+        </testcase>
+        <testcase classname="src/features/themes/themeAchievement.test.tsx" name="failed account update preserves the browser theme and reports failure" time="0.191929042">
+        </testcase>
+        <testcase classname="src/features/themes/themeAchievement.test.tsx" name="fetches a CSRF token when the profile is still loading" time="0.023999917">
+        </testcase>
+        <testcase classname="src/features/themes/themeAchievement.test.tsx" name="waits for account identity before accepting theme changes" time="0.006427583">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/features/themes/themes.test.tsx" timestamp="2026-11-03T20:54:39.811Z" hostname="Christophers-MacBook-Air.local" tests="11" failures="0" errors="0" skipped="0" time="1.796380792">
+        <testcase classname="src/features/themes/themes.test.tsx" name="defaults to dark and initializes the document before React renders" time="0.543018917">
+        </testcase>
+        <testcase classname="src/features/themes/themes.test.tsx" name="restores saved dark on a new mount" time="0.048697">
+        </testcase>
+        <testcase classname="src/features/themes/themes.test.tsx" name="restores saved light on a new mount" time="0.031969875">
+        </testcase>
+        <testcase classname="src/features/themes/themes.test.tsx" name="falls back for invalid saved value invalid" time="0.000839334">
+        </testcase>
+        <testcase classname="src/features/themes/themes.test.tsx" name="falls back for invalid saved value LIGHT" time="0.00029925">
+        </testcase>
+        <testcase classname="src/features/themes/themes.test.tsx" name="falls back for invalid saved value " time="0.000252834">
+        </testcase>
+        <testcase classname="src/features/themes/themes.test.tsx" name="switches both ways and restores the saved selection after remounting" time="0.068424958">
+        </testcase>
+        <testcase classname="src/features/themes/themes.test.tsx" name="unreadable storage does not prevent startup" time="0.013092333">
+        </testcase>
+        <testcase classname="src/features/themes/themes.test.tsx" name="changes the current theme and explains failed persistence, then recovers" time="0.080837375">
+        </testcase>
+        <testcase classname="src/features/themes/themes.test.tsx" name="keeps browser preference across navigation for host null" time="0.526346416">
+        </testcase>
+        <testcase classname="src/features/themes/themes.test.tsx" name="keeps browser preference across navigation for host {&quot;id&quot;:7,&quot;username&quot;:&quot;Kelechi&quot;}" time="0.473236792">
         </testcase>
     </testsuite>
 </testsuites>
