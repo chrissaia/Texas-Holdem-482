@@ -68,9 +68,10 @@ class LeaderboardView(ListAPIView):
         viewer_id = request.user.pk if can_host(request) else None
         current_user = None
         if viewer_id:
-            player = accounts.get(pk=viewer_id)
-            player.rank = accounts.filter(total_xp__gt=player.total_xp).count() + 1
-            current_user = player_payload(player, viewer_id)
+            player = accounts.filter(pk=viewer_id).first()
+            if player is not None:
+                player.rank = accounts.filter(total_xp__gt=player.total_xp).count() + 1
+                current_user = player_payload(player, viewer_id)
         return Response({
             "count": self.paginator.page.paginator.count,
             "page": self.paginator.page.number,

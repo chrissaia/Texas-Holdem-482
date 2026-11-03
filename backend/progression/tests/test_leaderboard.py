@@ -111,3 +111,14 @@ def test_query_count_does_not_grow_per_player(django_assert_num_queries):
     with django_assert_num_queries(2):
         response = APIClient().get(URL)
     assert len(response.data["results"]) == 10
+
+
+def test_deactivation_after_authentication_omits_personal_rank(registered_user):
+    # Middleware may have cached the active user just before another request deactivates it.
+    client = APIClient()
+    client.force_authenticate(registered_user)
+    get_user_model().objects.filter(pk=registered_user.pk).update(is_active=False)
+    response = client.get(URL)
+    assert response.status_code == 200
+    assert response.data["current_user"] is None
+    assert response.data["results"] == []
