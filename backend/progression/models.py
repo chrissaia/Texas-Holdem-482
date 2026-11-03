@@ -23,6 +23,7 @@ class Event(models.Model):
     source = models.CharField(max_length=100)
     outcome = models.CharField(max_length=10, blank=True)
     xp = models.PositiveIntegerField(default=0)
+    facts = models.JSONField(default=dict, blank=True)
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=["user", "kind", "source"], name="unique_progression_event")]

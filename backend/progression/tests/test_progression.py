@@ -20,7 +20,7 @@ def xp(user):
 
 
 def test_catalog_preserves_first_ten():
-    assert len(ACHIEVEMENTS) == 10
+    assert len(ACHIEVEMENTS) == 20
     assert list(ACHIEVEMENTS)[:10] == ["welcome", "picture", "host", "friend", "message", "hands_10", "hands_100", "hands_1000", "first_win", "streak"]
 
 
@@ -105,7 +105,7 @@ def test_collection_hides_locked_details_and_other_users(registered_client, regi
     response = registered_client.get("/api/achievements/")
     assert response.status_code == 200
     assert response.data["total_xp"] == 50
-    assert response.data["total_achievements"] == 10
+    assert response.data["total_achievements"] == 20
     assert [a["name"] for a in response.data["earned"]] == ["Picture Perfect"]
     assert "House Rules" not in str(response.data)
     assert "Welcome to the Table" not in str(response.data)
@@ -163,3 +163,82 @@ def test_concurrent_actions_pay_achievement_once(same_source):
     assert sum(len(r) for r in results) == 1
     assert xp(user) == 50
     assert Achievement.objects.filter(user=user).count() == 1
+
+
+@pytest.mark.parametrize(("facts", "code"), [
+    ({"hole_cards": ["As", "Ah"]}, "pocket_aces"),
+    ({"hole_cards": ["7s", "2h"]}, "seven_two"),
+    ({"preflop_all_in": True}, "preflop_all_in"),
+    *[({"showdown": True, "category": category}, category) for category in ("straight", "flush", "full_house", "four_of_a_kind", "royal_flush")],
+])
+def test_new_hand_trophies_pay_once_and_stack(registered_user, facts, code):
+    awarded = record_event(registered_user.pk, "hand", "new1", outcome="win", facts=facts)
+    assert code in awarded
+    assert xp(registered_user) == 100 + 50 * len(awarded)
+    assert record_event(registered_user.pk, "hand", "new1", outcome="win", facts=facts) == []
+    second = record_event(registered_user.pk, "hand", "new2", outcome="win", facts=facts)
+    assert code not in second
+    assert Achievement.objects.filter(user=registered_user, code=code).count() == 1
+
+
+@pytest.mark.parametrize("outcome", ["split", "loss"])
+def test_non_wins_cannot_earn_win_trophies(registered_user, outcome):
+    earned = record_event(registered_user.pk, "hand", "no-win", outcome=outcome,
+                          facts={"hole_cards": ["7s", "2h"], "preflop_all_in": True, "showdown": True, "category": "royal_flush"})
+    assert earned == ["welcome"]
+    assert xp(registered_user) == 50
+
+
+def test_pocket_aces_requires_only_being_dealt(registered_user):
+    earned = record_event(registered_user.pk, "hand", "fold-aces", outcome="loss", facts={"hole_cards": ["Ah", "As"]})
+    assert earned == ["welcome", "pocket_aces"]
+    assert record_event(registered_user.pk, "hand", "fold-aces", outcome="loss", facts={"hole_cards": ["As", "Ah"]}) == []
+    assert xp(registered_user) == 100
+
+
+def test_seven_two_suited_is_not_offsuit(registered_user):
+    assert "seven_two" not in record_event(registered_user.pk, "hand", "suited", outcome="win", facts={"hole_cards": ["7s", "2s"]})
+
+
+@pytest.mark.parametrize("facts", [
+    [], {"amount": 500}, {"hole_cards": ["As"]}, {"hole_cards": ["As", "As"]},
+    {"hole_cards": ["Xs", "2h"]}, {"hole_cards": ["10s", "2h"]},
+    {"hole_cards": [3, "2h"]}, {"hole_cards": "AsAh"},
+    {"preflop_all_in": "true"}, {"showdown": 1}, {"category": "flush"},
+    {"showdown": True, "category": "invented"}, {"showdown": True, "category": []},
+])
+def test_malformed_hand_facts_do_not_award(registered_user, facts):
+    with pytest.raises(ValueError):
+        record_event(registered_user.pk, "hand", "invalid", outcome="win", facts=facts)
+    assert not Event.objects.exists()
+    assert not Achievement.objects.exists()
+
+
+def test_replayed_hand_cannot_change_facts(registered_user):
+    record_event(registered_user.pk, "hand", "immutable", outcome="win")
+    with pytest.raises(ValueError):
+        record_event(registered_user.pk, "hand", "immutable", outcome="win", facts={"hole_cards": ["As", "Ah"]})
+    assert xp(registered_user) == 200
+
+
+def test_tournament_debut_champion_and_retry(registered_user):
+    assert record_event(registered_user.pk, "tournament", "t1", outcome="loss") == ["tournament_debut"]
+    assert xp(registered_user) == 50
+    assert record_event(registered_user.pk, "tournament", "t2", outcome="win") == ["tournament_champion"]
+    assert xp(registered_user) == 1100
+    assert record_event(registered_user.pk, "tournament", "t2", outcome="win") == []
+    assert record_event(registered_user.pk, "tournament", "t3", outcome="win") == []
+    assert xp(registered_user) == 2100
+
+
+@pytest.mark.parametrize(("outcome", "facts"), [("split", None), ("", None), ("win", {"hole_cards": ["As", "Ah"]})])
+def test_invalid_tournament_events(registered_user, outcome, facts):
+    with pytest.raises(ValueError):
+        record_event(registered_user.pk, "tournament", "bad", outcome=outcome, facts=facts)
+    assert not Event.objects.exists()
+
+
+def test_multiple_new_trophies_stack(registered_user):
+    codes = record_event(registered_user.pk, "hand", "stack", outcome="win", facts={"hole_cards": ["7s", "2h"], "preflop_all_in": True, "showdown": True, "category": "full_house"})
+    assert set(codes) == {"welcome", "first_win", "seven_two", "preflop_all_in", "full_house"}
+    assert xp(registered_user) == 350

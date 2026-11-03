@@ -12,3 +12,16 @@ ACHIEVEMENTS = {
     "streak": ("On a Roll", "Win three consecutive dealt hands outright."),
 }
 ACHIEVEMENT_XP = 50
+
+ACHIEVEMENTS.update({
+    "pocket_aces": ("Pocket Rockets", "Be dealt pocket aces."),
+    "seven_two": ("Against the Odds", "Win a hand outright with 7–2 offsuit."),
+    "preflop_all_in": ("All or Nothing", "Go all-in before the flop and win outright."),
+    "straight": ("Straight Shooter", "Win at showdown with a straight."),
+    "flush": ("Flush with Success", "Win at showdown with a flush."),
+    "full_house": ("Full House", "Win at showdown with a full house."),
+    "four_of_a_kind": ("Four of a Kind", "Win at showdown with four of a kind."),
+    "royal_flush": ("Royal Treatment", "Win at showdown with a royal flush."),
+    "tournament_debut": ("Tournament Debut", "Complete your first tournament."),
+    "tournament_champion": ("Champion", "Win your first tournament."),
+})

@@ -40,17 +40,17 @@ test("shows only earned details, hidden trophy slots and real XP", async () => {
   const fetch = vi
     .fn()
     .mockResolvedValue(
-      respond({ total_xp: 250, total_achievements: 10, earned: [earned] }),
+      respond({ total_xp: 250, total_achievements: 20, earned: [earned] }),
     );
   vi.stubGlobal("fetch", fetch);
   render(page());
   expect(await screen.findByText("Picture Perfect")).toBeInTheDocument();
-  expect(screen.getAllByText("Hidden achievement")).toHaveLength(9);
+  expect(screen.getAllByText("Hidden achievement")).toHaveLength(19);
   expect(screen.queryByText("House Rules")).not.toBeInTheDocument();
   expect(screen.getByText("250")).toBeInTheDocument();
-  expect(screen.getByText("1 / 10")).toBeInTheDocument();
+  expect(screen.getByText("1 / 20")).toBeInTheDocument();
   expect(screen.getByText(/Split pots do not count/)).toBeInTheDocument();
-  expect(document.querySelectorAll(".achievement-emblem img")).toHaveLength(10);
+  expect(document.querySelectorAll(".achievement-emblem img")).toHaveLength(20);
   expect(fetch).toHaveBeenCalledWith(
     "/api/achievements/",
     expect.objectContaining({ credentials: "same-origin" }),
@@ -63,11 +63,11 @@ test("empty collection reveals no requirements", async () => {
     vi
       .fn()
       .mockResolvedValue(
-        respond({ total_xp: 0, total_achievements: 10, earned: [] }),
+        respond({ total_xp: 0, total_achievements: 20, earned: [] }),
       ),
   );
   render(page());
-  expect(await screen.findAllByText("Hidden achievement")).toHaveLength(10);
+  expect(await screen.findAllByText("Hidden achievement")).toHaveLength(20);
   expect(
     screen.queryByText("Save your first profile picture."),
   ).not.toBeInTheDocument();
@@ -96,7 +96,7 @@ test("failed fetch supports retry and manual refresh without awarding XP", async
     .mockResolvedValueOnce(respond({}, 503))
     .mockImplementation(() =>
       Promise.resolve(
-        respond({ total_xp: 50, total_achievements: 10, earned: [earned] }),
+        respond({ total_xp: 50, total_achievements: 20, earned: [earned] }),
       ),
     );
   vi.stubGlobal("fetch", fetch);
@@ -122,7 +122,7 @@ test("late response from a previous account cannot reveal their collection", asy
         }),
     )
     .mockResolvedValue(
-      respond({ total_xp: 0, total_achievements: 10, earned: [] }),
+      respond({ total_xp: 0, total_achievements: 20, earned: [] }),
     );
   vi.stubGlobal("fetch", fetch);
   const view = render(page());
@@ -130,7 +130,7 @@ test("late response from a previous account cannot reveal their collection", asy
   await screen.findAllByText("Hidden achievement");
   await act(async () => {
     resolve(
-      respond({ total_xp: 50, total_achievements: 10, earned: [earned] }),
+      respond({ total_xp: 50, total_achievements: 20, earned: [earned] }),
     );
   });
   expect(screen.queryByText("Picture Perfect")).not.toBeInTheDocument();

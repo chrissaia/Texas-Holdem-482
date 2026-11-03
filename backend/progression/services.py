@@ -8,26 +8,29 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 
 from .catalog import ACHIEVEMENT_XP
+from .facts import normalize_facts, hand_achievements
 from .models import Achievement, Event, Progress
 
 
 @transaction.atomic
-def record_event(user_id, kind, source, *, outcome=""):
-    if kind not in {"hand", "avatar", "game", "friend", "message"}:
+def record_event(user_id, kind, source, *, outcome="", facts=None):
+    if kind not in {"hand", "avatar", "game", "friend", "message", "tournament"}:
         raise ValueError("Unknown event kind")
     if not isinstance(source, str) or not source.strip() or len(source) > 100:
         raise ValueError("A stable source ID of 1–100 characters is required")
-    if (kind == "hand" and outcome not in {"win", "loss", "split"}) or (kind != "hand" and outcome):
+    allowed = {"win", "loss", "split"} if kind == "hand" else {"win", "loss"} if kind == "tournament" else {""}
+    if outcome not in allowed:
         raise ValueError("Invalid event outcome")
+    facts = normalize_facts(kind, facts)
     user = get_user_model().objects.select_for_update().get(pk=user_id)
     if not user.is_active:
         raise ValueError("Progression requires an active registered account")
     previous = Event.objects.filter(user=user, kind=kind, source=source).first()
     if previous:
-        if previous.outcome != outcome:
+        if previous.outcome != outcome or previous.facts != facts:
             raise ValueError("An event cannot be rewritten")
         return []
-    event = Event.objects.create(user=user, kind=kind, source=source, outcome=outcome)
+    event = Event.objects.create(user=user, kind=kind, source=source, outcome=outcome, facts=facts)
     candidates = []
     if kind == "hand":
         progress, _ = Progress.objects.get_or_create(user=user)
@@ -35,6 +38,7 @@ def record_event(user_id, kind, source, *, outcome=""):
         progress.win_streak = progress.win_streak + 1 if outcome == "win" else 0
         progress.save(update_fields=["hands_played", "win_streak"])
         candidates.append("welcome")
+        candidates.extend(hand_achievements(outcome, facts))
         for count in (10, 100, 1000):
             if progress.hands_played >= count:
                 candidates.append(f"hands_{count}")
@@ -43,6 +47,11 @@ def record_event(user_id, kind, source, *, outcome=""):
             candidates.append("first_win")
         if progress.win_streak >= 3:
             candidates.append("streak")
+    elif kind == "tournament":
+        candidates.append("tournament_debut")
+        if outcome == "win":
+            candidates.append("tournament_champion")
+            event.xp = 1000
     else:
         candidates.append({"avatar": "picture", "game": "host", "friend": "friend", "message": "message"}[kind])
     earned = []
