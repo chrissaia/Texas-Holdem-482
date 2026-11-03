@@ -122,7 +122,7 @@ export function CreateTablePage({
       {!loading && !error && !context?.host && (
         <div className="notice">
           Sign in with a registered account to create a table.{' '}
-          <a href="/admin/login/?next=/tables/create/">Sign in</a>
+          <Link to="/login">Sign in</Link>
         </div>
       )}
       <form ref={form} onSubmit={submit} noValidate>

@@ -1,0 +1,28 @@
+sequenceDiagram
+    participant ui as Player React UI
+    participant api as Django API
+    participant game as Planned Game Service
+    participant xp as Progression Service
+    participant db as PostgreSQL
+    participant live as Planned Channels
+    ui->>api: Submit action with session and CSRF
+    api->>game: Authorize player and apply action
+    game->>db: Begin transaction and lock hand
+    db-->>game: Current hand, turn and stacks
+    game->>game: Validate turn, legal move and chips
+    alt Invalid action
+        game->>db: Roll back without rewards
+        game-->>api: Validation failure
+        api-->>ui: Show actionable error
+    else Valid action
+        game->>db: Persist action and advance phase
+        opt Hand completes
+            game->>game: Evaluate winners and split pots
+            game->>db: Save payouts and final result
+            game->>xp: Record each dealt player result with stable hand ID
+            xp->>db: Lock user and save XP and trophies atomically
+        end
+        game->>db: Commit action, results and rewards
+        game->>live: After commit publish recipient-filtered updates
+        live-->>ui: Public state and only this player's private cards
+    end

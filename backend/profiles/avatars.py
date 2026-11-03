@@ -9,6 +9,7 @@ from django.core.files.base import ContentFile
 from django.db import transaction
 from PIL import Image, ImageOps, UnidentifiedImageError
 from rest_framework.exceptions import ValidationError
+from progression.services import record_event
 
 MAX_UPLOAD_BYTES = 2 * 1024 * 1024
 MAX_SIDE = 4096
@@ -58,6 +59,7 @@ def replace_avatar(user_id, content):
             user.avatar.save(content.name, content, save=False)
             saved_name = user.avatar.name
             user.save(update_fields=["avatar"])
+            record_event(user.pk, "avatar", saved_name)
             if old_name:
                 transaction.on_commit(lambda: delete_old_avatar(storage, old_name))
         return user

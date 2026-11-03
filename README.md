@@ -4,6 +4,12 @@ CS 482, Team 23: Chris, Finn, Kelechi, Royal. React/TypeScript + Django REST Fra
 
 Avatars, 1,000 starting chips on registration, and daily 500-chip rewards are available at `/settings` and `/rewards`; see [the profile and rewards guide](docs/profile-rewards.md).
 
+The twenty-four hidden achievements and XP collection are available at `/achievements`; see [the XP guide](docs/xp-achievements.md) for implemented triggers and future gameplay/social hooks.
+
+[Iteration report (LaTeX/PDF)](docs/report/README.md) · [Requirements audit](docs/quality/requirements-audit.md) · [Full coverage evidence](docs/quality/README.md) · [Demo runbook](docs/quality/demo-runbook.md)
+
+The S18 all-time XP leaderboard is at `/leaderboard`; see [its guide](docs/s18-leaderboard.md). Both iteration plans and branch contribution evidence are documented without claiming instructor acceptance.
+
 Teammates: start with [instructions.md](instructions.md) for setup, feature branches, commits, pushing, and pull requests.
 
 ## Repository
@@ -109,7 +115,7 @@ pytest --cov --cov-report=term-missing --cov-report=html
 
 From `frontend/`, use `npm run build`, `npm run lint`, `npm test`, and `npm run test:coverage`. Frontend tests cover creation and lobby behavior, filters/sorting/pagination, saved details, session failures, and API errors. Backend tests use a real, separate PostgreSQL test database (`test_rivr`), created and removed by pytest-django. The local database user has database-creation privileges; do not point tests at shared or production databases.
 
-Backend HTML coverage: `backend/htmlcov/index.html`; frontend coverage: `frontend/coverage/index.html`. Coverage includes the foundation and implemented S13/S10 code; it does not establish coverage of unimplemented sprint stories. The sprint target is above 80% statement and above 50% branch coverage, with buffers of 85% and 55%; foundation results do not establish feature coverage. Expand backend coverage `source` and pytest `testpaths` as apps are added.
+Backend HTML coverage: `backend/htmlcov/index.html`; frontend coverage: `frontend/coverage/index.html`. Current coverage includes all implemented runtime application code, including configuration and launchers; see `docs/quality/README.md` for exact scope and exclusions. It does not establish coverage of unimplemented stories. The sprint target is above 80% statement and above 50% branch coverage, with buffers of 85% and 55%; foundation results do not establish feature coverage. Keep pytest discovery and coverage inventory current as apps are added.
 
 ## Accounts and migrations
 
@@ -119,7 +125,7 @@ Backend HTML coverage: `backend/htmlcov/index.html`; frontend coverage: `fronten
 docker compose exec backend python manage.py createsuperuser
 ```
 
-Use `/admin/` for Django's normal session login. This does not implement Sprint 1 registration or guest entry. Commit model migrations alongside their model changes, coordinate migration order, and refer to users using `settings.AUTH_USER_MODEL` or `get_user_model()`.
+Use `/login`, `/register` and `/guest` for the implemented account flows; `/admin/` remains Django's staff administration interface. Commit model migrations alongside their model changes, coordinate migration order, and refer to users using `settings.AUTH_USER_MODEL` or `get_user_model()`.
 
 ## Team workflow
 

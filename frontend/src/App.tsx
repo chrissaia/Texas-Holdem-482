@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from "react";
 import {
   BrowserRouter,
   Link,
@@ -6,59 +6,61 @@ import {
   Route,
   Routes,
   useLocation,
-} from 'react-router-dom'
-import { AppLayout } from './components/AppLayout'
-import { GuestPage } from './features/auth/GuestPage'
-import { RegisterPage } from './features/auth/RegisterPage'
-import { SignInPage } from './features/auth/SignInPage'
-import { getCreationContext } from './features/tables/api'
-import { CreateTablePage } from './features/tables/CreateTablePage'
-import { LobbyPage } from './features/tables/LobbyPage'
-import { TableDetailPage } from './features/tables/TableDetailPage'
-import type { CreationContext } from './features/tables/types'
-import { ThemeProvider } from './features/themes/ThemeProvider'
-import { SettingsPage } from './features/themes/SettingsPage'
-import { ProfileProvider } from './features/profile/ProfileProvider'
-import { RewardsPage } from './features/profile/RewardsPage'
-import './App.css'
+} from "react-router-dom";
+import { AppLayout } from "./components/AppLayout";
+import { GuestPage } from "./features/auth/GuestPage";
+import { RegisterPage } from "./features/auth/RegisterPage";
+import { SignInPage } from "./features/auth/SignInPage";
+import { getCreationContext } from "./features/tables/api";
+import { CreateTablePage } from "./features/tables/CreateTablePage";
+import { LobbyPage } from "./features/tables/LobbyPage";
+import { TableDetailPage } from "./features/tables/TableDetailPage";
+import type { CreationContext } from "./features/tables/types";
+import { ThemeProvider } from "./features/themes/ThemeProvider";
+import { SettingsPage } from "./features/themes/SettingsPage";
+import { ProfileProvider } from "./features/profile/ProfileProvider";
+import { RewardsPage } from "./features/profile/RewardsPage";
+import { AchievementsPage } from "./features/achievements/AchievementsPage";
+import { LeaderboardPage } from "./features/leaderboard/LeaderboardPage";
+import "./App.css";
 
 export function AppRoutes() {
-  const { pathname } = useLocation()
-  const [context, setContext] = useState<CreationContext | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-  const [attempt, setAttempt] = useState(0)
+  const { pathname } = useLocation();
+  const [context, setContext] = useState<CreationContext | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [attempt, setAttempt] = useState(0);
   const refresh = useCallback(() => {
-    setLoading(true)
-    setError('')
-    setAttempt((n) => n + 1)
-  }, [])
+    setLoading(true);
+    setError("");
+    setAttempt((n) => n + 1);
+  }, []);
   useEffect(() => {
-    let active = true
+    let active = true;
     getCreationContext()
       .then((value) => {
-        if (active) setContext(value)
+        if (active) setContext(value);
       })
       .catch(() => {
         if (active) {
-          setContext(null)
-          setError('We could not check your session. Please try again.')
+          setContext(null);
+          setError("We could not check your session. Please try again.");
         }
       })
       .finally(() => {
-        if (active) setLoading(false)
-      })
+        if (active) setLoading(false);
+      });
     return () => {
-      active = false
-    }
-  }, [attempt])
+      active = false;
+    };
+  }, [attempt]);
   return (
     <ThemeProvider>
       <ProfileProvider
         accountId={context?.host?.id ?? null}
         registered={!!context?.host}
         identityLoading={loading}
-        enabled={pathname === '/settings' || pathname === '/rewards'}
+        enabled={pathname === "/settings" || pathname === "/rewards"}
       >
         <Routes>
           {/* Account screens use their own full-page layout from Figma, without the sidebar. */}
@@ -78,6 +80,18 @@ export function AppRoutes() {
               </AppLayout>
             }
           >
+            <Route
+              path="/achievements"
+              element={
+                <AchievementsPage key={context?.host?.id ?? "anonymous"} />
+              }
+            />
+            <Route
+              path="/leaderboard"
+              element={
+                <LeaderboardPage key={context?.host?.id ?? "anonymous"} />
+              }
+            />
             <Route path="/rewards" element={<RewardsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/lobby" element={<LobbyPage />} />
@@ -125,7 +139,7 @@ export function AppRoutes() {
         </Routes>
       </ProfileProvider>
     </ThemeProvider>
-  )
+  );
 }
 
 export default function App() {
@@ -133,5 +147,5 @@ export default function App() {
     <BrowserRouter>
       <AppRoutes />
     </BrowserRouter>
-  )
+  );
 }

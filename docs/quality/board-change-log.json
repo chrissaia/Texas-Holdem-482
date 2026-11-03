@@ -1,0 +1,30 @@
+{
+  "observed_at_utc": "2026-11-03T20:33:45.638480+00:00",
+  "project_url": "https://github.com/users/chrissaia/projects/2",
+  "status_order": [
+    "Backlog",
+    "Ready",
+    "In progress",
+    "In review",
+    "Acceptance Test",
+    "Done"
+  ],
+  "item_count": 39,
+  "transitions": [
+    {
+      "issue": 32,
+      "title": "S18 See the Leaderboard",
+      "from": "Backlog",
+      "to": "Acceptance Test"
+    },
+    {
+      "issue": 45,
+      "title": "S32 Earn Xp and Achievements",
+      "from": "Backlog",
+      "to": "Acceptance Test"
+    }
+  ],
+  "other_item_statuses_preserved": true,
+  "professor_acceptance_claimed": false,
+  "note": "Only current readiness transitions are recorded; no historical In Progress time, accepted points or cycle time is inferred."
+}

@@ -10,6 +10,7 @@
 __pycache__/
 *.py[cod]
 .venv/
+.venv-docs/
 venv/
 *.egg-info/
 .pytest_cache/
@@ -39,3 +40,6 @@ backend/staticfiles/
 .vscode/*
 !.vscode/extensions.json
 !.vscode/settings.json
+
+# Local test runner output (release copies live under docs/quality/evidence)
+backend/test-results.xml

@@ -1,4 +1,6 @@
 from django.middleware.csrf import get_token
+from django.db import transaction
+from progression.services import record_event
 from django.db.models import Count, F, Q, Sum
 from django.db.models.functions import Coalesce, Lower
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -56,8 +58,10 @@ class TableListCreateView(ListCreateAPIView):
             *orderings[filters["ordering"]]
         )
 
+    @transaction.atomic
     def perform_create(self, serializer):
-        serializer.save(host=self.request.user)
+        table = serializer.save(host=self.request.user)
+        record_event(self.request.user.pk, "game", str(table.pk))
 
 
 class TableDetailView(RetrieveAPIView):

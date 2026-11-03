@@ -58,3 +58,14 @@ def daily(request):
     except BalanceLimit:
         return Response({"detail": "Your balance is at its limit. No chips were changed."}, status=409)
     return Response(profile_payload(user))
+
+
+@never_cache
+@api_view(["POST"])
+@permission_classes([RegisteredAccountPermission])
+def theme_choice(request):
+    from progression.services import save_theme_choice
+    if not isinstance(request.data, dict) or set(request.data) != {"theme"} or request.data["theme"] not in ("dark", "light"):
+        raise ValidationError({"theme": ["Supply only a theme: dark or light."]})
+    save_theme_choice(request.user.pk, request.data["theme"])
+    return Response({"theme": request.data["theme"]})

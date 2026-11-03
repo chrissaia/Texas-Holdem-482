@@ -1,0 +1,2 @@
+# PDF artifacts must not be treated as mergeable text.
+*.pdf binary
