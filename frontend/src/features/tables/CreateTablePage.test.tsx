@@ -127,7 +127,7 @@ test('anonymous users may configure but cannot submit', async () => {
   start()
   expect(await screen.findByRole('link', { name: 'Sign in' })).toHaveAttribute(
     'href',
-    '/admin/login/?next=/tables/create/',
+    '/login',
   )
   expect(screen.getByRole('button', { name: 'Create Table →' })).toBeDisabled()
   fireEvent.submit(screen.getByLabelText('Table name').closest('form')!)
