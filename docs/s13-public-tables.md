@@ -1,6 +1,6 @@
 # S13 - Public table creation
 
-Chris's two selected stories are S13 public table creation (2 points) and S10 browse public tables (2 points). This change implements S13 for team review; professor acceptance remains pending. S10 listing/filtering is implemented separately; see [the lobby guide](s10-lobby.md).
+Chris's Iteration 1 stories are S13 public table creation (2 points) and S10 browse public tables (2 points). This change implements S13 for team review; professor acceptance remains pending. S10 listing/filtering is implemented separately; see [the lobby guide](s10-lobby.md).
 
 ## Try it locally
 
@@ -11,13 +11,12 @@ docker compose up --build -d
 docker compose exec frontend npm ci
 docker compose restart frontend
 docker compose exec backend python manage.py migrate
-docker compose exec backend python manage.py createsuperuser
 ```
 
-Skip `createsuperuser` if you already have a local staff account. It prompts for your own username and password; do not put credentials in commits. This is Django's normal local administrative account, not an authentication bypass. The API also accepts normal active registered users; using the admin login UI for local testing requires a staff account. Finn owns the eventual public login/registration UI.
+Use `/register` to create a normal account or `/login` for an existing one. Finn's real account UI is integrated; a staff account is not required to host. For administrator cleanup only, create a local staff/superuser with `docker compose exec backend python manage.py createsuperuser` after migrations. Keep credentials out of commits.
 
 1. Open http://localhost:5173/tables/create.
-2. Select **Sign in**, log in with the local account, and return to the form automatically.
+2. If signed out, select **Sign in** and use the regular account login. After signing in, return to **Create Table** from Home.
 3. Enter a name, choose seats, and configure chip values. Example: 6 seats, 1,000 buy-in, 1,000 minimum balance, 25 small blind, 50 big blind.
 4. Select **Create Table**. The button disables while saving, and a successful response shows **Table created!**.
 5. Select **View your table** and refresh, or **See it in the lobby** to browse the newly saved table. The settings are fetched from PostgreSQL again.
@@ -96,7 +95,7 @@ npm run lint
 npm run test:coverage
 ```
 
-Measured results and browser checks are recorded in `s13-verification.md`. Coverage includes all current application modules in the configured scope; migrations and test files are excluded, along with frontend `main.tsx` bootstrap. It is not evidence for teammates' unimplemented stories.
+Historical S13 measurements are recorded in `s13-verification.md`. For current full-application reports, including the previously excluded bootstrap files, see [quality evidence](quality/README.md). Historical narrow results are not evidence for unimplemented stories or the final team release.
 
 ## Design and scope
 

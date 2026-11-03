@@ -1,0 +1,20 @@
+iteration,story,planned_owner,actual_contributor,actual_hours,started_at,acceptance_test_at,professor_accepted_at,accepted_points,evidence
+1,S13,Chris,,,,,,,pending actual contributor records
+1,S10,Chris,,,,,,,pending actual contributor records
+1,S2,Finn,,,,,,,pending actual contributor records
+1,S1,Finn,,,,,,,pending actual contributor records
+1,S4,Finn,,,,,,,pending actual contributor records
+1,S23,Kelechi,,,,,,,pending actual contributor records
+1,S35,Kelechi,,,,,,,pending actual contributor records
+1,S5,Royal,Chris,,,,,,implementation shown by 9b21c1e; hours and acceptance pending
+1,S14,Royal,Chris,,,,,,implementation shown by 9b21c1e; hours and acceptance pending
+1,S29,Royal,Chris,,,,,,implementation shown by 9b21c1e; hours and acceptance pending
+2,S32,Chris,Chris,,,,,,local feature commits and #45
+2,S18,Chris,Chris,,,,,,leaderboard implementation and #32
+2,S19,Finn,Finn,,,,,,feature/S19-friends; integration pending
+2,S16,Kelechi,,,,,,,teammate branch evidence to confirm
+2,S15,Kelechi,,,,,,,teammate branch evidence to confirm
+2,S17,Kelechi,,,,,,,teammate branch evidence to confirm
+2,S11,Royal,,,,,,,teammate branch evidence to confirm
+2,S27,Royal,,,,,,,teammate branch evidence to confirm
+2,S26,Royal,,,,,,,teammate branch evidence to confirm

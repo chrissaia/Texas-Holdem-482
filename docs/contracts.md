@@ -41,7 +41,7 @@ Chris owns `backend/tables/` and the table feature UI. The student approved the 
 
 Implemented endpoints:
 
-- `GET /api/tables/creation-context/`: public, returns `{host: {id, username} | null, profile_summary: {avatar_url, chip_balance} | null, csrf_token}` and sets the CSRF cookie for the form. This small form-specific interface can later consume Finn's session interface; it does not implement login or registration.
+- `GET /api/tables/creation-context/`: public, returns `{host: {id, username} | null, profile_summary: {avatar_url, chip_balance} | null, csrf_token}` and sets the CSRF cookie for the form. This form-specific interface coexists with the implemented account/session API.
 - `POST /api/tables/`: requires an active registered user's Django session and CSRF token. JSON fields: `name`, `max_players`, `buy_in`, `minimum_balance`, `small_blind`, `big_blind`. Returns HTTP 201 with the saved table. Missing/invalid/unknown/server-controlled fields return HTTP 400 with field-keyed error arrays. Session/CSRF permission failures return HTTP 403.
 - `GET /api/tables/<id>/`: public read-back of a public table. Missing/private tables return HTTP 404. S10 now adds GET listing/filtering on `/api/tables/`; see the lobby contract below.
 
@@ -51,7 +51,7 @@ User references use `settings.AUTH_USER_MODEL` with `PROTECT` on deletion to pre
 
 For Kelechi: `player_count` is server-owned and constrained to capacity. It stays zero until a future seating service updates it. `last_activity_at` is initialized on creation and indexed; reads do not refresh it. Future seating/game services must update occupancy and activity atomically, locking the table row. Cleanup must recheck occupancy under the same lock. S23 now provides manual admin cleanup with a configurable 30-minute default; see the S23 section below. `status` permits `waiting`, `playing`, `closed`; only `waiting` is created by this endpoint.
 
-The form is at `/tables/create`; saved settings can be read at `/tables/<id>`. Local development uses Django's existing admin login with a local staff account, then returns to the form. Finn's final login UI remains separate. See [the S13 guide](s13-public-tables.md) for exact commands and acceptance evidence.
+The form is at `/tables/create`; saved settings can be read at `/tables/<id>`. Local development uses the normal `/register` and `/login` screens; hosting does not require a staff account. See [the S13 guide](s13-public-tables.md) for exact commands and acceptance evidence.
 
 ## S10 public lobby
 
@@ -116,3 +116,8 @@ The creation-context `profile_summary` is private to the signed-in user and null
 ## S32 XP and achievements
 
 The twenty-four one-time achievements and their trusted backend hooks are documented in [xp-achievements.md](xp-achievements.md). `GET /api/achievements/` returns the registered account's total XP, total collection size and earned details only; locked metadata stays on the server. Avatar upload and table creation are integrated atomically. Gameplay/friend/message services must call the trusted hooks when implemented; no client event or claim endpoint exists. Each achievement grants 50 XP once; outright hand wins grant 100 XP per unique hand, while splits never count as wins. The leaderboard is outside this milestone. All progression writes lock the account row and preserve CSRF on originating actions.
+
+
+## S18 all-time XP rankings
+
+`GET /api/leaderboard/` is public, uses the authoritative progression event ledger and includes active registered accounts (including zero XP). Ties share competition rank; IDs stabilize equal-XP pagination. Query fields are only `page` and bounded `page_size`. Public rows expose ID, username, avatar URL, XP, rank and current-user flag; private account fields and chip balances are excluded. Authenticated responses add the viewer's own global rank even off page. All-time only; seasonal rankings remain S33. See [s18-leaderboard.md](s18-leaderboard.md) for response shape, limits, privacy and integration details.

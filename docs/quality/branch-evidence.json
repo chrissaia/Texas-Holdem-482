@@ -1,0 +1,612 @@
+{
+  "captured_at_utc": "2026-11-03T20:38:11.203072+00:00",
+  "origin_main": "7a3d567bc2c53d229671c6526a311863548ad5aa",
+  "scope": "Only local and fetched origin refs visible to this clone. Does not inspect teammates' unpushed work or prove instructor acceptance. Dates and counts are not work hours.",
+  "branches": [
+    {
+      "ref": "feature/xp-achievements",
+      "tip": "7a3d567bc2c53d229671c6526a311863548ad5aa",
+      "recent_original_commits": [
+        {
+          "sha": "9b21c1e5e79f4fa22b031f7a0efc9805de7be52f",
+          "author_date": "2026-10-26T18:59:16-04:00",
+          "author": "chrissaia",
+          "subject": "royals sprint completed"
+        },
+        {
+          "sha": "54bae1fcc7890d3223f33389d61b6e9d84a93da7",
+          "author_date": "2026-10-22T21:37:12-04:00",
+          "author": "kelechi055",
+          "subject": "S23: add administrator cleanup for old empty public tables"
+        },
+        {
+          "sha": "a8606f19fa3b42f5388d8c22cec94360b5ea2620",
+          "author_date": "2026-10-22T15:32:07-04:00",
+          "author": "Fmpowers",
+          "subject": "S1: Comment Changes, deleted certain unecessary comments"
+        },
+        {
+          "sha": "f0ac4cb47b9426b985aaf30fc56148db35c07673",
+          "author_date": "2026-10-22T00:06:54-04:00",
+          "author": "kelechi055",
+          "subject": "S35: add light and dark themes"
+        },
+        {
+          "sha": "03cb3359f5ae0d55c2dbcf00212a3b0294a214f6",
+          "author_date": "2026-10-21T10:35:58-04:00",
+          "author": "Fmpowers",
+          "subject": "First Iteration of the frontend of S1/S2/S4, the completiong of Login/Register/Logout and the guest screens"
+        },
+        {
+          "sha": "0a175a040beaa892dd399de02288c0e46a8d20b4",
+          "author_date": "2026-10-20T15:46:54-04:00",
+          "author": "chrissaia",
+          "subject": "Update README.md"
+        },
+        {
+          "sha": "402f9319afd8c4a86983182dab4717d551b247e2",
+          "author_date": "2026-10-20T10:50:51-04:00",
+          "author": "Fmpowers",
+          "subject": "S2/S1/S4: registration, login/logout, guest sessions with tests"
+        },
+        {
+          "sha": "2f3577b9dfc15db7f281c0ee51d80004f1f8571b",
+          "author_date": "2026-10-19T22:55:24-04:00",
+          "author": "chrissaia",
+          "subject": "s10 public table"
+        }
+      ],
+      "commits_not_on_origin_main": 0
+    },
+    {
+      "ref": "main",
+      "tip": "7a3d567bc2c53d229671c6526a311863548ad5aa",
+      "recent_original_commits": [
+        {
+          "sha": "9b21c1e5e79f4fa22b031f7a0efc9805de7be52f",
+          "author_date": "2026-10-26T18:59:16-04:00",
+          "author": "chrissaia",
+          "subject": "royals sprint completed"
+        },
+        {
+          "sha": "54bae1fcc7890d3223f33389d61b6e9d84a93da7",
+          "author_date": "2026-10-22T21:37:12-04:00",
+          "author": "kelechi055",
+          "subject": "S23: add administrator cleanup for old empty public tables"
+        },
+        {
+          "sha": "a8606f19fa3b42f5388d8c22cec94360b5ea2620",
+          "author_date": "2026-10-22T15:32:07-04:00",
+          "author": "Fmpowers",
+          "subject": "S1: Comment Changes, deleted certain unecessary comments"
+        },
+        {
+          "sha": "f0ac4cb47b9426b985aaf30fc56148db35c07673",
+          "author_date": "2026-10-22T00:06:54-04:00",
+          "author": "kelechi055",
+          "subject": "S35: add light and dark themes"
+        },
+        {
+          "sha": "03cb3359f5ae0d55c2dbcf00212a3b0294a214f6",
+          "author_date": "2026-10-21T10:35:58-04:00",
+          "author": "Fmpowers",
+          "subject": "First Iteration of the frontend of S1/S2/S4, the completiong of Login/Register/Logout and the guest screens"
+        },
+        {
+          "sha": "0a175a040beaa892dd399de02288c0e46a8d20b4",
+          "author_date": "2026-10-20T15:46:54-04:00",
+          "author": "chrissaia",
+          "subject": "Update README.md"
+        },
+        {
+          "sha": "402f9319afd8c4a86983182dab4717d551b247e2",
+          "author_date": "2026-10-20T10:50:51-04:00",
+          "author": "Fmpowers",
+          "subject": "S2/S1/S4: registration, login/logout, guest sessions with tests"
+        },
+        {
+          "sha": "2f3577b9dfc15db7f281c0ee51d80004f1f8571b",
+          "author_date": "2026-10-19T22:55:24-04:00",
+          "author": "chrissaia",
+          "subject": "s10 public table"
+        }
+      ],
+      "commits_not_on_origin_main": 0
+    },
+    {
+      "ref": "saia",
+      "tip": "06063bc902d8eae7ec3c4e6f21221bbfd054e49b",
+      "recent_original_commits": [
+        {
+          "sha": "06063bc902d8eae7ec3c4e6f21221bbfd054e49b",
+          "author_date": "2026-11-03T15:27:01-05:00",
+          "author": "chrissaia",
+          "subject": "S32: retain JUnit results and reject incomplete coverage inventories (#45)"
+        },
+        {
+          "sha": "4b97ab2ed06c27bddec0da2408ced9de0510ba6b",
+          "author_date": "2026-11-03T15:27:01-05:00",
+          "author": "chrissaia",
+          "subject": "S13: route regular players to account login instead of staff admin (#27)"
+        },
+        {
+          "sha": "42bcde79fb3a68c10b395c5f8cc9daf637ab08e1",
+          "author_date": "2026-11-03T15:21:20-05:00",
+          "author": "chrissaia",
+          "subject": "S32: measure all application files and automate coverage evidence (#45)"
+        },
+        {
+          "sha": "79d90bcea1172e914aabbd4fff4e2bd775f5dec7",
+          "author_date": "2026-11-03T15:21:20-05:00",
+          "author": "chrissaia",
+          "subject": "S18: add persisted all-time XP leaderboard and ranking tests (#32)"
+        },
+        {
+          "sha": "9a6afb1c3ccba15aa100a4b58f188876cceab119",
+          "author_date": "2026-11-03T14:55:15-05:00",
+          "author": "chrissaia",
+          "subject": "S32: document all 24 achievements and verified integration limits"
+        },
+        {
+          "sha": "04c8a3c409c6ce2cf6a2f0035fc0fdc83072d122",
+          "author_date": "2026-11-03T14:55:15-05:00",
+          "author": "chrissaia",
+          "subject": "S32: connect theme changes to hidden achievement rewards"
+        },
+        {
+          "sha": "f51b9f4d73bacdcfc91b8877150bf2686ae19a87",
+          "author_date": "2026-11-03T14:55:14-05:00",
+          "author": "chrissaia",
+          "subject": "S32: finish remaining achievement rules and theme reward API"
+        },
+        {
+          "sha": "0b0e07c36282c16bd46ab00babf5f77b641a6518",
+          "author_date": "2026-11-03T14:47:36-05:00",
+          "author": "chrissaia",
+          "subject": "S32: document XP rules, achievement discovery and integration handoffs"
+        }
+      ],
+      "commits_not_on_origin_main": 12
+    },
+    {
+      "ref": "origin",
+      "tip": "7a3d567bc2c53d229671c6526a311863548ad5aa",
+      "recent_original_commits": [
+        {
+          "sha": "9b21c1e5e79f4fa22b031f7a0efc9805de7be52f",
+          "author_date": "2026-10-26T18:59:16-04:00",
+          "author": "chrissaia",
+          "subject": "royals sprint completed"
+        },
+        {
+          "sha": "54bae1fcc7890d3223f33389d61b6e9d84a93da7",
+          "author_date": "2026-10-22T21:37:12-04:00",
+          "author": "kelechi055",
+          "subject": "S23: add administrator cleanup for old empty public tables"
+        },
+        {
+          "sha": "a8606f19fa3b42f5388d8c22cec94360b5ea2620",
+          "author_date": "2026-10-22T15:32:07-04:00",
+          "author": "Fmpowers",
+          "subject": "S1: Comment Changes, deleted certain unecessary comments"
+        },
+        {
+          "sha": "f0ac4cb47b9426b985aaf30fc56148db35c07673",
+          "author_date": "2026-10-22T00:06:54-04:00",
+          "author": "kelechi055",
+          "subject": "S35: add light and dark themes"
+        },
+        {
+          "sha": "03cb3359f5ae0d55c2dbcf00212a3b0294a214f6",
+          "author_date": "2026-10-21T10:35:58-04:00",
+          "author": "Fmpowers",
+          "subject": "First Iteration of the frontend of S1/S2/S4, the completiong of Login/Register/Logout and the guest screens"
+        },
+        {
+          "sha": "0a175a040beaa892dd399de02288c0e46a8d20b4",
+          "author_date": "2026-10-20T15:46:54-04:00",
+          "author": "chrissaia",
+          "subject": "Update README.md"
+        },
+        {
+          "sha": "402f9319afd8c4a86983182dab4717d551b247e2",
+          "author_date": "2026-10-20T10:50:51-04:00",
+          "author": "Fmpowers",
+          "subject": "S2/S1/S4: registration, login/logout, guest sessions with tests"
+        },
+        {
+          "sha": "2f3577b9dfc15db7f281c0ee51d80004f1f8571b",
+          "author_date": "2026-10-19T22:55:24-04:00",
+          "author": "chrissaia",
+          "subject": "s10 public table"
+        }
+      ],
+      "commits_not_on_origin_main": 0
+    },
+    {
+      "ref": "origin/feature/S19-friends",
+      "tip": "c545f999d9cc16c0147fe16d2536147789048618",
+      "recent_original_commits": [
+        {
+          "sha": "c545f999d9cc16c0147fe16d2536147789048618",
+          "author_date": "2026-11-03T15:35:23-05:00",
+          "author": "Fmpowers",
+          "subject": "Frontend Iteration 2 Starting pointing, first commit"
+        },
+        {
+          "sha": "e3c7733eb6bd9c002604b38af71397a7163a2141",
+          "author_date": "2026-11-03T11:29:26-05:00",
+          "author": "Fmpowers",
+          "subject": "Backend Code second iteration of testing and urls"
+        },
+        {
+          "sha": "09166e780458818f5ae8a04542dff45a8e73e5b4",
+          "author_date": "2026-11-02T10:34:44-05:00",
+          "author": "Fmpowers",
+          "subject": "Adding more models and testing for the S19 Story"
+        },
+        {
+          "sha": "798af8ef43a55fc37dc3b2492673d760916cdef0",
+          "author_date": "2026-11-02T10:31:39-05:00",
+          "author": "Fmpowers",
+          "subject": "Committing first iteration of S19 Add/Request Friends"
+        },
+        {
+          "sha": "9b21c1e5e79f4fa22b031f7a0efc9805de7be52f",
+          "author_date": "2026-10-26T18:59:16-04:00",
+          "author": "chrissaia",
+          "subject": "royals sprint completed"
+        },
+        {
+          "sha": "54bae1fcc7890d3223f33389d61b6e9d84a93da7",
+          "author_date": "2026-10-22T21:37:12-04:00",
+          "author": "kelechi055",
+          "subject": "S23: add administrator cleanup for old empty public tables"
+        },
+        {
+          "sha": "a8606f19fa3b42f5388d8c22cec94360b5ea2620",
+          "author_date": "2026-10-22T15:32:07-04:00",
+          "author": "Fmpowers",
+          "subject": "S1: Comment Changes, deleted certain unecessary comments"
+        },
+        {
+          "sha": "f0ac4cb47b9426b985aaf30fc56148db35c07673",
+          "author_date": "2026-10-22T00:06:54-04:00",
+          "author": "kelechi055",
+          "subject": "S35: add light and dark themes"
+        }
+      ],
+      "commits_not_on_origin_main": 4
+    },
+    {
+      "ref": "origin/feature/S2-auth-frontend",
+      "tip": "a8606f19fa3b42f5388d8c22cec94360b5ea2620",
+      "recent_original_commits": [
+        {
+          "sha": "a8606f19fa3b42f5388d8c22cec94360b5ea2620",
+          "author_date": "2026-10-22T15:32:07-04:00",
+          "author": "Fmpowers",
+          "subject": "S1: Comment Changes, deleted certain unecessary comments"
+        },
+        {
+          "sha": "f0ac4cb47b9426b985aaf30fc56148db35c07673",
+          "author_date": "2026-10-22T00:06:54-04:00",
+          "author": "kelechi055",
+          "subject": "S35: add light and dark themes"
+        },
+        {
+          "sha": "03cb3359f5ae0d55c2dbcf00212a3b0294a214f6",
+          "author_date": "2026-10-21T10:35:58-04:00",
+          "author": "Fmpowers",
+          "subject": "First Iteration of the frontend of S1/S2/S4, the completiong of Login/Register/Logout and the guest screens"
+        },
+        {
+          "sha": "0a175a040beaa892dd399de02288c0e46a8d20b4",
+          "author_date": "2026-10-20T15:46:54-04:00",
+          "author": "chrissaia",
+          "subject": "Update README.md"
+        },
+        {
+          "sha": "402f9319afd8c4a86983182dab4717d551b247e2",
+          "author_date": "2026-10-20T10:50:51-04:00",
+          "author": "Fmpowers",
+          "subject": "S2/S1/S4: registration, login/logout, guest sessions with tests"
+        },
+        {
+          "sha": "2f3577b9dfc15db7f281c0ee51d80004f1f8571b",
+          "author_date": "2026-10-19T22:55:24-04:00",
+          "author": "chrissaia",
+          "subject": "s10 public table"
+        },
+        {
+          "sha": "9b87b7d543ff1dccd279ba293bef432166f2d67c",
+          "author_date": "2026-10-19T22:35:57-04:00",
+          "author": "chrissaia",
+          "subject": "S13: implement public table creation with validation and tests"
+        },
+        {
+          "sha": "7806c272f55efc16cf65894c8ebba195b1c78f81",
+          "author_date": "2026-10-19T22:35:01-04:00",
+          "author": "chrissaia",
+          "subject": "story 13 public tables"
+        }
+      ],
+      "commits_not_on_origin_main": 0
+    },
+    {
+      "ref": "origin/feature/S2-registration",
+      "tip": "402f9319afd8c4a86983182dab4717d551b247e2",
+      "recent_original_commits": [
+        {
+          "sha": "402f9319afd8c4a86983182dab4717d551b247e2",
+          "author_date": "2026-10-20T10:50:51-04:00",
+          "author": "Fmpowers",
+          "subject": "S2/S1/S4: registration, login/logout, guest sessions with tests"
+        },
+        {
+          "sha": "2f3577b9dfc15db7f281c0ee51d80004f1f8571b",
+          "author_date": "2026-10-19T22:55:24-04:00",
+          "author": "chrissaia",
+          "subject": "s10 public table"
+        },
+        {
+          "sha": "9b87b7d543ff1dccd279ba293bef432166f2d67c",
+          "author_date": "2026-10-19T22:35:57-04:00",
+          "author": "chrissaia",
+          "subject": "S13: implement public table creation with validation and tests"
+        },
+        {
+          "sha": "7806c272f55efc16cf65894c8ebba195b1c78f81",
+          "author_date": "2026-10-19T22:35:01-04:00",
+          "author": "chrissaia",
+          "subject": "story 13 public tables"
+        },
+        {
+          "sha": "807351ef26b1da23af8e979786f02f3ddaf54e07",
+          "author_date": "2026-10-19T22:14:32-04:00",
+          "author": "chrissaia",
+          "subject": "organized docs, added in basic files and added in some agents for the team"
+        },
+        {
+          "sha": "1603200e54a06b00e8e3bc974f87eed4c6912009",
+          "author_date": "2026-10-19T22:12:54-04:00",
+          "author": "chrissaia",
+          "subject": "organized backend structure and added pytest + Django API"
+        },
+        {
+          "sha": "f2df8bf87b06423ec23b817f99a3dbddf9263721",
+          "author_date": "2026-10-19T22:11:28-04:00",
+          "author": "chrissaia",
+          "subject": "updated frontend"
+        },
+        {
+          "sha": "4119ce4af2cfaa439282a9199b3e372f25c3af57",
+          "author_date": "2026-10-19T20:43:16-04:00",
+          "author": "chrissaia",
+          "subject": "npm frontend created"
+        }
+      ],
+      "commits_not_on_origin_main": 0
+    },
+    {
+      "ref": "origin/feature/S23-admin-cleanup",
+      "tip": "54bae1fcc7890d3223f33389d61b6e9d84a93da7",
+      "recent_original_commits": [
+        {
+          "sha": "54bae1fcc7890d3223f33389d61b6e9d84a93da7",
+          "author_date": "2026-10-22T21:37:12-04:00",
+          "author": "kelechi055",
+          "subject": "S23: add administrator cleanup for old empty public tables"
+        },
+        {
+          "sha": "a8606f19fa3b42f5388d8c22cec94360b5ea2620",
+          "author_date": "2026-10-22T15:32:07-04:00",
+          "author": "Fmpowers",
+          "subject": "S1: Comment Changes, deleted certain unecessary comments"
+        },
+        {
+          "sha": "f0ac4cb47b9426b985aaf30fc56148db35c07673",
+          "author_date": "2026-10-22T00:06:54-04:00",
+          "author": "kelechi055",
+          "subject": "S35: add light and dark themes"
+        },
+        {
+          "sha": "03cb3359f5ae0d55c2dbcf00212a3b0294a214f6",
+          "author_date": "2026-10-21T10:35:58-04:00",
+          "author": "Fmpowers",
+          "subject": "First Iteration of the frontend of S1/S2/S4, the completiong of Login/Register/Logout and the guest screens"
+        },
+        {
+          "sha": "0a175a040beaa892dd399de02288c0e46a8d20b4",
+          "author_date": "2026-10-20T15:46:54-04:00",
+          "author": "chrissaia",
+          "subject": "Update README.md"
+        },
+        {
+          "sha": "402f9319afd8c4a86983182dab4717d551b247e2",
+          "author_date": "2026-10-20T10:50:51-04:00",
+          "author": "Fmpowers",
+          "subject": "S2/S1/S4: registration, login/logout, guest sessions with tests"
+        },
+        {
+          "sha": "2f3577b9dfc15db7f281c0ee51d80004f1f8571b",
+          "author_date": "2026-10-19T22:55:24-04:00",
+          "author": "chrissaia",
+          "subject": "s10 public table"
+        },
+        {
+          "sha": "9b87b7d543ff1dccd279ba293bef432166f2d67c",
+          "author_date": "2026-10-19T22:35:57-04:00",
+          "author": "chrissaia",
+          "subject": "S13: implement public table creation with validation and tests"
+        }
+      ],
+      "commits_not_on_origin_main": 0
+    },
+    {
+      "ref": "origin/feature/S35-themes",
+      "tip": "06c4de677cacf9dbcb746be1243d869c9ceed36f",
+      "recent_original_commits": [
+        {
+          "sha": "a8606f19fa3b42f5388d8c22cec94360b5ea2620",
+          "author_date": "2026-10-22T15:32:07-04:00",
+          "author": "Fmpowers",
+          "subject": "S1: Comment Changes, deleted certain unecessary comments"
+        },
+        {
+          "sha": "f0ac4cb47b9426b985aaf30fc56148db35c07673",
+          "author_date": "2026-10-22T00:06:54-04:00",
+          "author": "kelechi055",
+          "subject": "S35: add light and dark themes"
+        },
+        {
+          "sha": "03cb3359f5ae0d55c2dbcf00212a3b0294a214f6",
+          "author_date": "2026-10-21T10:35:58-04:00",
+          "author": "Fmpowers",
+          "subject": "First Iteration of the frontend of S1/S2/S4, the completiong of Login/Register/Logout and the guest screens"
+        },
+        {
+          "sha": "0a175a040beaa892dd399de02288c0e46a8d20b4",
+          "author_date": "2026-10-20T15:46:54-04:00",
+          "author": "chrissaia",
+          "subject": "Update README.md"
+        },
+        {
+          "sha": "402f9319afd8c4a86983182dab4717d551b247e2",
+          "author_date": "2026-10-20T10:50:51-04:00",
+          "author": "Fmpowers",
+          "subject": "S2/S1/S4: registration, login/logout, guest sessions with tests"
+        },
+        {
+          "sha": "2f3577b9dfc15db7f281c0ee51d80004f1f8571b",
+          "author_date": "2026-10-19T22:55:24-04:00",
+          "author": "chrissaia",
+          "subject": "s10 public table"
+        },
+        {
+          "sha": "9b87b7d543ff1dccd279ba293bef432166f2d67c",
+          "author_date": "2026-10-19T22:35:57-04:00",
+          "author": "chrissaia",
+          "subject": "S13: implement public table creation with validation and tests"
+        },
+        {
+          "sha": "7806c272f55efc16cf65894c8ebba195b1c78f81",
+          "author_date": "2026-10-19T22:35:01-04:00",
+          "author": "chrissaia",
+          "subject": "story 13 public tables"
+        }
+      ],
+      "commits_not_on_origin_main": 0
+    },
+    {
+      "ref": "origin/main",
+      "tip": "7a3d567bc2c53d229671c6526a311863548ad5aa",
+      "recent_original_commits": [
+        {
+          "sha": "9b21c1e5e79f4fa22b031f7a0efc9805de7be52f",
+          "author_date": "2026-10-26T18:59:16-04:00",
+          "author": "chrissaia",
+          "subject": "royals sprint completed"
+        },
+        {
+          "sha": "54bae1fcc7890d3223f33389d61b6e9d84a93da7",
+          "author_date": "2026-10-22T21:37:12-04:00",
+          "author": "kelechi055",
+          "subject": "S23: add administrator cleanup for old empty public tables"
+        },
+        {
+          "sha": "a8606f19fa3b42f5388d8c22cec94360b5ea2620",
+          "author_date": "2026-10-22T15:32:07-04:00",
+          "author": "Fmpowers",
+          "subject": "S1: Comment Changes, deleted certain unecessary comments"
+        },
+        {
+          "sha": "f0ac4cb47b9426b985aaf30fc56148db35c07673",
+          "author_date": "2026-10-22T00:06:54-04:00",
+          "author": "kelechi055",
+          "subject": "S35: add light and dark themes"
+        },
+        {
+          "sha": "03cb3359f5ae0d55c2dbcf00212a3b0294a214f6",
+          "author_date": "2026-10-21T10:35:58-04:00",
+          "author": "Fmpowers",
+          "subject": "First Iteration of the frontend of S1/S2/S4, the completiong of Login/Register/Logout and the guest screens"
+        },
+        {
+          "sha": "0a175a040beaa892dd399de02288c0e46a8d20b4",
+          "author_date": "2026-10-20T15:46:54-04:00",
+          "author": "chrissaia",
+          "subject": "Update README.md"
+        },
+        {
+          "sha": "402f9319afd8c4a86983182dab4717d551b247e2",
+          "author_date": "2026-10-20T10:50:51-04:00",
+          "author": "Fmpowers",
+          "subject": "S2/S1/S4: registration, login/logout, guest sessions with tests"
+        },
+        {
+          "sha": "2f3577b9dfc15db7f281c0ee51d80004f1f8571b",
+          "author_date": "2026-10-19T22:55:24-04:00",
+          "author": "chrissaia",
+          "subject": "s10 public table"
+        }
+      ],
+      "commits_not_on_origin_main": 0
+    },
+    {
+      "ref": "origin/saia",
+      "tip": "9b21c1e5e79f4fa22b031f7a0efc9805de7be52f",
+      "recent_original_commits": [
+        {
+          "sha": "9b21c1e5e79f4fa22b031f7a0efc9805de7be52f",
+          "author_date": "2026-10-26T18:59:16-04:00",
+          "author": "chrissaia",
+          "subject": "royals sprint completed"
+        },
+        {
+          "sha": "54bae1fcc7890d3223f33389d61b6e9d84a93da7",
+          "author_date": "2026-10-22T21:37:12-04:00",
+          "author": "kelechi055",
+          "subject": "S23: add administrator cleanup for old empty public tables"
+        },
+        {
+          "sha": "a8606f19fa3b42f5388d8c22cec94360b5ea2620",
+          "author_date": "2026-10-22T15:32:07-04:00",
+          "author": "Fmpowers",
+          "subject": "S1: Comment Changes, deleted certain unecessary comments"
+        },
+        {
+          "sha": "f0ac4cb47b9426b985aaf30fc56148db35c07673",
+          "author_date": "2026-10-22T00:06:54-04:00",
+          "author": "kelechi055",
+          "subject": "S35: add light and dark themes"
+        },
+        {
+          "sha": "03cb3359f5ae0d55c2dbcf00212a3b0294a214f6",
+          "author_date": "2026-10-21T10:35:58-04:00",
+          "author": "Fmpowers",
+          "subject": "First Iteration of the frontend of S1/S2/S4, the completiong of Login/Register/Logout and the guest screens"
+        },
+        {
+          "sha": "0a175a040beaa892dd399de02288c0e46a8d20b4",
+          "author_date": "2026-10-20T15:46:54-04:00",
+          "author": "chrissaia",
+          "subject": "Update README.md"
+        },
+        {
+          "sha": "402f9319afd8c4a86983182dab4717d551b247e2",
+          "author_date": "2026-10-20T10:50:51-04:00",
+          "author": "Fmpowers",
+          "subject": "S2/S1/S4: registration, login/logout, guest sessions with tests"
+        },
+        {
+          "sha": "2f3577b9dfc15db7f281c0ee51d80004f1f8571b",
+          "author_date": "2026-10-19T22:55:24-04:00",
+          "author": "chrissaia",
+          "subject": "s10 public table"
+        }
+      ],
+      "commits_not_on_origin_main": 0
+    }
+  ]
+}

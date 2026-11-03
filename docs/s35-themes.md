@@ -1,5 +1,7 @@
 # S35 iteration 1: selectable themes
 
+This file records historical feature-stage checks. Use [current full-application evidence](quality/README.md) for release coverage; these earlier percentages are not the current team-wide result.
+
 Open /settings using Settings in the navigation (also available in the mobile header).
 Choose Dark navy or Light. Shared CSS variables update the home, lobby, create-table,
 detail, and settings screens. Dark navy retains the existing Figma palette.
