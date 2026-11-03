@@ -21,6 +21,7 @@ import { SettingsPage } from "./features/themes/SettingsPage";
 import { ProfileProvider } from "./features/profile/ProfileProvider";
 import { RewardsPage } from "./features/profile/RewardsPage";
 import { AchievementsPage } from "./features/achievements/AchievementsPage";
+import { LeaderboardPage } from "./features/leaderboard/LeaderboardPage";
 import "./App.css";
 
 export function AppRoutes() {
@@ -83,6 +84,12 @@ export function AppRoutes() {
               path="/achievements"
               element={
                 <AchievementsPage key={context?.host?.id ?? "anonymous"} />
+              }
+            />
+            <Route
+              path="/leaderboard"
+              element={
+                <LeaderboardPage key={context?.host?.id ?? "anonymous"} />
               }
             />
             <Route path="/rewards" element={<RewardsPage />} />

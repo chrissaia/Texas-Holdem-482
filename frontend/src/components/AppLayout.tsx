@@ -73,6 +73,7 @@ export function AppLayout({
               Settings: "/settings",
               "Store / Get Chips": "/rewards",
               Achievements: "/achievements",
+              Leaderboard: "/leaderboard",
             };
             const route = routes[label];
             const active =
@@ -145,6 +146,9 @@ export function AppLayout({
             </Link>
             <Link className="mobile-settings-link" to="/rewards">
               Chips
+            </Link>
+            <Link className="mobile-settings-link" to="/leaderboard">
+              Ranks
             </Link>
             <Link className="mobile-settings-link" to="/achievements">
               Trophies

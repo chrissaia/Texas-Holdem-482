@@ -6,8 +6,10 @@ from django.urls import include, path
 from core.views import health
 
 from progression.views import collection
+from progression.leaderboard import LeaderboardView
 
 urlpatterns = [
+    path("api/leaderboard/", LeaderboardView.as_view(), name="leaderboard"),
     path("api/achievements/", collection, name="achievements"),
     path("api/profile/", include("profiles.urls")),
     path("api/auth/", include("accounts.urls")),
