@@ -1,6 +1,6 @@
 # Iteration 1 — reconstructed planning and execution record
 
-Prepared November 3, 2026 to repair the missing documentation noted by the professor. This is a retrospective reconstruction, not a document claimed to have existed at the original deadline. See the [team-reported plans](../reference/iteration-plans.md), [main report source/PDF](../report/) and [current testing evidence](../quality/README.md).
+Prepared November 3, 2026 to repair the missing documentation noted by the professor. This is a retrospective reconstruction, not a document claimed to have existed at the original deadline. See the [team-reported plans](../reference/iteration-plans.md), [iteration plans](../reference/iteration-plans.md) and [current testing evidence](../quality/README.md).
 
 ## Planning
 

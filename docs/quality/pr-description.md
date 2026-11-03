@@ -4,7 +4,7 @@ The leaderboard supports shared ranks, bounded pagination, private-field exclusi
 
 Real avatar, public-table and theme actions award XP now. Game, tournament and social trophies have tested trusted hooks awaiting their authoritative integrations; this PR does not claim a shipped poker engine.
 
-The report contains reconstructed Iteration 1 and current Iteration 2 planning/execution, the reported 16-/17-point team plans, branch/author evidence, full coverage images and a proposed gameplay sequence diagram. Chris reports sending the Iteration 2 planning email October 27, 2026 at 7:47 PM local time. Unknown actual hours remain pending. The Overleaf draft is pasteable, and the upload ZIP includes both coverage images and the full diagram.
+The report contains reconstructed Iteration 1 and current Iteration 2 planning/execution, the reported 16-/17-point team plans, branch/author evidence, full coverage images and a proposed gameplay sequence diagram. Chris reports sending the Iteration 2 planning email October 27, 2026 at 7:47 PM local time. Unknown actual hours remain pending. Course report authoring and upload packages are maintained outside the application repository.
 
 Validation on measured source 1af0df00c3705298a7ae9c316a7ea330507ac55e: **363 backend tests and 115 frontend tests passed**, plus build, lint and Django system/migration checks. Full runtime coverage: backend 37 files, 97.89% statements / 96.67% branches; frontend 33 files, 96.43% / 92.63%. Raw JSON/XML, JUnit results, images and source hashes are committed. Report/tool output is evidence, not implementation LOC or extra story points.
 

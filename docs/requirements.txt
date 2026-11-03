@@ -1,4 +1,2 @@
-# Documentation tooling only; keep out of application runtime dependencies.
+# Standalone sequence-diagram rendering only.
 reportlab==5.1.0
-PyMuPDF==2.1
-pypdf==6.21.4

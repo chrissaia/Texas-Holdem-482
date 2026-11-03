@@ -6,7 +6,7 @@ Avatars, 1,000 starting chips on registration, and daily 500-chip rewards are av
 
 The twenty-four hidden achievements and XP collection are available at `/achievements`; see [the XP guide](docs/xp-achievements.md) for implemented triggers and future gameplay/social hooks.
 
-[Iteration report (LaTeX/PDF)](docs/report/README.md) · [Requirements audit](docs/quality/requirements-audit.md) · [Full coverage evidence](docs/quality/README.md) · [Demo runbook](docs/quality/demo-runbook.md)
+[Requirements audit](docs/quality/requirements-audit.md) · [Full coverage evidence](docs/quality/README.md) · [Demo runbook](docs/quality/demo-runbook.md)
 
 The S18 all-time XP leaderboard is at `/leaderboard`; see [its guide](docs/s18-leaderboard.md). Both iteration plans and branch contribution evidence are documented without claiming instructor acceptance.
 

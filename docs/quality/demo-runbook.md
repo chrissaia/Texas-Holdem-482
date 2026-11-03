@@ -5,7 +5,7 @@ Prepare together before the November 5 nominal delivery date; verify exact Moodl
 ## Before the session
 
 1. Each author pushes their feature branch, links actual issues, requests peer review and resolves integration failures. Confirm main includes the reviewed work before the cutoff. Never force-push shared history.
-2. Run `scripts/run_quality.sh` against the intended release source; review missing coverage, refresh report source/PDF and commit evidence. Check the GitHub CI run after pushing; local success alone is not a green hosted run.
+2. Run `scripts/run_quality.sh` against the intended release source; review missing coverage, update the separately maintained course report and commit application testing evidence. Check the GitHub CI run after pushing; local success alone is not a green hosted run.
 3. Assign speaking roles: Chris S32/S18; Finn S19; Kelechi S16/S15/S17; Royal S11/S27/S26. Each owner supplies their actual branch, commits, hours, completed/partial criteria and demo steps. This runbook does not assert their features are merged or ready.
 4. Agree on presenter/backup, attendance and screen-sharing. Record a short backup walkthrough showing the source SHA and real app; this supports the live demo and does not excuse an unapproved absence. Contact the professor in advance if someone cannot attend.
 5. Use a fresh labelled demonstration account through registration. Do not display credentials, `.env`, private emails or real user uploads on screen. Keep a clean browser and the database-backed services running.
