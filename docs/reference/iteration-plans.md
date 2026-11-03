@@ -1,6 +1,6 @@
 # Team-reported iteration plans
 
-Chris supplied these plans in chat on November 3, 2026. The Iteration 2 text is the content of a planning email addressed to Dr. Rocha. The sent timestamp, release date, delivery receipt and instructor acceptance were not supplied; this document preserves the reported plan without asserting timely delivery.
+Chris supplied these plans in chat on November 3, 2026. The Iteration 2 text is the content of a planning email addressed to Dr. Rocha. Chris reports sending the Iteration 2 planning email on October 27, 2026 at 7:47 PM local time (America/New_York). The release date and instructor acceptance are not supplied; the sent time is recorded as reported, without inventing receipt or acceptance.
 
 ## Iteration 1 — updated team plan (16 points)
 

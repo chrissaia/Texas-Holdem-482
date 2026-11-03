@@ -4,7 +4,7 @@ Audit date: November 3, 2026. Sources: [user-provided Iteration 2 assignment](..
 
 | Requirement / feedback | Finding at audit start | Repair / evidence | Remaining responsibility |
 | --- | --- | --- | --- |
-| Plan before implementation; timely email | Planning-email content supplied; sent timestamp/receipt and release date unverified | Iteration reports preserve both team-reported plans (16 and 17 points) and distinguish them from observed execution | Team supplies actual sent email/date; professor determines any penalty |
+| Plan before implementation; timely email | Planning-email content supplied; Chris reports October 27, 2026 at 7:47 PM local time; release date unverified | Iteration reports preserve both team-reported plans (16 and 17 points) and distinguish them from observed execution | Reported sent time is recorded; confirm assignment release date; professor determines deadline compliance |
 | Four points for an individual A target | Workbook S32 = 3 and S18 = 1; Chris selected these | Story acceptance criteria, real issues #45/#32, source and tests | Professor accepts stories; no automatic four accepted points |
 | Mandatory Acceptance Test column | Live Kanban had Backlog, Ready, In progress, In review, Done | Added Acceptance Test immediately before Done, preserving all existing status IDs and item statuses | Only CTO/professor may approve Done |
 | Iteration 1 missing | No report .tex or PDF in repository | Reconstructed Iteration 1 chapter and main planning table in `docs/report/iteration-report.tex` and PDF | Actual hours, acceptance and demo records still need team evidence |

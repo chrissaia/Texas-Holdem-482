@@ -14,4 +14,11 @@ python3 -m venv .venv-docs
 
 Every report page is rendered to `/tmp/rivr-report-preview/` for visual inspection. Check text/tables, per-file coverage images, diagram readability and page boundaries before committing the PDF. The `build_report.py` text checks are not a substitute for visual QA.
 
-Complete the actual-hour, sent-email timestamp, acceptance and individual-reflection records with the team. Current unknowns are labelled pending, not invented. Rebuilding now does not backdate the Iteration 1 report or change historical acceptance.
+Chris reported the Iteration 2 email sent time as October 27, 2026 at 7:47 PM local time. Complete actual hours, acceptance and individual reflections with the team. Current unknowns are labelled pending, not invented. Rebuilding now does not backdate the Iteration 1 report or change historical acceptance.
+
+
+## Paste into Overleaf
+
+Open `overleaf-draft.tex` and paste its contents into Overleaf's `main.tex`. It has inline measured coverage values and a built-in sequence-diagram fallback, so it compiles by itself. Missing coverage images appear as explicit upload placeholders rather than invented evidence.
+
+For the complete version, upload `overleaf-project.zip` as a new Overleaf project. The ZIP contains `main.tex`, both measured coverage images and the full gameplay diagram PDF. Compile with pdfLaTeX. Actual work hours remain pending and must be filled from real records. Regenerate both files with `python3 scripts/package_overleaf.py` after rebuilding the source report.

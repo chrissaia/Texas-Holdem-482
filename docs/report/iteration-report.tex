@@ -16,7 +16,7 @@
 \maketitle
 \textbf{Purpose and provenance.} This document repairs the missing Iteration 1 documentation and records Iteration 2 work. Iteration 1 is reconstructed retrospectively; it is not represented as a report submitted before the original deadline. Team plans were supplied by Chris. Branch commits are contribution evidence; main-branch delivery and professor acceptance are separate checks. Individual reflections, actual hours and acceptance decisions require human confirmation.
 
-The Iteration 2 assignment supplied in chat lists November 5, 2026 as the nominal due date, with instructions to verify Moodle and a Sunday-night grace period. The exact cutoff, release date and presentation time must be verified; the demo is not a delivery extension. Planning-email content has been supplied, but its sent timestamp/receipt has not.
+The Iteration 2 assignment supplied in chat lists November 5, 2026 as the nominal due date, with instructions to verify Moodle and a Sunday-night grace period. The exact cutoff, release date and presentation time must be verified; the demo is not a delivery extension. Chris reports that the Iteration 2 planning email was sent October 27, 2026 at 7:47 PM local time (America/New\_York). This records the student's reported sent time; professor receipt and acceptance are not inferred.
 
 \setcounter{tocdepth}{1}
 {\small\tableofcontents}
@@ -93,7 +93,7 @@ Team planned points are 17. Accepted/delivered point totals and individual actua
 
 \section{Testing and Coverage Report}
 \input{coverage-data.tex}
-The two percentages are reported separately because Python executable-line statements and JavaScript statements have different denominators. The optional equal-weight means below are a transparent interpretation of the rubric, not a pooled cross-language percentage. Each side independently exceeds the target where the gate passes.
+The table reports Python and JavaScript separately because their statement denominators differ. The equal-weight means are included as one interpretation of the rubric. They are not a pooled percentage. Both parts independently exceed the coverage targets.
 
 Backend measurement includes all Python under backend, including configuration and launchers. Tests, generated migrations and the virtual environment are excluded. Frontend includes executable TS/TSX under src, including main.tsx; tests, setup and declaration files are excluded. Type-only modules may compile to no executable code. Unexecuted runtime files remain in the reports. Supporting report-generation tools are additionally smoke-tested by generating and validating their artifacts; they are not silently counted as runtime app coverage.
 
@@ -123,7 +123,7 @@ Proposed next-iteration improvements: verify the coverage scope before release; 
 
 \section{Release and Demo Checklist}
 \begin{enumerate}\setlength{\itemsep}{1pt}\setlength{\parsep}{0pt}
-\item Confirm planning email timing, actual hours, professor acceptance history and exact Moodle/demo dates.
+\item Compare the reported October 27, 7:47 PM email time against the assignment release date; enter actual hours and confirm Moodle/demo dates.
 \item Push original feature branches; peer-review and integrate without losing authorship. Main must contain the release before cutoff.
 \item Run the full quality script, export truthful evidence for the source SHA, build this report and commit the PDF/source/images.
 \item Rehearse S32/S18 real actions and failure cases. Show the proposed gameplay model separately from running features.

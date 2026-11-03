@@ -15,4 +15,4 @@ Original backlog story; Iteration 2 reported owner: Chris. Planned estimate: **1
 ### Scope and proof
 All-time XP only. Friends/weekly/seasonal boards, fabricated levels, wins and win rates are excluded. Sources: backend/progression/leaderboard.py, frontend/src/features/leaderboard/, docs/s18-leaderboard.md. See docs/quality/acceptance-checklist.md and demo-runbook.md for the concrete demo and source/test evidence.
 
-New implementation commits reference this issue with #32. Internal completion is not accepted points. Actual hours and sent planning-email timing require the student's records.
+New implementation commits reference this issue with #32. Internal completion is not accepted points. Chris reports sending the Iteration 2 planning email October 27, 2026 at 7:47 PM local time. Actual hours remain pending.

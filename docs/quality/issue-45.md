@@ -16,4 +16,4 @@ Original backlog story; Iteration 2 reported owner: Chris. Planned estimate: **3
 ### Traceability and limitations
 Sources: backend/progression/, frontend/src/features/achievements/, docs/xp-achievements.md. Real action walkthrough and partial-integration boundaries: docs/quality/acceptance-checklist.md and demo-runbook.md. Current full-application coverage is under docs/quality/evidence/ and does not establish coverage of missing game/social features.
 
-Earlier S32 commits lacked the actual #45 reference; their original hashes/authorship are preserved and mapped in documentation. New commits reference #45. Do not claim three accepted points from a passing test suite. Actual hours and planning-email timing require the student's records.
+Earlier S32 commits lacked the actual #45 reference; their original hashes/authorship are preserved and mapped in documentation. New commits reference #45. Do not claim three accepted points from a passing test suite. Chris reports sending the Iteration 2 planning email October 27, 2026 at 7:47 PM local time. Actual hours remain pending.

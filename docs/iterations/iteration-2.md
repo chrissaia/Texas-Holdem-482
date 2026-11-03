@@ -1,6 +1,6 @@
 # Iteration 2 — planning and execution
 
-As of November 3, 2026. Nominal due date supplied by the assignment: November 5; verify exact Moodle cutoff and live-demo schedule. The team-reported email content selects **17 points**, not 16: Chris 4 (S32/S18), Finn 5 (S19), Kelechi 4 (S16/S15/S17), Royal 4 (S11/S27/S26). See [the complete plan](../reference/iteration-plans.md). The content has been supplied; the email's sent date/receipt remains pending.
+As of November 3, 2026. Nominal due date supplied by the assignment: November 5; verify exact Moodle cutoff and live-demo schedule. The team-reported email content selects **17 points**, not 16: Chris 4 (S32/S18), Finn 5 (S19), Kelechi 4 (S16/S15/S17), Royal 4 (S11/S27/S26). See [the complete plan](../reference/iteration-plans.md). Chris reports that the planning email was sent October 27, 2026 at 7:47 PM local time. The release date still needs confirmation to assess the assignment's email deadline.
 
 ## Current work and boundaries
 
@@ -25,4 +25,4 @@ The live board's Status field now includes Acceptance Test immediately before Do
 
 Actual velocity = professor-accepted story points during the iteration. Cycle time = actual Acceptance Test entry minus actual In Progress entry under the team's documented convention. Historical transitions and accepted points are not known; no cycle time or velocity is invented. Track future transitions and use the supplied work-log template.
 
-The branch still needs push, peer review, integration with teammate branches and merge to main before the verified cutoff. Do not overwrite teammates' work or treat an individual feature branch as the finished team release. Optional refactoring, spikes and card animation tasks are not claimed as extra points here.
+The review candidate was pushed as PR #53. Integration with teammate branches and delivery to main must be tracked separately from professor acceptance. Do not overwrite teammates' work or treat an individual feature branch as the finished team release. Optional refactoring, spikes and card animation tasks are not claimed as extra points here.
