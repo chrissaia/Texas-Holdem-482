@@ -4,6 +4,8 @@ CS 482, Team 23: Chris, Finn, Kelechi, Royal. React/TypeScript + Django REST Fra
 
 Avatars, 1,000 starting chips on registration, and daily 500-chip rewards are available at `/settings` and `/rewards`; see [the profile and rewards guide](docs/profile-rewards.md).
 
+The twenty hidden achievements and XP collection are available at `/achievements`; see [the XP guide](docs/xp-achievements.md) for implemented triggers and future gameplay/social hooks.
+
 Teammates: start with [instructions.md](instructions.md) for setup, feature branches, commits, pushing, and pull requests.
 
 ## Repository
