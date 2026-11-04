@@ -8,6 +8,9 @@ import {
 import { MemoryRouter, useNavigate } from 'react-router-dom'
 import { afterEach, expect, test, vi } from 'vitest'
 import { AppRoutes } from '../../App'
+
+// Background rewards are tested separately; keep table API fixtures scoped here.
+vi.mock('../achievements/RewardNotifications', () => ({ RewardNotifications: () => null }))
 import type { PokerTable, TableList } from './types'
 
 const host = { id: 7, username: 'Mira' }
