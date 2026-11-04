@@ -89,7 +89,7 @@ for implementation; teammate review and professor acceptance remain pending.
 ## Ownership
 
 - Chris: tables, lobby, table fixtures, API contracts, creation/browsing tests.
-- Finn: accounts and session/guest contracts, authentication tests, team test and coverage coordination.
+- Finn: accounts and session/guest contracts, authentication tests, S19 friends, team test and coverage coordination.
 - Kelechi: saved theme preference and shared theme styles; admin cleanup after agreeing on inactivity threshold and authoritative occupancy. Cleanup must check current occupancy and permissions.
 - Royal: avatar storage and validation, starting-chip and daily-reward fields/services. Approved rewards are 1,000 starting chips and 500 daily chips per UTC calendar day; see the profile contract below.
 
@@ -97,7 +97,7 @@ Coordinate user field and migration changes before implementation. Royal and Kel
 
 ## Scope and known document differences
 
-The system design’s 60% coverage baseline is superseded for Sprint 1 by above 80% statement and above 50% branch coverage. Privacy options, bots, gameplay, joining tables, social features, and WebSocket synchronization remain future work. S13 now has a working form/API and tests; professor acceptance remains pending. S10 now provides real public browsing, filters, sorting, and pagination; other owners’ stories remain separate. The Create Table layout uses inspected Figma frame 12:1619, adapting private/bot areas to the approved public-only scope.
+The system design’s 60% coverage baseline is superseded for Sprint 1 by above 80% statement and above 50% branch coverage. Privacy options, bots, gameplay, joining tables, social features beyond S19 friends, and WebSocket synchronization remain future work. S13 now has a working form/API and tests; professor acceptance remains pending. S10 now provides real public browsing, filters, sorting, and pagination; other owners’ stories remain separate. The Create Table layout uses inspected Figma frame 12:1619, adapting private/bot areas to the approved public-only scope.
 
 ## S5/S14/S29 profiles and virtual chips
 
@@ -112,6 +112,38 @@ All `/api/profile/` endpoints require an active registered session; guests and a
 - `POST /api/profile/daily-chips/`: empty JSON object `{}`. Server time is read after acquiring the account row lock. Grants exactly 500 once per UTC calendar date; no streak or rolling cooldown. Repeat claims and balance-limit failures return 409. Success returns the profile payload without `csrf_token`. Client-supplied user IDs, amounts, and timestamps are rejected (400).
 
 The creation-context `profile_summary` is private to the signed-in user and null for guests/anonymous users. Public table hosts remain `{id, username}`. Settings at `/settings` supports avatar changes alongside Kelechi's theme picker; `/rewards` supports claiming and refreshing the persisted balance. Uploaded media is served by Django only in DEBUG; Vite proxies `/media`. Production must supply a media-serving/storage configuration.
+
+## S19 friends
+
+Finn owns `backend/friends/` and the `/friends` page. All endpoints live under `/api/friends/` and require an active registered session; anonymous users and guests get 403. Writes enforce CSRF and act only as the session's user. Responses are private and not cached.
+
+Every successful response returns the full lists, so the page replaces its state in one step:
+
+```json
+{"friends":  [{"id": 7, "player": {"id": 2, "username": "..."}, "created_at": "..."}],
+ "incoming": [...],
+ "outgoing": [...],
+ "csrf_token": "..."}
+```
+
+`id` is the friendship row ID that the action endpoints take; `player` is the other person. `friends` is sorted by username, case-insensitively; `incoming` and `outgoing` are newest first. Only `{id, username}` is exposed, never email.
+
+- `GET /api/friends/`: sets the CSRF cookie and returns the lists.
+- `POST /api/friends/requests/`: `{username}`, matched case-insensitively against active accounts. Returns 201 when a new pending request is created. If that player has already sent you a pending request, it is accepted instead and returns 200. Unknown or inactive usernames return 400 `{"username": ["No registered player has that username."]}`. Adding yourself, an existing friend, or someone you already asked returns 400 `non_field_errors`.
+- `POST /api/friends/requests/<id>/accept/`: empty body `{}`. Only the receiver of a pending request may accept.
+- `POST /api/friends/requests/<id>/decline/`: empty body `{}`. Only the receiver; deletes the request.
+- `POST /api/friends/requests/<id>/cancel/`: empty body `{}`. Only the sender; deletes the request.
+- `DELETE /api/friends/<id>/`: either friend may remove the friendship; deletes the row.
+
+A request or friendship that does not exist, is not yours, or is in the wrong state returns 404, so the IDs of other players' rows are not revealed. A non-empty body on accept/decline/cancel returns 400; unsupported methods return 405.
+
+Storage is `friends.Friendship`: `from_user`, `to_user` (both `settings.AUTH_USER_MODEL`, `CASCADE`), `status` (`pending` or `accepted`), and `created_at`. Database constraints block self-friending and invalid statuses, and allow one row per pair in either direction. Declining, cancelling, and removing delete the row, so either player may send a new request later. Sending locks the pair's row; a concurrent duplicate caught by the unique constraint continues with the row that won. Deleting an account deletes its friendships.
+
+For later stories: S20 (online status), S21 (messaging), and S27 (private-table invitations) can read accepted friends through `friends.services.involving(user).filter(status="accepted")`. On the page, the Online and Recently Played tabs and the Message and Invite to Table buttons are shown but disabled until those stories land. The layout follows Figma frame 18:15681.
+
+Tests: `backend/friends/tests/` (model constraints and API) and `frontend/src/features/friends/FriendsPage.test.tsx`.
+
+Open decisions: request-and-accept (rather than instant follow), auto-accepting crossed requests, and allowing a new request after a decline are Finn's implementation choices pending team agreement. There is no blocking or request rate limit. Professor acceptance remains pending.
 
 ## S32 XP and achievements
 

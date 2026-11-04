@@ -70,6 +70,7 @@ export function AppLayout({
           {navigation.map(([label, icon]) => {
             const routes: Record<string, string> = {
               Lobby: "/lobby",
+              Friends: "/friends",
               Settings: "/settings",
               "Store / Get Chips": "/rewards",
               Achievements: "/achievements",
@@ -143,6 +144,9 @@ export function AppLayout({
           <div className="account-controls">
             <Link className="mobile-lobby-link" to="/lobby">
               Lobby
+            </Link>
+            <Link className="mobile-settings-link" to="/friends">
+              Friends
             </Link>
             <Link className="mobile-settings-link" to="/rewards">
               Chips
