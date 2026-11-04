@@ -1,7 +1,7 @@
 [run]
 branch = True
-source = accounts,core,tables,profiles,friends
-omit = */migrations/*,*/tests/*,*/test_*.py
+source = .
+omit = .venv/*,*/.venv/*,*/migrations/*,*/tests/*,*/test_*.py
 
 [report]
 show_missing = True

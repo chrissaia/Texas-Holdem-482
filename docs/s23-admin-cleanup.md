@@ -1,5 +1,7 @@
 # S23 administrator cleanup
 
+Historical feature measurements below are not the current full-application coverage. The retained S23 report image measures two cleanup files only; see [the scope correction](s23-coverage/README.md) and [current evidence](quality/README.md).
+
 Story 23 deletes selected old empty public tables through Django's existing admin.
 The default inactivity threshold I set is 30 minutes, approved by Kelechi for this
 implementation and pending peer review. Cleanup is manual; no scheduler runs.

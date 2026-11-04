@@ -1,0 +1,8 @@
+{
+  "iteration": 2,
+  "reported_by": "Chris",
+  "sent_local": "2026-10-27T19:47:00-04:00",
+  "timezone_assumption": "America/New_York, matching the client timezone",
+  "source": "User reported sent date and time in chat",
+  "receipt_or_professor_acceptance_inferred": false
+}

@@ -204,3 +204,12 @@ git switch -c feature/S1-login-logout
 ```
 
 Use your next story's branch name. Keep your story status and time log current: internal completion moves work to Acceptance Test; only professor acceptance moves a story to Done.
+
+
+## Current iteration: traceability and delivery evidence
+
+See [the supplied plans](docs/reference/iteration-plans.md): Iteration 1 plans 16 points; Iteration 2 plans 17. Chris's current S32/S18 work links to actual issues #45/#32. Preserve each teammate's branch and author commits; branch contribution evidence and main delivery are separate checks. Do not rewrite shared commit history just to add issue links.
+
+Use `scripts/run_quality.sh` with the local backend virtualenv/PostgreSQL to run full-scope checks and export tool-generated coverage JSON/XML and per-file images. Commit measured application testing evidence; do not reuse the historical two-file cleanup image as team coverage. The GitHub workflow uploads HTML/raw artifacts after a push, but a local run is not proof of hosted CI success.
+
+Main must contain the reviewed deliverable before the verified Moodle cutoff. Use the [acceptance checklist](docs/quality/acceptance-checklist.md), [demo runbook](docs/quality/demo-runbook.md) and [board workflow](docs/quality/board-workflow.md). Backlog is first and Acceptance Test immediately precedes Done. Only professor/CTO acceptance authorizes Done. Record actual hours, email timing and individual reflections; leave missing records pending. A backup recording supports, but does not replace, required live attendance.

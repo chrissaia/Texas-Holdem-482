@@ -1,0 +1,2 @@
+# Standalone sequence-diagram rendering only.
+reportlab==5.1.0

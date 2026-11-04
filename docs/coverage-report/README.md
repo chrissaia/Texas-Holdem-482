@@ -1,6 +1,6 @@
 # Whole-team coverage report
 
-Finn coordinates team test and coverage evidence. This report measures **every backend app and every frontend source file**, not a single story. It replaces the S23-only evidence in `docs/s23-coverage/` as the team's coverage record.
+
 
 | | |
 |---|---|

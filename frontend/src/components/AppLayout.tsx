@@ -1,61 +1,54 @@
-import { useProfile } from '../features/profile/context'
-import type { ProfileSummary } from '../features/profile/types'
-import '../features/profile/profile.css'
-import type { ReactNode } from 'react'
-import { Link, useLocation } from 'react-router-dom'
-import type { Host } from '../features/tables/types'
-import logo from '../assets/figma/geometric-chip-mark.svg'
-import house from '../assets/figma/house.svg'
-import spade from '../assets/figma/spade.svg'
-import grid from '../assets/figma/layout-grid.svg'
-import users from '../assets/figma/users.svg'
-import message from '../assets/figma/message-circle.svg'
-import trophy from '../assets/figma/trophy.svg'
-import chart from '../assets/figma/chart-no-axes-combined.svg'
-import award from '../assets/figma/award.svg'
-import book from '../assets/figma/book-open.svg'
-import chips from '../assets/figma/circle-plus.svg'
-import settings from '../assets/figma/settings.svg'
-import avatar from '../assets/figma/avatar-surface.svg'
-import avatarSmall from '../assets/figma/avatar-surface1.svg'
-import online from '../assets/figma/online-presence.svg'
-import search from '../assets/figma/search.svg'
-import bell from '../assets/figma/bell.svg'
-import chevron from '../assets/figma/chevron-down.svg'
+import { useProfile } from "../features/profile/context";
+import type { ProfileSummary } from "../features/profile/types";
+import "../features/profile/profile.css";
+import type { ReactNode } from "react";
+import { Link, useLocation } from "react-router-dom";
+import type { Host } from "../features/tables/types";
+import logo from "../assets/figma/geometric-chip-mark.svg";
+import house from "../assets/figma/house.svg";
+import spade from "../assets/figma/spade.svg";
+import grid from "../assets/figma/layout-grid.svg";
+import users from "../assets/figma/users.svg";
+import message from "../assets/figma/message-circle.svg";
+import trophy from "../assets/figma/trophy.svg";
+import chart from "../assets/figma/chart-no-axes-combined.svg";
+import award from "../assets/figma/award.svg";
+import book from "../assets/figma/book-open.svg";
+import chips from "../assets/figma/circle-plus.svg";
+import settings from "../assets/figma/settings.svg";
+import avatar from "../assets/figma/avatar-surface.svg";
+import avatarSmall from "../assets/figma/avatar-surface1.svg";
+import online from "../assets/figma/online-presence.svg";
+import search from "../assets/figma/search.svg";
+import bell from "../assets/figma/bell.svg";
+import chevron from "../assets/figma/chevron-down.svg";
 
 const navigation = [
-  ['Play Poker', spade],
-  ['Lobby', grid],
-  ['Friends', users],
-  ['Messages', message],
-  ['Leaderboard', trophy],
-  ['Statistics', chart],
-  ['Achievements', award],
-  ['Tutorial', book],
-  ['Store / Get Chips', chips],
-  ['Settings', settings],
-]
-// Navigation items without a route stay visible but unavailable.
-const routes: Record<string, string> = {
-  Lobby: '/lobby',
-  Friends: '/friends',
-  'Store / Get Chips': '/rewards',
-  Settings: '/settings',
-}
+  ["Play Poker", spade],
+  ["Lobby", grid],
+  ["Friends", users],
+  ["Messages", message],
+  ["Leaderboard", trophy],
+  ["Statistics", chart],
+  ["Achievements", award],
+  ["Tutorial", book],
+  ["Store / Get Chips", chips],
+  ["Settings", settings],
+];
 
 export function AppLayout({
   host,
   summary,
   children,
 }: {
-  host: Host | null
-  summary?: ProfileSummary | null
-  children: ReactNode
+  host: Host | null;
+  summary?: ProfileSummary | null;
+  children: ReactNode;
 }) {
-  const { pathname } = useLocation()
-  const { profile } = useProfile()
-  const account = profile || summary
-  const initials = host?.username.slice(0, 2).toUpperCase() || '-'
+  const { pathname } = useLocation();
+  const { profile } = useProfile();
+  const account = profile || summary;
+  const initials = host?.username.slice(0, 2).toUpperCase() || "-";
   return (
     <div className="app-shell">
       <a className="skip-link" href="#main-content">
@@ -69,40 +62,45 @@ export function AppLayout({
         <nav className="primary-nav" aria-label="Main navigation">
           <Link
             to="/"
-            className={`nav-item ${pathname === '/' ? 'active' : ''}`}
+            className={`nav-item ${pathname === "/" ? "active" : ""}`}
           >
             <img src={house} alt="" />
             Home
           </Link>
           {navigation.map(([label, icon]) => {
-            const to = routes[label]
-            if (!to)
-              return (
-                <span
-                  key={label}
-                  className="nav-item unavailable"
-                  aria-disabled="true"
-                  title="Coming in a later story"
-                >
-                  <img src={icon} alt="" />
-                  {label}
-                </span>
-              )
-            // Table pages belong to the lobby section.
+            const routes: Record<string, string> = {
+              Lobby: "/lobby",
+              Friends: "/friends",
+              Settings: "/settings",
+              "Store / Get Chips": "/rewards",
+              Achievements: "/achievements",
+              Leaderboard: "/leaderboard",
+            };
+            const route = routes[label];
             const active =
-              pathname === to ||
-              (label === 'Lobby' && pathname.startsWith('/tables'))
-            return (
+              pathname === route ||
+              (label === "Lobby" && pathname.startsWith("/tables"));
+            return route ? (
               <Link
                 key={label}
-                to={to}
-                className={`nav-item ${active ? 'active' : ''}`}
-                aria-current={pathname === to ? 'page' : undefined}
+                to={route}
+                className={`nav-item ${active ? "active" : ""}`}
+                aria-current={active ? "page" : undefined}
               >
                 <img src={icon} alt="" />
                 {label}
               </Link>
-            )
+            ) : (
+              <span
+                key={label}
+                className="nav-item unavailable"
+                aria-disabled="true"
+                title="Coming in a later story"
+              >
+                <img src={icon} alt="" />
+                {label}
+              </span>
+            );
           })}
         </nav>
         <div className="sidebar-note">
@@ -115,7 +113,7 @@ export function AppLayout({
               src={account?.avatar_url || avatar}
               alt=""
               className={
-                account?.avatar_url ? 'shell-uploaded-avatar' : undefined
+                account?.avatar_url ? "shell-uploaded-avatar" : undefined
               }
             />
             {!account?.avatar_url && <span>{initials}</span>}
@@ -123,10 +121,10 @@ export function AppLayout({
           </div>
           {host && account && (
             <Link className="shell-balance" to="/rewards">
-              {account.chip_balance.toLocaleString('en-US')} virtual chips
+              {account.chip_balance.toLocaleString("en-US")} virtual chips
             </Link>
           )}
-          <p>{host?.username || 'Not signed in'}</p>
+          <p>{host?.username || "Not signed in"}</p>
           {host ? (
             <span className="muted">Registered player</span>
           ) : (
@@ -153,6 +151,12 @@ export function AppLayout({
             <Link className="mobile-settings-link" to="/rewards">
               Chips
             </Link>
+            <Link className="mobile-settings-link" to="/leaderboard">
+              Ranks
+            </Link>
+            <Link className="mobile-settings-link" to="/achievements">
+              Trophies
+            </Link>
             <Link className="mobile-settings-link" to="/settings">
               Settings
             </Link>
@@ -161,18 +165,18 @@ export function AppLayout({
             </span>
             {host && account && (
               <Link className="shell-balance" to="/rewards">
-                {account.chip_balance.toLocaleString('en-US')} chips
+                {account.chip_balance.toLocaleString("en-US")} chips
               </Link>
             )}
             <span className="account-label">
-              {host?.username || 'Welcome to RIVR'}
+              {host?.username || "Welcome to RIVR"}
             </span>
             <div className="avatar avatar-small">
               <img
                 src={account?.avatar_url || avatarSmall}
                 alt=""
                 className={
-                  account?.avatar_url ? 'shell-uploaded-avatar' : undefined
+                  account?.avatar_url ? "shell-uploaded-avatar" : undefined
                 }
               />
               {!account?.avatar_url && <span>{initials}</span>}
@@ -185,5 +189,5 @@ export function AppLayout({
         </main>
       </div>
     </div>
-  )
+  );
 }
