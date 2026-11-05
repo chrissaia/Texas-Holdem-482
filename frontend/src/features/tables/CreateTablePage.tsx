@@ -42,7 +42,11 @@ export function CreateTablePage({
   const status = useRef<HTMLDivElement>(null)
 
   function update<K extends keyof TableInput>(field: K, value: TableInput[K]) {
-    setInput((current) => ({ ...current, [field]: value }))
+    setInput((current) => ({
+      ...current,
+      [field]: value,
+      ...(field === 'small_blind' ? { big_blind: Number(value) * 2 } : {}),
+    }))
     setErrors({})
     setMessage('')
   }
@@ -209,6 +213,8 @@ export function CreateTablePage({
                           ? Math.floor(MAX_CHIPS / 2)
                           : MAX_CHIPS
                       }
+                      readOnly={field === 'big_blind'}
+                      hint={field === 'big_blind' ? 'Calculated automatically: twice the small blind.' : undefined}
                       step={1}
                       required
                       value={Number.isNaN(input[field]) ? '' : input[field]}
