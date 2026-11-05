@@ -25,3 +25,8 @@ export const answerRequest = (
   })
 export const removeFriend = (id: number, token: string) =>
   write(`/api/friends/${id}/`, token, { method: 'DELETE' })
+
+export const searchPlayers = (query: string) =>
+  request<{ results: { id: number; username: string }[] }>(
+    `/api/friends/search/?${new URLSearchParams({ q: query })}`,
+  )

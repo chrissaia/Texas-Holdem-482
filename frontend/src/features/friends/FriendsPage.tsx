@@ -10,6 +10,7 @@ import {
   getFriends,
   removeFriend,
   sendFriendRequest,
+  searchPlayers,
 } from './api'
 import type { FriendEntry, FriendsResponse, RequestAction } from './types'
 import './friends.css'
@@ -44,6 +45,7 @@ export function FriendsPage() {
   const [attempt, setAttempt] = useState(0)
   const [tab, setTab] = useState<'all' | 'requests'>('all')
   const [username, setUsername] = useState('')
+  const [suggestions, setSuggestions] = useState<{ id: number; username: string }[]>([])
   const [fieldError, setFieldError] = useState('')
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
@@ -71,6 +73,18 @@ export function FriendsPage() {
       active = false
     }
   }, [attempt])
+
+  useEffect(() => {
+    let active = true
+    const query = username.trim()
+    if (!query || !data || signedOut) return
+    const timer = window.setTimeout(() => {
+      searchPlayers(query)
+        .then(({ results }) => { if (active) setSuggestions(results.slice(0, 5)) })
+        .catch(() => { if (active) setSuggestions([]) })
+    }, 250)
+    return () => { active = false; window.clearTimeout(timer) }
+  }, [username, data, signedOut])
 
   async function run(
     send: (token: string) => Promise<FriendsResponse>,
@@ -134,7 +148,7 @@ export function FriendsPage() {
           ? `You and ${name} are now friends.`
           : `Friend request sent to ${name}.`,
     )
-    if (sent) setUsername('')
+    if (sent) { setUsername(''); setSuggestions([]) }
     else input.current?.focus()
   }
 
@@ -240,13 +254,17 @@ export function FriendsPage() {
             id="friend-username"
             ref={input}
             value={username}
-            onChange={(event) => setUsername(event.target.value)}
+            onChange={(event) => { setUsername(event.target.value); setSuggestions([]) }}
+            list="friend-matches"
             placeholder="⌕  Search by username…"
             autoComplete="off"
             maxLength={150}
             aria-invalid={fieldError ? 'true' : undefined}
             aria-describedby={fieldError ? 'friend-username-error' : undefined}
           />
+          <datalist id="friend-matches">
+            {suggestions.map((player) => <option key={player.id} value={player.username} />)}
+          </datalist>
           {fieldError && (
             <span id="friend-username-error" className="field-error">
               {fieldError}
