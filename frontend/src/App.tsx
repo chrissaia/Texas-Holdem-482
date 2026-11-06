@@ -27,6 +27,7 @@ import { ProfileProvider } from "./features/profile/ProfileProvider";
 import { RewardsPage } from "./features/profile/RewardsPage";
 import { AchievementsPage } from "./features/achievements/AchievementsPage";
 import { LeaderboardPage } from "./features/leaderboard/LeaderboardPage";
+import { RewardNotifications } from "./features/achievements/RewardNotifications";
 import "./App.css";
 
 /** Render the app routes interface and its current state. */
@@ -68,6 +69,9 @@ export function AppRoutes() {
         identityLoading={loading}
         enabled={pathname === "/settings" || pathname === "/rewards"}
       >
+        {!loading && context?.host && (
+          <RewardNotifications key={context.host.id} />
+        )}
         <Routes>
           {/* Account screens use their own full-page layout from Figma, without the sidebar. */}
           <Route path="/login" element={<SignInPage onSignedIn={refresh} />} />

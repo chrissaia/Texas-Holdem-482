@@ -7,6 +7,9 @@ import { MemoryRouter } from 'react-router-dom'
 import { afterEach, expect, test, vi } from 'vitest'
 import { AppRoutes } from '../../App'
 
+// Background rewards are tested separately; keep table API fixtures scoped here.
+vi.mock('../achievements/RewardNotifications', () => ({ RewardNotifications: () => null }))
+
 const host = { id: 7, username: 'Chris' }
 const context = { host, csrf_token: 'test-csrf-token' }
 const table = {
