@@ -1,7 +1,12 @@
+/**
+ * Module: auth/SessionGate.tsx.
+ * Implement SessionGate for the auth feature and its importing components.
+ */
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import type { Session } from './types'
 
+/** Render the session gate interface and its current state. */
 export function SessionGate({
   session,
   loadError,
@@ -53,6 +58,7 @@ export function SessionGate({
   return children
 }
 
+/** Render the form message interface and its current state. */
 export function FormMessage({ messages }: { messages?: string[] }) {
   if (!messages) return null
   return (

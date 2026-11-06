@@ -3,6 +3,7 @@ CATEGORIES = {"high_card", "pair", "two_pair", "three_of_a_kind", "straight", "f
 
 
 def normalize_facts(kind, facts):
+    """Normalize facts."""
     if kind == "tournament_stage":
         if not isinstance(facts, dict) or set(facts) != {"entrants", "starting_tables", "stage"}:
             raise ValueError("Tournament stage facts require entrants, starting_tables and stage")
@@ -46,6 +47,7 @@ def normalize_facts(kind, facts):
 
 
 def hand_achievements(outcome, facts):
+    """Hand achievements."""
     codes = []
     cards = facts.get("hole_cards", [])
     if cards and all(card[0] == "A" for card in cards):

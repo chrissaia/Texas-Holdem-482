@@ -1,9 +1,12 @@
+"""Tests for account identity, authentication and guest sessions: models."""
+
 import pytest
 from django.contrib.auth import get_user_model
 
 
 @pytest.mark.django_db
 def test_custom_user_persists_hashed_password():
+    """Verify that custom user persists hashed password."""
     user_model = get_user_model()
     user = user_model.objects.create_user(username="foundation-test", password="test-password-123")
     stored = user_model.objects.get(pk=user.pk)

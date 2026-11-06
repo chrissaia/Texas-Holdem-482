@@ -1,3 +1,7 @@
+/**
+ * Module: profile/ProfileProvider.tsx.
+ * Implement ProfileProvider for the profile feature and its importing components.
+ */
 import { useCallback, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import { getProfile } from './api'
@@ -12,6 +16,7 @@ type Result = {
   error: string
 }
 
+/** Render the profile provider interface and its current state. */
 export function ProfileProvider({
   registered,
   accountId,
@@ -28,10 +33,11 @@ export function ProfileProvider({
   const [result, setResult] = useState<Result | null>(null)
   const [attempt, setAttempt] = useState(0)
   const current = result?.owner === accountId ? result : null
-  const refresh = useCallback(() => setAttempt((n) => n + 1), [])
+  const refresh = useCallback(/* Provide a stable callback for the dependent component operations. */ () => setAttempt(/* Handle the setAttempt callback using the current operation's state. */ (n) => n + 1), [])
   const update = useCallback(
+    /* Provide a stable callback for the dependent component operations. */
     (profile: Profile) => {
-      setResult((previous) => ({
+      setResult(/* Handle the setResult callback using the current operation's state. */ (previous) => ({
         owner: accountId,
         profile,
         token: previous?.owner === accountId ? previous.token : '',
@@ -41,11 +47,11 @@ export function ProfileProvider({
     },
     [accountId, attempt],
   )
-  useEffect(() => {
+  useEffect(/* Synchronize component state with external data and release resources on cleanup. */ () => {
     if (!registered || !enabled) return
     let active = true
     getProfile()
-      .then((value) => {
+      .then(/* Apply the successful asynchronous result to the current operation. */ (value) => {
         if (!value.daily_reward) throw new Error('Invalid profile response')
         if (active)
           setResult({
@@ -56,9 +62,9 @@ export function ProfileProvider({
             error: '',
           })
       })
-      .catch(() => {
+      .catch(/* Handle the failed operation without leaving stale UI feedback. */ () => {
         if (active)
-          setResult((previous) => ({
+          setResult(/* Handle the setResult callback using the current operation's state. */ (previous) => ({
             owner: accountId,
             profile: previous?.owner === accountId ? previous.profile : null,
             token: '',
@@ -67,7 +73,7 @@ export function ProfileProvider({
               'We could not load your profile. Try again or sign in again.',
           }))
       })
-    return () => {
+    return /* Return the derived value for the enclosing operation. */ () => {
       active = false
     }
   }, [registered, accountId, enabled, attempt])

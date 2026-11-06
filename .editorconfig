@@ -1,3 +1,4 @@
+# Purpose: Shared whitespace and encoding conventions for repository editors.
 root = true
 
 [*]

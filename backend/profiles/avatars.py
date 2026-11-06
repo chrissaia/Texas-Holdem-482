@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 def normalize_avatar(upload):
+    """Normalize avatar."""
     if upload.size > MAX_UPLOAD_BYTES:
         raise ValidationError({"avatar": ["Choose an image no larger than 2 MB."]})
     try:
@@ -42,6 +43,7 @@ def normalize_avatar(upload):
 
 
 def delete_old_avatar(storage, name):
+    """Delete old avatar."""
     try:
         storage.delete(name)
     except OSError:
@@ -50,6 +52,7 @@ def delete_old_avatar(storage, name):
 
 
 def replace_avatar(user_id, content):
+    """Replace avatar."""
     saved_name = None
     storage = get_user_model()._meta.get_field("avatar").storage
     try:

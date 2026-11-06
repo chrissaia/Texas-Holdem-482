@@ -1,3 +1,5 @@
+"""Url patterns mapped to application views for avatar storage and virtual-chip rewards."""
+
 from django.urls import path
 from . import views
 

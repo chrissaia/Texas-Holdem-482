@@ -1,3 +1,5 @@
+"""Url patterns mapped to application views for friend requests, relationships and player discovery."""
+
 from django.urls import path
 
 from . import views

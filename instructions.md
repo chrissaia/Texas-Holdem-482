@@ -2,7 +2,7 @@
 
 Use this guide to set up your machine, work on your own branch, and push changes for review. Run commands from the repository root unless a step says otherwise.
 
-See [the agent team plan](docs/agent-team.md) for assistant specialties, story mapping, and coordination boundaries.
+See [the agent team plan](docs/development/agent-team.md) for assistant specialties, story mapping, and coordination boundaries.
 
 For reusable assistant instructions, choose your role from [.agents/README.md](.agents/README.md) and include its file path in your prompt. Each teammate has a dedicated brief.
 
@@ -71,7 +71,7 @@ The first build downloads dependencies and may take several minutes. Press Ctrl+
 - Backend directly: http://localhost:8000/api/health/
 - PostgreSQL from your machine: `127.0.0.1:5433`, using your `.env` credentials.
 
-The health endpoint should return `{"status":"ok","database":"ok"}`. The frontend includes S10 browsing at `/lobby` and S13 public-table creation at `/tables/create`; see [the S13 guide](docs/s13-public-tables.md) for local sign-in and a walkthrough. For avatars and chip rewards, see [the feature guide](docs/profile-rewards.md). After pulling model changes, run `docker compose exec backend python manage.py migrate`. Each teammate has a separate local database; your database records are not shared through Git.
+The health endpoint should return `{"status":"ok","database":"ok"}`. The frontend includes S10 browsing at `/lobby` and S13 public-table creation at `/tables/create`; see [the S13 guide](docs/team/chris/s13-make-a-public-table.md) for local sign-in and a walkthrough. For avatars and chip rewards, see [the feature guide](docs/team/royal/profile-rewards.md). After pulling model changes, run `docker compose exec backend python manage.py migrate`. Each teammate has a separate local database; your database records are not shared through Git.
 
 Useful commands:
 
@@ -95,10 +95,10 @@ If a native Vite or Django server already occupies ports 5173 or 8000, stop that
 | `backend/core/` | Shared API infrastructure |
 | `backend/config/` | Django settings and routing |
 | `backend/requirements.txt` | Pinned Python dependencies |
-| `docs/contracts.md` | Shared interfaces and ownership |
+| `docs/architecture/contracts.md` | Shared interfaces and ownership |
 | `docs/reference/` | System design PDF and user stories workbook |
 
-Read [docs/contracts.md](docs/contracts.md) before modifying shared models or authentication. Coordinate user-model changes with Finn and table-model changes with Chris. Keep your own feature code, tests, and documentation in your commits.
+Read [docs/architecture/contracts.md](docs/architecture/contracts.md) before modifying shared models or authentication. Coordinate user-model changes with Finn and table-model changes with Chris. Keep your own feature code, tests, and documentation in your commits.
 
 For a model change, generate and apply a migration, replacing `accounts` with the relevant app:
 

@@ -1,3 +1,4 @@
+# Purpose: Keep local secrets, dependencies, generated outputs and private report authoring out of Git.
 # Local configuration and secrets
 .env
 .env.*

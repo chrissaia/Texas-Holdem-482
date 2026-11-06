@@ -1,3 +1,4 @@
+# Purpose: Run the local PostgreSQL, Django and Vite services with persistent development volumes.
 name: rivr
 
 services:

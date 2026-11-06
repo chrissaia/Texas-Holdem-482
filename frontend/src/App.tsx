@@ -1,3 +1,7 @@
+/**
+ * Module: src/App.tsx.
+ * Implement App for the shared application feature and its importing components.
+ */
 import { useCallback, useEffect, useState } from "react";
 import {
   BrowserRouter,
@@ -25,33 +29,34 @@ import { AchievementsPage } from "./features/achievements/AchievementsPage";
 import { LeaderboardPage } from "./features/leaderboard/LeaderboardPage";
 import "./App.css";
 
+/** Render the app routes interface and its current state. */
 export function AppRoutes() {
   const { pathname } = useLocation();
   const [context, setContext] = useState<CreationContext | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
-  const refresh = useCallback(() => {
+  const refresh = useCallback(/* Provide a stable callback for the dependent component operations. */ () => {
     setLoading(true);
     setError("");
-    setAttempt((n) => n + 1);
+    setAttempt(/* Handle the setAttempt callback using the current operation's state. */ (n) => n + 1);
   }, []);
-  useEffect(() => {
+  useEffect(/* Synchronize component state with external data and release resources on cleanup. */ () => {
     let active = true;
     getCreationContext()
-      .then((value) => {
+      .then(/* Apply the successful asynchronous result to the current operation. */ (value) => {
         if (active) setContext(value);
       })
-      .catch(() => {
+      .catch(/* Handle the failed operation without leaving stale UI feedback. */ () => {
         if (active) {
           setContext(null);
           setError("We could not check your session. Please try again.");
         }
       })
-      .finally(() => {
+      .finally(/* Release pending state after the asynchronous operation settles. */ () => {
         if (active) setLoading(false);
       });
-    return () => {
+    return /* Return the derived value for the enclosing operation. */ () => {
       active = false;
     };
   }, [attempt]);
@@ -144,6 +149,7 @@ export function AppRoutes() {
   );
 }
 
+/* Render the app interface and its current state. */
 export default function App() {
   return (
     <BrowserRouter>

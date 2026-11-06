@@ -1,8 +1,12 @@
+/**
+ * Regression tests: api/client.test.ts.
+ * Exercises observable behavior and isolates API or browser dependencies.
+ */
 import { afterEach, expect, test, vi } from 'vitest'
 import { ApiError, request } from './client'
 
-afterEach(() => vi.unstubAllGlobals())
-test('non-JSON server errors retain HTTP status without leaking raw HTML', async () => {
+afterEach(/* Restore test isolation after the preceding scenario. */ () => vi.unstubAllGlobals())
+test('non-JSON server errors retain HTTP status without leaking raw HTML', /* Verify non-JSON server errors retain HTTP status without leaking raw HTML. */ async () => {
   vi.stubGlobal(
     'fetch',
     vi
@@ -17,7 +21,7 @@ test('non-JSON server errors retain HTTP status without leaking raw HTML', async
     message: 'The request could not be completed.',
   })
 })
-test('API errors expose field data and optional detail safely', () => {
+test('API errors expose field data and optional detail safely', /* Verify API errors expose field data and optional detail safely. */ () => {
   expect(new ApiError(400, { name: ['Invalid'] }).message).toBe(
     'The request could not be completed.',
   )

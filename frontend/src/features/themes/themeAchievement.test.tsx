@@ -1,9 +1,14 @@
+/**
+ * Regression tests: themes/themeAchievement.test.tsx.
+ * Exercises observable behavior and isolates API or browser dependencies.
+ */
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { ProfileContext } from "../profile/context";
 import { SettingsPage } from "./SettingsPage";
 import { ThemeProvider } from "./ThemeProvider";
 
+/** Setup for this module's test scenario. */
 function setup(registered = true, token = "csrf-theme", loading = false) {
   render(
     <ThemeProvider>
@@ -14,8 +19,8 @@ function setup(registered = true, token = "csrf-theme", loading = false) {
           loading,
           error: "",
           profile: null,
-          refresh: () => {},
-          update: () => {},
+          refresh: /* Return the derived value for the enclosing operation. */ () => {},
+          update: /* Return the derived value for the enclosing operation. */ () => {},
         }}
       >
         <SettingsPage />
@@ -23,10 +28,10 @@ function setup(registered = true, token = "csrf-theme", loading = false) {
     </ThemeProvider>,
   );
 }
-beforeEach(() => localStorage.clear());
-afterEach(() => vi.unstubAllGlobals());
+beforeEach(/* Handle the beforeEach callback using the current operation's state. */ () => localStorage.clear());
+afterEach(/* Restore test isolation after the preceding scenario. */ () => vi.unstubAllGlobals());
 
-test("explicit theme change persists with CSRF, without a trophy announcement", async () => {
+test("explicit theme change persists with CSRF, without a trophy announcement", /* Verify explicit theme change persists with CSRF, without a trophy announcement. */ async () => {
   const fetch = vi
     .fn()
     .mockResolvedValue(new Response(JSON.stringify({ theme: "light" })));
@@ -35,7 +40,7 @@ test("explicit theme change persists with CSRF, without a trophy announcement", 
   fireEvent.change(screen.getByLabelText("Theme"), {
     target: { value: "light" },
   });
-  await waitFor(() =>
+  await waitFor(/* Wait for the expected asynchronous UI or request state. */ () =>
     expect(screen.getByLabelText("Theme")).not.toBeDisabled(),
   );
   expect(fetch).toHaveBeenCalledWith(
@@ -53,7 +58,7 @@ test("explicit theme change persists with CSRF, without a trophy announcement", 
   expect(screen.queryByText("Make It Yours")).not.toBeInTheDocument();
 });
 
-test("anonymous themes remain local and cannot claim an achievement", () => {
+test("anonymous themes remain local and cannot claim an achievement", /* Verify anonymous themes remain local and cannot claim an achievement. */ () => {
   const fetch = vi.fn();
   vi.stubGlobal("fetch", fetch);
   setup(false);
@@ -64,7 +69,7 @@ test("anonymous themes remain local and cannot claim an achievement", () => {
   expect(screen.getByLabelText("Theme")).toHaveValue("light");
 });
 
-test("unchanged theme does not submit an action", () => {
+test("unchanged theme does not submit an action", /* Verify unchanged theme does not submit an action. */ () => {
   const fetch = vi.fn();
   vi.stubGlobal("fetch", fetch);
   setup();
@@ -74,7 +79,7 @@ test("unchanged theme does not submit an action", () => {
   expect(fetch).not.toHaveBeenCalled();
 });
 
-test("failed account update preserves the browser theme and reports failure", async () => {
+test("failed account update preserves the browser theme and reports failure", /* Verify failed account update preserves the browser theme and reports failure. */ async () => {
   vi.stubGlobal(
     "fetch",
     vi.fn().mockResolvedValue(new Response("{}", { status: 403 })),
@@ -90,7 +95,7 @@ test("failed account update preserves the browser theme and reports failure", as
   expect(screen.getByLabelText("Theme")).not.toBeDisabled();
 });
 
-test("fetches a CSRF token when the profile is still loading", async () => {
+test("fetches a CSRF token when the profile is still loading", /* Verify fetches a CSRF token when the profile is still loading. */ async () => {
   const fetch = vi
     .fn()
     .mockResolvedValueOnce(
@@ -102,8 +107,8 @@ test("fetches a CSRF token when the profile is still loading", async () => {
   fireEvent.change(screen.getByLabelText("Theme"), {
     target: { value: "light" },
   });
-  await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
-  await waitFor(() =>
+  await waitFor(/* Wait for the expected asynchronous UI or request state. */ () => expect(fetch).toHaveBeenCalledTimes(2));
+  await waitFor(/* Wait for the expected asynchronous UI or request state. */ () =>
     expect(screen.getByLabelText("Theme")).not.toBeDisabled(),
   );
   expect(fetch.mock.calls[0][0]).toBe("/api/profile/");
@@ -111,7 +116,7 @@ test("fetches a CSRF token when the profile is still loading", async () => {
 });
 
 
-test('waits for account identity before accepting theme changes', () => {
+test('waits for account identity before accepting theme changes', /* Verify waits for account identity before accepting theme changes. */ () => {
   const fetch = vi.fn()
   vi.stubGlobal('fetch', fetch)
   setup(false, '', true)

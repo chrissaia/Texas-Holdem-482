@@ -1,3 +1,5 @@
+"""Tests for public poker-table configuration and browsing: creation."""
+
 import pytest
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
@@ -13,6 +15,7 @@ pytestmark = pytest.mark.django_db
 
 @pytest.fixture
 def host():
+    """Prepare host for the surrounding test scenario."""
     return get_user_model().objects.create_user(
         username="chris-test", email="private@example.com", password="test-password-482"
     )
@@ -20,18 +23,21 @@ def host():
 
 @pytest.fixture
 def payload():
+    """Prepare payload for the surrounding test scenario."""
     return dict(name="Friday poker", max_players=6, buy_in=1000,
                 minimum_balance=1000, small_blind=25, big_blind=50)
 
 
 @pytest.fixture
 def client(host):
+    """Prepare client for the surrounding test scenario."""
     client = APIClient()
     client.force_authenticate(host)
     return client
 
 
 def test_create_persists_public_empty_table(client, host, payload):
+    """Verify that create persists public empty table."""
     response = client.post(reverse("tables:create"), {**payload, "name": "  Friday poker  "}, format="json")
     assert response.status_code == 201
     table = PokerTable.objects.get(pk=response.data["id"])
@@ -50,6 +56,7 @@ def test_create_persists_public_empty_table(client, host, payload):
 
 @pytest.mark.parametrize("capacity", [2, 4, 6, 8, 9])
 def test_all_design_capacities(client, payload, capacity):
+    """Verify that all design capacities."""
     assert client.post(reverse("tables:create"), {**payload, "max_players": capacity}, format="json").status_code == 201
 
 
@@ -62,6 +69,7 @@ def test_all_design_capacities(client, payload, capacity):
     ({"buy_in": MAX_CHIPS + 1}, "buy_in"), ({"name": None}, "name"),
 ])
 def test_invalid_settings_do_not_persist(client, payload, changes, field):
+    """Verify that invalid settings do not persist."""
     response = client.post(reverse("tables:create"), {**payload, **changes}, format="json")
     assert response.status_code == 400 and field in response.data
     assert not PokerTable.objects.exists()
@@ -70,6 +78,7 @@ def test_invalid_settings_do_not_persist(client, payload, changes, field):
 @pytest.mark.parametrize("field", ["buy_in", "minimum_balance", "small_blind", "big_blind", "max_players"])
 @pytest.mark.parametrize("bad_value", [0, -1, 2.5, True, "abc", None])
 def test_invalid_numeric_values(client, payload, field, bad_value):
+    """Verify that invalid numeric values."""
     response = client.post(reverse("tables:create"), {**payload, field: bad_value}, format="json")
     assert response.status_code == 400 and field in response.data
     assert not PokerTable.objects.exists()
@@ -81,12 +90,14 @@ def test_invalid_numeric_values(client, payload, field, bad_value):
     ("bots", 2),
 ])
 def test_rejects_server_fields_and_unknown_options(client, payload, field, value):
+    """Verify that rejects server fields and unknown options."""
     response = client.post(reverse("tables:create"), {**payload, field: value}, format="json")
     assert response.status_code == 400 and field in response.data
     assert not PokerTable.objects.exists()
 
 
 def test_missing_fields_and_wrong_body_shape(client):
+    """Verify that missing fields and wrong body shape."""
     response = client.post(reverse("tables:create"), {}, format="json")
     assert response.status_code == 400 and "name" in response.data
     response = client.post(reverse("tables:create"), [], format="json")
@@ -94,6 +105,7 @@ def test_missing_fields_and_wrong_body_shape(client):
 
 
 def test_chip_upper_boundary_and_duplicate_names(client, payload):
+    """Verify that chip upper boundary and duplicate names."""
     data = {**payload, "small_blind": MAX_CHIPS // 2, "big_blind": MAX_CHIPS - 1,
             "buy_in": MAX_CHIPS, "minimum_balance": MAX_CHIPS}
     for _ in range(2):
@@ -102,6 +114,7 @@ def test_chip_upper_boundary_and_duplicate_names(client, payload):
 
 
 def test_anonymous_and_session_guests_cannot_create(payload, host):
+    """Verify that anonymous and session guests cannot create."""
     client = APIClient()
     assert client.post(reverse("tables:create"), payload, format="json").status_code == 403
     client.force_login(host)
@@ -114,6 +127,7 @@ def test_anonymous_and_session_guests_cannot_create(payload, host):
 
 
 def test_user_guest_marker_and_inactive_users_denied(client, host, payload):
+    """Verify that user guest marker and inactive users denied."""
     host.is_guest = True
     assert client.post(reverse("tables:create"), payload, format="json").status_code == 403
     host.is_guest = False
@@ -122,6 +136,7 @@ def test_user_guest_marker_and_inactive_users_denied(client, host, payload):
 
 
 def test_real_session_requires_csrf(host, payload):
+    """Verify that real session requires csrf."""
     client = APIClient(enforce_csrf_checks=True)
     client.force_login(host)
     assert client.post(reverse("tables:create"), payload, format="json").status_code == 403
@@ -136,6 +151,7 @@ def test_real_session_requires_csrf(host, payload):
 
 
 def test_anonymous_context_and_private_missing_details(host, payload):
+    """Verify that anonymous context and private missing details."""
     client = APIClient()
     assert client.get(reverse("tables:creation-context")).data["host"] is None
     table = PokerTable.objects.create(host=host, is_public=False, **payload)
@@ -151,12 +167,14 @@ def test_anonymous_context_and_private_missing_details(host, payload):
     {"status": "invalid"}, {"name": "  "},
 ])
 def test_database_constraints_even_without_serializer(host, payload, changes):
+    """Verify that database constraints even without serializer."""
     with pytest.raises(IntegrityError), transaction.atomic():
         PokerTable.objects.create(host=host, **{**payload, **changes})
     assert not PokerTable.objects.exists()
 
 
 def test_host_deletion_protected_and_model_clean(host, payload):
+    """Verify that host deletion protected and model clean."""
     PokerTable.objects.create(host=host, **payload)
     with pytest.raises(ProtectedError):
         host.delete()

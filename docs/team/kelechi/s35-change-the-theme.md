@@ -1,6 +1,22 @@
 # S35 iteration 1: selectable themes
 
-This file records historical feature-stage checks. Use [current full-application evidence](quality/README.md) for release coverage; these earlier percentages are not the current team-wide result.
+## Story record
+
+- Planned owner: Kelechi.
+- Workbook source: [User_Stories.xlsx](../../reference/User_Stories.xlsx), `User Stories!A37:M37`.
+- Workbook points: 2; planned sprint points: 2.
+- Priority: Low; epic: E23; NFR references: NFR9, NFR10.
+- Tracked issue: [#13](https://github.com/chrissaia/Texas-Holdem-482/issues/13).
+
+**User story:** as a player, i want to change the game theme, so that i can change how the game looks.
+
+**Workbook acceptance target:** done when players can pick different themes.
+
+The workbook is a planning snapshot, not a live acceptance record. Only professor/CTO acceptance establishes Done. Owner names describe the supplied plan, not inferred commit authorship.
+
+## Feature guide
+
+This file records historical feature-stage checks. Use [current full-application evidence](../../quality/README.md) for release coverage; these earlier percentages are not the current team-wide result.
 
 Open /settings using Settings in the navigation (also available in the mobile header).
 Choose Dark navy or Light. Shared CSS variables update the home, lobby, create-table,

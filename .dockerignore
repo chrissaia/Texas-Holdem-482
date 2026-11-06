@@ -1,3 +1,4 @@
+# Purpose: Exclude local data and generated artifacts from Docker build contexts.
 .git
 .env
 **/.env

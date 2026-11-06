@@ -1,3 +1,7 @@
+/**
+ * Regression tests: tables/validation.test.ts.
+ * Exercises observable behavior and isolates API or browser dependencies.
+ */
 import { expect, test } from 'vitest'
 import {
   DEFAULT_TABLE,
@@ -9,12 +13,14 @@ import {
 const input = { ...DEFAULT_TABLE, name: 'Friday poker' }
 test.each(SEAT_OPTIONS)(
   'accepts %i seats with valid chip settings',
+  /* Handle the enclosing callback using the current operation's state. */
   (max_players) => {
     expect(validateTable({ ...input, max_players })).toEqual({})
   },
 )
 test.each([0, -1, 0.5, NaN, Infinity, MAX_CHIPS + 1])(
   'rejects invalid chip value %s',
+  /* Handle the enclosing callback using the current operation's state. */
   (value) => {
     for (const field of [
       'buy_in',
@@ -26,7 +32,7 @@ test.each([0, -1, 0.5, NaN, Infinity, MAX_CHIPS + 1])(
     }
   },
 )
-test('rejects invalid seat counts, long names and unaffordable starting stacks', () => {
+test('rejects invalid seat counts, long names and unaffordable starting stacks', /* Verify rejects invalid seat counts, long names and unaffordable starting stacks. */ () => {
   expect(
     validateTable({
       ...input,

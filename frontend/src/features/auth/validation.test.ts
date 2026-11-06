@@ -1,3 +1,7 @@
+/**
+ * Regression tests: auth/validation.test.ts.
+ * Exercises observable behavior and isolates API or browser dependencies.
+ */
 import { expect, test } from 'vitest'
 import { validateGuestName, validateLogin, validateRegister } from './validation'
 
@@ -9,7 +13,7 @@ const valid = {
   age: true,
 }
 
-test('a complete registration form passes', () => {
+test('a complete registration form passes', /* Verify a complete registration form passes. */ () => {
   expect(validateRegister(valid)).toEqual({})
 })
 
@@ -29,11 +33,11 @@ test.each([
     'age',
     'Confirm that you meet the minimum age requirement.',
   ],
-] as const)('registration rejects %o', (change, field, message) => {
+] as const)('registration rejects %o', /* Handle the enclosing callback using the current operation's state. */ (change, field, message) => {
   expect(validateRegister({ ...valid, ...change })[field]).toEqual([message])
 })
 
-test('login requires both fields', () => {
+test('login requires both fields', /* Verify login requires both fields. */ () => {
   expect(validateLogin('Finn', 'pw')).toEqual({})
   expect(validateLogin(' ', '')).toEqual({
     username: ['Enter your username.'],
@@ -52,6 +56,6 @@ test.each([
       name: ['Use only letters, numbers, spaces, hyphens, and underscores.'],
     },
   ],
-])('guest name %j', (name, expected) => {
+])('guest name %j', /* Handle the enclosing callback using the current operation's state. */ (name, expected) => {
   expect(validateGuestName(name)).toEqual(expected)
 })

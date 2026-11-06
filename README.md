@@ -1,14 +1,14 @@
 # RIVR - Texas Hold’em
 
-CS 482, Team 23: Chris, Finn, Kelechi, Royal. React/TypeScript + Django REST Framework + PostgreSQL. The shared foundation, S13 public-table creation, and S10 public lobby are implemented. Browse at `/lobby`; see [the lobby guide](docs/s10-lobby.md). See [the S13 guide](docs/s13-public-tables.md) for the working flow and local sign-in instructions.
+CS 482, Team 23: Chris, Finn, Kelechi, Royal. React/TypeScript + Django REST Framework + PostgreSQL. The shared foundation, S13 public-table creation, and S10 public lobby are implemented. Browse at `/lobby`; see [the lobby guide](docs/team/chris/s10-browse-public-tables.md). See [the S13 guide](docs/team/chris/s13-make-a-public-table.md) for the working flow and local sign-in instructions.
 
-Avatars, 1,000 starting chips on registration, and daily 500-chip rewards are available at `/settings` and `/rewards`; see [the profile and rewards guide](docs/profile-rewards.md).
+Avatars, 1,000 starting chips on registration, and daily 500-chip rewards are available at `/settings` and `/rewards`; see [the profile and rewards guide](docs/team/royal/profile-rewards.md).
 
-The twenty-four hidden achievements and XP collection are available at `/achievements`; see [the XP guide](docs/xp-achievements.md) for implemented triggers and future gameplay/social hooks.
+The twenty-four hidden achievements and XP collection are available at `/achievements`; see [the XP guide](docs/team/chris/s32-earn-xp-and-achievements.md) for implemented triggers and future gameplay/social hooks.
 
 [Requirements audit](docs/quality/requirements-audit.md) · [Full coverage evidence](docs/quality/README.md) · [Demo runbook](docs/quality/demo-runbook.md)
 
-The S18 all-time XP leaderboard is at `/leaderboard`; see [its guide](docs/s18-leaderboard.md). Both iteration plans and branch contribution evidence are documented without claiming instructor acceptance.
+The S18 all-time XP leaderboard is at `/leaderboard`; see [its guide](docs/team/chris/s18-see-the-leaderboard.md). Both iteration plans and branch contribution evidence are documented without claiming instructor acceptance.
 
 Teammates: start with [instructions.md](instructions.md) for setup, feature branches, commits, pushing, and pull requests.
 
@@ -22,7 +22,7 @@ backend/                  Django, REST Framework, PostgreSQL driver, pytest
   profiles/               Avatar validation, atomic chip rewards, private API and tests
   core/                   Database readiness endpoint and tests
   tables/                 S13 settings, API, constraints, tests, migrations
-docs/contracts.md         Shared interfaces and teammate boundaries
+docs/architecture/contracts.md         Shared interfaces and teammate boundaries
 docs/reference/           System design PDF and user stories workbook
 compose.yaml              Local PostgreSQL, backend, frontend services
 .env.example              Configuration template (no real credentials)
@@ -133,4 +133,8 @@ Keep `main` stable. Create feature branches using your name, e.g. `git switch -c
 
 Commit source, migrations, lockfiles, and configuration examples. Do not commit `.env`, virtual environments, dependencies, uploaded media, or local coverage output. Finn will commit the final sprint coverage evidence deliberately under `docs/`.
 
-Read [shared contracts](docs/contracts.md), the [system design](docs/reference/CS495_Project_System_Design.pdf), and the [stories workbook](docs/reference/User_Stories.xlsx) before extending interfaces.
+Read [shared contracts](docs/architecture/contracts.md), the [system design](docs/reference/CS495_Project_System_Design.pdf), and the [stories workbook](docs/reference/User_Stories.xlsx) before extending interfaces.
+
+## Documentation
+
+[Documentation index](docs/README.md) · [Assigned user stories](docs/stories.md). Story guides are grouped by planned teammate ownership.

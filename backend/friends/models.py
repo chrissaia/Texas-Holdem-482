@@ -1,3 +1,5 @@
+"""Persisted records and database constraints for friend requests, relationships and player discovery."""
+
 from django.conf import settings
 from django.db import models
 from django.db.models import F, Q
@@ -12,6 +14,7 @@ class Friendship(models.Model):
     """
 
     class Status(models.TextChoices):
+        """Enumerate the persisted friendship states accepted by the model."""
         PENDING = "pending", "Pending"
         ACCEPTED = "accepted", "Accepted"
 
@@ -25,6 +28,7 @@ class Friendship(models.Model):
     created_at = models.DateTimeField(default=timezone.now, editable=False)
 
     class Meta:
+        """Declare Django model or serializer metadata for the enclosing class."""
         ordering = ["-created_at", "-id"]
         constraints = [
             models.CheckConstraint(condition=~Q(from_user=F("to_user")), name="friendship_not_self"),
@@ -41,4 +45,5 @@ class Friendship(models.Model):
         ]
 
     def __str__(self):
+        """Return the human-readable label used by Django administration and diagnostics."""
         return f"{self.from_user} -> {self.to_user} ({self.status})"

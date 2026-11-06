@@ -1,6 +1,22 @@
 # S13 - Public table creation
 
-Chris's Iteration 1 stories are S13 public table creation (2 points) and S10 browse public tables (2 points). This change implements S13 for team review; professor acceptance remains pending. S10 listing/filtering is implemented separately; see [the lobby guide](s10-lobby.md).
+## Story record
+
+- Planned owner: Chris.
+- Workbook source: [User_Stories.xlsx](../../reference/User_Stories.xlsx), `User Stories!A15:M15`.
+- Workbook points: 2; planned sprint points: 2.
+- Priority: High; epic: E9; NFR references: NFR5, NFR9, NFR10, NFR11.
+- Tracked issue: [#27](https://github.com/chrissaia/Texas-Holdem-482/issues/27).
+
+**User story:** as a host, i want to create a public table, so that other players can join my game.
+
+**Workbook acceptance target:** done when hosts can make a table and choose the settings.
+
+The workbook is a planning snapshot, not a live acceptance record. Only professor/CTO acceptance establishes Done. Owner names describe the supplied plan, not inferred commit authorship.
+
+## Feature guide
+
+Chris's Iteration 1 stories are S13 public table creation (2 points) and S10 browse public tables (2 points). This change implements S13 for team review; professor acceptance remains pending. S10 listing/filtering is implemented separately; see [the lobby guide](s10-browse-public-tables.md).
 
 ## Try it locally
 
@@ -35,7 +51,7 @@ The home page links to creation. Cancel returns home without submitting. A succe
 - Server derives host from the active registered user's session. Anonymous, inactive, and explicitly marked guests cannot create.
 - New tables are public, waiting, and empty. Creation does not seat the host, debit a balance, create bots/invites, or start poker gameplay.
 
-Validation runs in the React form, DRF/model validation, and PostgreSQL constraints. The last layer protects direct database writes too. Tables protect their host foreign key against accidental deletion. See `docs/contracts.md` for occupancy/activity and guest handoffs.
+Validation runs in the React form, DRF/model validation, and PostgreSQL constraints. The last layer protects direct database writes too. Tables protect their host foreign key against accidental deletion. See `docs/architecture/contracts.md` for occupancy/activity and guest handoffs.
 
 ## Files and architecture
 
@@ -95,7 +111,7 @@ npm run lint
 npm run test:coverage
 ```
 
-Historical S13 measurements are recorded in `s13-verification.md`. For current full-application reports, including the previously excluded bootstrap files, see [quality evidence](quality/README.md). Historical narrow results are not evidence for unimplemented stories or the final team release.
+Historical S13 measurements are recorded in `s13-verification.md`. For current full-application reports, including the previously excluded bootstrap files, see [quality evidence](../../quality/README.md). Historical narrow results are not evidence for unimplemented stories or the final team release.
 
 ## Design and scope
 

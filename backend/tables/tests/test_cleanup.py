@@ -1,3 +1,5 @@
+"""Tests for public poker-table configuration and browsing: cleanup."""
+
 from concurrent.futures import ThreadPoolExecutor
 from datetime import timedelta
 from queue import Queue
@@ -28,7 +30,9 @@ def default_cleanup_threshold(settings):
 
 @pytest.fixture
 def table_factory(registered_user):
+    """Prepare table factory for the surrounding test scenario."""
     def create(**changes):
+        """Persist a new record using validated input and server-owned fields."""
         values = dict(
             name="Cleanup test table", host=registered_user, max_players=6,
             buy_in=1000, minimum_balance=1000, small_blind=25, big_blind=50,
@@ -40,6 +44,7 @@ def table_factory(registered_user):
 
 
 def admin_client(user=None, *, csrf=False):
+    """Prepare admin client for the surrounding test scenario."""
     client = Client(enforce_csrf_checks=csrf)
     if user is not None:
         client.force_login(user)
@@ -47,6 +52,7 @@ def admin_client(user=None, *, csrf=False):
 
 
 def action_data(*tables, confirm=False):
+    """Prepare action data for the surrounding test scenario."""
     data = {"action": ACTION, "_selected_action": [str(table.pk) for table in tables]}
     if confirm:
         data["confirm_cleanup"] = "yes"
@@ -54,10 +60,12 @@ def action_data(*tables, confirm=False):
 
 
 def changelist():
+    """Prepare changelist for the surrounding test scenario."""
     return reverse("admin:tables_pokertable_changelist")
 
 
 def test_deletes_old_empty_public_and_audits_actor_and_identity(table_factory, rivr_admin):
+    """Verify that deletes old empty public and audits actor and identity."""
     table = table_factory(name="Old empty public table")
     table_id = table.pk
     result = cleanup_tables(actor=rivr_admin, table_ids=[table_id])
@@ -78,6 +86,7 @@ def test_deletes_old_empty_public_and_audits_actor_and_identity(table_factory, r
     {"last_activity_at": "recent"},
 ])
 def test_preserves_ineligible_tables(changes, table_factory, rivr_admin):
+    """Verify that preserves ineligible tables."""
     changes = {
         key: timezone.now() if value == "recent" else value
         for key, value in changes.items()
@@ -91,6 +100,7 @@ def test_preserves_ineligible_tables(changes, table_factory, rivr_admin):
 
 
 def test_strict_cutoff_uses_last_activity_not_creation_time(table_factory, rivr_admin):
+    """Verify that strict cutoff uses last activity not creation time."""
     now = timezone.now()
     cutoff = now - timedelta(minutes=30)
     old = table_factory(last_activity_at=cutoff - timedelta(microseconds=1))
@@ -105,11 +115,13 @@ def test_strict_cutoff_uses_last_activity_not_creation_time(table_factory, rivr_
 
 
 def test_closed_empty_public_tables_are_also_eligible(table_factory, rivr_admin):
+    """Verify that closed empty public tables are also eligible."""
     table = table_factory(status=PokerTable.Status.CLOSED)
     assert cleanup_tables(actor=rivr_admin, table_ids=[table.pk]).deleted_ids == (table.pk,)
 
 
 def test_only_selected_tables_are_deleted_and_retries_are_safe(table_factory, rivr_admin):
+    """Verify that only selected tables are deleted and retries are safe."""
     selected = table_factory()
     unselected = table_factory()
     result = cleanup_tables(actor=rivr_admin, table_ids=[selected.pk, selected.pk])
@@ -123,6 +135,7 @@ def test_only_selected_tables_are_deleted_and_retries_are_safe(table_factory, ri
 
 
 def test_configured_threshold_is_used(settings, table_factory, rivr_admin):
+    """Verify that configured threshold is used."""
     settings.TABLE_CLEANUP_INACTIVITY_MINUTES = 60
     table = table_factory(last_activity_at=timezone.now() - timedelta(minutes=45))
     assert cleanup_tables(actor=rivr_admin, table_ids=[table.pk]).deleted_ids == ()
@@ -132,6 +145,7 @@ def test_configured_threshold_is_used(settings, table_factory, rivr_admin):
 
 @pytest.mark.parametrize("value", [0, -1, True, "30", 1.5, None])
 def test_invalid_threshold_never_deletes(value, settings, table_factory, rivr_admin):
+    """Verify that invalid threshold never deletes."""
     settings.TABLE_CLEANUP_INACTIVITY_MINUTES = value
     table = table_factory()
     with pytest.raises(ImproperlyConfigured):
@@ -142,6 +156,7 @@ def test_invalid_threshold_never_deletes(value, settings, table_factory, rivr_ad
 
 @pytest.mark.parametrize("actor_kind", ["anonymous", "ordinary", "inactive", "staff_without_permission"])
 def test_service_denies_unauthorized_actors(actor_kind, registered_user, rivr_admin, table_factory):
+    """Verify that service denies unauthorized actors."""
     table = table_factory()
     if actor_kind == "anonymous":
         actor = AnonymousUser()
@@ -158,6 +173,7 @@ def test_service_denies_unauthorized_actors(actor_kind, registered_user, rivr_ad
 
 
 def test_non_staff_with_delete_permission_is_still_denied(registered_user, table_factory):
+    """Verify that non staff with delete permission is still denied."""
     table = table_factory()
     registered_user.user_permissions.add(
         Permission.objects.get(codename="delete_pokertable", content_type__app_label="tables")
@@ -167,6 +183,7 @@ def test_non_staff_with_delete_permission_is_still_denied(registered_user, table
 
 
 def test_staff_with_table_permissions_can_confirm_cleanup(registered_user, table_factory):
+    """Verify that staff with table permissions can confirm cleanup."""
     table = table_factory()
     registered_user.is_staff = True
     registered_user.save(update_fields=["is_staff"])
@@ -182,6 +199,7 @@ def test_staff_with_table_permissions_can_confirm_cleanup(registered_user, table
 
 
 def test_admin_preview_does_not_delete_and_confirmation_reports_skips(table_factory, rivr_admin):
+    """Verify that admin preview does not delete and confirmation reports skips."""
     old = table_factory(name="<script>untrusted name</script>")
     occupied = table_factory(player_count=2)
     client = admin_client(rivr_admin)
@@ -199,6 +217,7 @@ def test_admin_preview_does_not_delete_and_confirmation_reports_skips(table_fact
 
 @pytest.mark.parametrize("user_kind", ["anonymous", "ordinary", "staff_without_delete"])
 def test_admin_http_denies_cleanup(user_kind, table_factory, registered_user):
+    """Verify that admin http denies cleanup."""
     table = table_factory()
     user = None if user_kind == "anonymous" else registered_user
     if user_kind == "staff_without_delete":
@@ -220,6 +239,7 @@ def test_admin_http_denies_cleanup(user_kind, table_factory, registered_user):
 
 
 def test_confirm_requires_csrf_even_for_admin(table_factory, rivr_admin):
+    """Verify that confirm requires csrf even for admin."""
     table = table_factory()
     client = admin_client(rivr_admin, csrf=True)
     assert client.post(changelist(), action_data(table, confirm=True)).status_code == 403
@@ -234,6 +254,7 @@ def test_confirm_requires_csrf_even_for_admin(table_factory, rivr_admin):
 
 
 def test_admin_get_never_deletes(table_factory, rivr_admin):
+    """Verify that admin get never deletes."""
     table = table_factory()
     response = admin_client(rivr_admin).get(changelist(), action_data(table, confirm=True))
     assert response.status_code in (200, 302)
@@ -244,6 +265,7 @@ def test_admin_get_never_deletes(table_factory, rivr_admin):
 def test_admin_configuration_error_is_reported_without_deleting(
     confirm, settings, table_factory, rivr_admin,
 ):
+    """Verify that admin configuration error is reported without deleting."""
     settings.TABLE_CLEANUP_INACTIVITY_MINUTES = 0
     table = table_factory()
     response = admin_client(rivr_admin).post(
@@ -254,10 +276,12 @@ def test_admin_configuration_error_is_reported_without_deleting(
 
 
 def test_failed_batch_rolls_back_deletions_and_audit_entries(table_factory, rivr_admin, monkeypatch):
+    """Verify that failed batch rolls back deletions and audit entries."""
     first, second = table_factory(), table_factory()
     original_delete = PokerTable.delete
 
     def fail_second(self, *args, **kwargs):
+        """Prepare fail second for the surrounding test scenario."""
         if self.pk == second.pk:
             raise RuntimeError("simulated delete failure")
         return original_delete(self, *args, **kwargs)
@@ -270,6 +294,7 @@ def test_failed_batch_rolls_back_deletions_and_audit_entries(table_factory, rivr
 
 
 def test_cleanup_updates_real_lobby_and_detail_api(table_factory, rivr_admin):
+    """Verify that cleanup updates real lobby and detail api."""
     removed, kept = table_factory(), table_factory(player_count=1)
     api = APIClient()
     before = api.get(reverse("tables:create"))
@@ -293,11 +318,13 @@ def test_cleanup_updates_real_lobby_and_detail_api(table_factory, rivr_admin):
 def test_cleanup_waits_for_writer_and_rechecks_committed_row(
     change, table_factory, rivr_admin,
 ):
+    """Verify that cleanup waits for writer and rechecks committed row."""
     assert connection.vendor == "postgresql"
     table = table_factory()
     worker_pid = Queue()
 
     def cleanup_worker():
+        """Prepare cleanup worker for the surrounding test scenario."""
         close_old_connections()
         try:
             connection.ensure_connection()
@@ -336,6 +363,7 @@ def test_cleanup_waits_for_writer_and_rechecks_committed_row(
 
 
 def test_direct_admin_action_also_checks_permission(registered_user, table_factory):
+    """Verify that direct admin action also checks permission."""
     from django.contrib import admin
     from django.test import RequestFactory
 
@@ -350,12 +378,14 @@ def test_direct_admin_action_also_checks_permission(registered_user, table_facto
 
 @pytest.mark.django_db(transaction=True)
 def test_competing_cleanups_delete_and_audit_once(table_factory, rivr_admin):
+    """Verify that competing cleanups delete and audit once."""
     from threading import Barrier
 
     table = table_factory()
     barrier = Barrier(2)
 
     def cleanup_worker():
+        """Prepare cleanup worker for the surrounding test scenario."""
         close_old_connections()
         try:
             barrier.wait(timeout=5)
@@ -373,6 +403,7 @@ def test_competing_cleanups_delete_and_audit_once(table_factory, rivr_admin):
 
 
 def test_real_guest_session_cannot_cleanup(guest_client, table_factory):
+    """Verify that real guest session cannot cleanup."""
     table = table_factory()
     response = guest_client.post(changelist(), action_data(table, confirm=True))
     assert response.status_code == 302
@@ -390,6 +421,7 @@ def test_real_guest_session_cannot_cleanup(guest_client, table_factory):
 def test_admin_rechecks_changes_between_preview_and_confirmation(
     change, table_factory, rivr_admin,
 ):
+    """Verify that admin rechecks changes between preview and confirmation."""
     table = table_factory()
     client = admin_client(rivr_admin)
     preview = client.post(changelist(), action_data(table))
@@ -409,14 +441,18 @@ def test_admin_rechecks_changes_between_preview_and_confirmation(
 def test_confirmation_form_retains_selection_and_does_not_delete_unselected(
     table_factory, rivr_admin,
 ):
+    """Verify that confirmation form retains selection and does not delete unselected."""
     from html.parser import HTMLParser
 
     class ConfirmationParser(HTMLParser):
+        """Extract confirmation inputs from the rendered Django admin form in tests."""
         def __init__(self):
+            """Prepare init for the surrounding test scenario."""
             super().__init__()
             self.inputs = {}
 
         def handle_starttag(self, tag, attrs):
+            """Prepare handle starttag for the surrounding test scenario."""
             fields = dict(attrs)
             if tag == "input" and fields.get("type") == "hidden":
                 self.inputs.setdefault(fields["name"], []).append(fields.get("value", ""))

@@ -1,3 +1,7 @@
+/**
+ * Module: tables/validation.ts.
+ * Implement validation for the tables feature and its importing components.
+ */
 import type { FieldErrors, TableInput } from './types'
 
 export const SEAT_OPTIONS = [2, 4, 6, 8, 9] as const
@@ -11,6 +15,7 @@ export const DEFAULT_TABLE: TableInput = {
   big_blind: 50,
 }
 
+/** Check table names, seating, chip limits and relationships before submission. */
 export function validateTable(input: TableInput): FieldErrors {
   const errors: FieldErrors = {}
   if (!input.name.trim() || input.name.trim().length > 80) {
@@ -33,7 +38,7 @@ export function validateTable(input: TableInput): FieldErrors {
       ]
     }
   }
-  if (!SEAT_OPTIONS.some((n) => n === input.max_players))
+  if (!SEAT_OPTIONS.some(/* Handle the some callback using the current operation's state. */ (n) => n === input.max_players))
     errors.max_players = ['Choose a supported table size.']
   if (
     !errors.small_blind &&

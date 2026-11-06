@@ -1,3 +1,5 @@
+"""Application operations and transactional state changes for friend requests, relationships and player discovery."""
+
 from django.db import IntegrityError, transaction
 from django.db.models import Q
 from django.http import Http404
@@ -10,14 +12,17 @@ PENDING = Friendship.Status.PENDING
 
 
 class FriendshipError(Exception):
+    """Report a rejected friendship operation without exposing database details."""
     pass
 
 
 def involving(user):
+    """Involving."""
     return Friendship.objects.filter(Q(from_user=user) | Q(to_user=user))
 
 
 def locked_pair(user, other):
+    """Locked pair."""
     return (
         Friendship.objects.select_for_update()
         .filter(Q(from_user=user, to_user=other) | Q(from_user=other, to_user=user))
@@ -31,6 +36,7 @@ def player(user):
 
 
 def friends_payload(user):
+    """Friends payload."""
     friends, incoming, outgoing = [], [], []
     for row in involving(user).select_related("from_user", "to_user"):
         sent = row.from_user_id == user.pk
@@ -73,6 +79,7 @@ def send_request(user, target):
 
 @transaction.atomic
 def accept_request(user, pk):
+    """Accept request."""
     request = get_object_or_404(
         Friendship.objects.select_for_update(), pk=pk, to_user=user, status=PENDING
     )
@@ -81,19 +88,23 @@ def accept_request(user, pk):
 
 
 def delete_or_404(queryset):
+    """Delete or 404."""
     deleted, _ = queryset.delete()
     if not deleted:
         raise Http404
 
 
 def decline_request(user, pk):
+    """Decline request."""
     delete_or_404(Friendship.objects.filter(pk=pk, to_user=user, status=PENDING))
 
 
 def cancel_request(user, pk):
+    """Cancel request."""
     delete_or_404(Friendship.objects.filter(pk=pk, from_user=user, status=PENDING))
 
 
 def remove_friend(user, pk):
     # Either player in the friendship may end it.
+    """Remove an accepted friendship owned by the current player."""
     delete_or_404(involving(user).filter(pk=pk, status=ACCEPTED))

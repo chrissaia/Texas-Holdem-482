@@ -1,3 +1,5 @@
+"""Url patterns mapped to application views for public poker-table configuration and browsing."""
+
 from django.urls import path
 
 from .views import TableListCreateView, TableDetailView, creation_context

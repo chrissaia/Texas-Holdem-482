@@ -1,3 +1,5 @@
+"""Tests for public poker-table configuration and browsing: lobby."""
+
 from datetime import timedelta
 
 import pytest
@@ -13,6 +15,7 @@ pytestmark = pytest.mark.django_db
 
 @pytest.fixture
 def lobby():
+    """Prepare lobby for the surrounding test scenario."""
     user_model = get_user_model()
     mira = user_model.objects.create_user(username="Mira", email="hidden@example.com")
     theo = user_model.objects.create_user(username="Theo")
@@ -30,14 +33,17 @@ def lobby():
 
 
 def list_tables(**query):
+    """Prepare list tables for the surrounding test scenario."""
     return APIClient().get(reverse("tables:create"), query)
 
 
 def ids(response):
+    """Prepare ids for the surrounding test scenario."""
     return [row["id"] for row in response.data["results"]]
 
 
 def test_public_list_hides_private_and_closed_and_uses_real_occupancy(lobby):
+    """Verify that public list hides private and closed and uses real occupancy."""
     response = list_tables()
     assert response.status_code == 200
     assert response.data["count"] == response.data["total_tables"] == 4
@@ -64,6 +70,7 @@ def test_public_list_hides_private_and_closed_and_uses_real_occupancy(lobby):
     ({"search": "missing"}, []),
 ])
 def test_filters_combine_and_do_not_change_global_totals(lobby, query, indices):
+    """Verify that filters combine and do not change global totals."""
     response = list_tables(**query)
     assert response.status_code == 200
     assert set(ids(response)) == {lobby[i].pk for i in indices}
@@ -78,6 +85,7 @@ def test_filters_combine_and_do_not_change_global_totals(lobby, query, indices):
 ])
 def test_sorting_is_deterministic(lobby, ordering, indices):
     # Give created_at values explicit order so the test does not depend on clock precision.
+    """Verify that sorting is deterministic."""
     for i, table in enumerate(lobby):
         PokerTable.objects.filter(pk=table.pk).update(created_at=timezone.now() + timedelta(minutes=i))
     response = list_tables(ordering=ordering)
@@ -85,6 +93,7 @@ def test_sorting_is_deterministic(lobby, ordering, indices):
 
 
 def test_pagination_and_page_boundaries(lobby):
+    """Verify that pagination and page boundaries."""
     first = list_tables(page_size=2, ordering="name")
     second = list_tables(page_size=2, ordering="name", page=2)
     assert first.data["total_pages"] == 2
@@ -103,17 +112,20 @@ def test_pagination_and_page_boundaries(lobby):
     {"search": "x" * 151}, {"is_public": "false"},
 ])
 def test_invalid_filters_return_clear_errors(query):
+    """Verify that invalid filters return clear errors."""
     response = list_tables(**query)
     assert response.status_code == 400
     assert set(query).intersection(response.data)
 
 
 def test_duplicate_filters_are_rejected():
+    """Verify that duplicate filters are rejected."""
     response = APIClient().get(reverse("tables:create") + "?page=1&page=2")
     assert response.status_code == 400 and "page" in response.data
 
 
 def test_empty_lobby_and_search_literal_characters(lobby):
+    """Verify that empty lobby and search literal characters."""
     assert list_tables(search="%_' OR 1=1 --").data["results"] == []
     PokerTable.objects.all().delete()
     response = list_tables()
@@ -124,12 +136,14 @@ def test_empty_lobby_and_search_literal_characters(lobby):
 
 def test_host_queries_do_not_grow_per_table(lobby, django_assert_num_queries):
     # One totals aggregate, one filtered count, and one joined result query.
+    """Verify that host queries do not grow per table."""
     with django_assert_num_queries(3):
         response = list_tables()
         assert len(response.data["results"]) == 4
 
 
 def test_created_table_immediately_appears_in_public_lobby():
+    """Verify that created table immediately appears in public lobby."""
     host = get_user_model().objects.create_user(username="creator")
     client = APIClient()
     client.force_authenticate(host)

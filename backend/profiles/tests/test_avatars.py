@@ -1,3 +1,5 @@
+"""Tests for avatar storage and virtual-chip rewards: avatars."""
+
 from io import BytesIO
 from pathlib import Path
 from unittest.mock import patch
@@ -15,10 +17,12 @@ pytestmark = pytest.mark.django_db
 
 @pytest.fixture(autouse=True)
 def isolated_media(settings, tmp_path):
+    """Prepare isolated media for the surrounding test scenario."""
     settings.MEDIA_ROOT = tmp_path
 
 
 def image_file(fmt='PNG', size=(40, 60), content_type=None):
+    """Prepare image file for the surrounding test scenario."""
     output = BytesIO()
     Image.new('RGB', size, 'purple').save(output, format=fmt)
     return SimpleUploadedFile('untrusted-name.'+fmt.lower(), output.getvalue(),
@@ -27,6 +31,7 @@ def image_file(fmt='PNG', size=(40, 60), content_type=None):
 
 @pytest.mark.parametrize('fmt', ['JPEG', 'PNG', 'WEBP'])
 def test_upload_persists_normalized_image_and_ownership(fmt, registered_client, registered_user, settings):
+    """Verify that upload persists normalized image and ownership."""
     other = get_user_model().objects.create_user(username='untouched')
     response = registered_client.post(reverse('profiles:avatar'), {'avatar': image_file(fmt)}, format='multipart')
     assert response.status_code == 200
@@ -43,6 +48,7 @@ def test_upload_persists_normalized_image_and_ownership(fmt, registered_client, 
 
 @pytest.mark.parametrize('kind', ['fake','mismatch','huge','dimensions','animated','truncated','svg'])
 def test_bad_images_never_change_profile(kind, registered_client, registered_user):
+    """Verify that bad images never change profile."""
     upload = image_file()
     if kind == 'fake': upload = SimpleUploadedFile('fake.png', b'not an image', content_type='image/png')
     if kind == 'mismatch': upload = image_file('PNG', content_type='image/jpeg')
@@ -61,6 +67,7 @@ def test_bad_images_never_change_profile(kind, registered_client, registered_use
 
 
 def test_replacement_deletes_previous_file_after_commit(registered_client, registered_user, django_capture_on_commit_callbacks):
+    """Verify that replacement deletes previous file after commit."""
     assert registered_client.post(reverse('profiles:avatar'), {'avatar':image_file()}, format='multipart').status_code == 200
     registered_user.refresh_from_db(); old = Path(registered_user.avatar.path)
     with django_capture_on_commit_callbacks(execute=True):
@@ -71,6 +78,7 @@ def test_replacement_deletes_previous_file_after_commit(registered_client, regis
 
 
 def test_database_failure_removes_new_file_and_keeps_old(registered_client, registered_user, settings):
+    """Verify that database failure removes new file and keeps old."""
     registered_client.post(reverse('profiles:avatar'), {'avatar':image_file()}, format='multipart')
     registered_user.refresh_from_db(); old_name = registered_user.avatar.name
     with patch('accounts.models.User.save', side_effect=RuntimeError('DB write failed')):
@@ -81,6 +89,7 @@ def test_database_failure_removes_new_file_and_keeps_old(registered_client, regi
 
 
 def test_unknown_fields_multiple_files_and_csrf(registered_client, registered_user):
+    """Verify that unknown fields multiple files and csrf."""
     for body in [{}, {'avatar':image_file(),'user_id': 999}, {'avatar':[image_file(),image_file()]}]:
         assert registered_client.post(reverse('profiles:avatar'), body, format='multipart').status_code == 400
     from rest_framework.test import APIClient
@@ -89,6 +98,7 @@ def test_unknown_fields_multiple_files_and_csrf(registered_client, registered_us
 
 
 def test_uploaded_metadata_is_removed(registered_client, registered_user):
+    """Verify that uploaded metadata is removed."""
     output = BytesIO()
     image = Image.new('RGB', (40, 60), 'purple')
     metadata = Image.Exif()
@@ -103,6 +113,7 @@ def test_uploaded_metadata_is_removed(registered_client, registered_user):
 
 
 def test_decompression_bomb_is_rejected(registered_client, monkeypatch):
+    """Verify that decompression bomb is rejected."""
     upload = image_file()
     monkeypatch.setattr(Image, 'MAX_IMAGE_PIXELS', 10)
     response = registered_client.post(reverse('profiles:avatar'), {'avatar':upload}, format='multipart')
@@ -110,6 +121,7 @@ def test_decompression_bomb_is_rejected(registered_client, monkeypatch):
 
 
 def test_replaced_file_cleanup_failure_does_not_undo_success(registered_client, registered_user, django_capture_on_commit_callbacks):
+    """Verify that replaced file cleanup failure does not undo success."""
     registered_client.post(reverse('profiles:avatar'), {'avatar':image_file()}, format='multipart')
     storage = get_user_model()._meta.get_field('avatar').storage
     with patch.object(storage, 'delete', side_effect=OSError('storage unavailable')):

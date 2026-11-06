@@ -1,3 +1,7 @@
+/**
+ * Module: components/FormField.tsx.
+ * Implement FormField for the shared application feature and its importing components.
+ */
 import type { InputHTMLAttributes } from 'react'
 
 type Props = InputHTMLAttributes<HTMLInputElement> & {
@@ -6,6 +10,7 @@ type Props = InputHTMLAttributes<HTMLInputElement> & {
   hint?: string
 }
 
+/** Render the form field interface and its current state. */
 export function FormField({ label, errors, hint, id, ...props }: Props) {
   const describedBy =
     [errors && `${id}-error`, hint && `${id}-hint`].filter(Boolean).join(' ') ||

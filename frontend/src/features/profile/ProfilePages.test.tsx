@@ -1,3 +1,7 @@
+/**
+ * Regression tests: profile/ProfilePages.test.tsx.
+ * Exercises observable behavior and isolates API or browser dependencies.
+ */
 import {
   act,
   fireEvent,
@@ -13,6 +17,7 @@ import { ProfileContext, useProfile } from './context'
 import { RewardsPage } from './RewardsPage'
 import type { ProfileResponse } from './types'
 
+/** Next claim for this module's test scenario. */
 const nextClaim = () => new Date(Date.now() + 60 * 60 * 1000).toISOString()
 const initial: ProfileResponse = {
   id: 7,
@@ -23,19 +28,21 @@ const initial: ProfileResponse = {
   daily_reward: { amount: 500, available: true, next_claim_at: null },
   csrf_token: 'profile-csrf',
 }
+/** Respond for this module's test scenario. */
 const respond = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status })
+/** Setup for this module's test scenario. */
 function setup(
   path: string,
   handler: (
     path: string,
     init?: RequestInit,
-  ) => Response | Promise<Response> = () => respond(initial),
+  ) => Response | Promise<Response> = /* Return the derived value for the enclosing operation. */ () => respond(initial),
   registered = true,
 ) {
   const fetch = vi
     .fn()
-    .mockImplementation((path: string, init?: RequestInit) =>
+    .mockImplementation(/* Handle the mockImplementation callback using the current operation's state. */ (path: string, init?: RequestInit) =>
       Promise.resolve(
         path.includes('creation-context')
           ? respond({
@@ -54,15 +61,15 @@ function setup(
   )
   return fetch
 }
-afterEach(() => {
+afterEach(/* Restore test isolation after the preceding scenario. */ () => {
   vi.restoreAllMocks()
   vi.unstubAllGlobals()
   vi.useRealTimers()
   localStorage.clear()
 })
 
-test('avatar upload uses multipart CSRF and updates account plus both shell avatars', async () => {
-  const fetch = setup('/settings', (path) =>
+test('avatar upload uses multipart CSRF and updates account plus both shell avatars', /* Verify avatar upload uses multipart CSRF and updates account plus both shell avatars. */ async () => {
+  const fetch = setup('/settings', /* Handle the setup callback using the current operation's state. */ (path) =>
     respond(
       path.endsWith('/avatar/')
         ? { ...initial, avatar_url: '/media/avatars/saved.webp' }
@@ -77,6 +84,7 @@ test('avatar upload uses multipart CSRF and updates account plus both shell avat
   fireEvent.click(screen.getByRole('button', { name: 'Save avatar' }))
   expect(await screen.findByText('Your avatar has been saved.')).toBeVisible()
   const call = fetch.mock.calls.find(
+    /* Handle the find callback using the current operation's state. */
     ([path]) => path === '/api/profile/avatar/',
   )!
   expect(call[1].headers['X-CSRFToken']).toBe('profile-csrf')
@@ -107,7 +115,7 @@ test.each([
     }),
     'Choose an image no larger than 2 MB.',
   ],
-])('rejects invalid avatar before upload', async (file, message) => {
+])('rejects invalid avatar before upload', /* Handle the enclosing callback using the current operation's state. */ async (file, message) => {
   const fetch = setup('/settings')
   fireEvent.change(await screen.findByLabelText('Avatar image'), {
     target: { files: [file] },
@@ -115,14 +123,15 @@ test.each([
   expect(screen.getByRole('alert')).toHaveTextContent(message)
   expect(screen.getByRole('button', { name: 'Save avatar' })).toBeDisabled()
   expect(
-    fetch.mock.calls.filter(([path]) => path.includes('/avatar/')),
+    fetch.mock.calls.filter(/* Keep only entries satisfying the surrounding collection rule. */ ([path]) => path.includes('/avatar/')),
   ).toHaveLength(0)
 })
 
 test.each([400, 403, 500])(
   'avatar server error %s preserves retry feedback',
+  /* Handle the enclosing callback using the current operation's state. */
   async (status) => {
-    setup('/settings', (path) =>
+    setup('/settings', /* Handle the setup callback using the current operation's state. */ (path) =>
       respond(
         path.endsWith('/avatar/')
           ? { avatar: ['The image could not be saved.'] }
@@ -140,8 +149,8 @@ test.each([400, 403, 500])(
   },
 )
 
-test('daily claim sends empty JSON and CSRF, updates displayed balance and disables repeats', async () => {
-  const fetch = setup('/rewards', (path) =>
+test('daily claim sends empty JSON and CSRF, updates displayed balance and disables repeats', /* Verify daily claim sends empty JSON and CSRF, updates displayed balance and disables repeats. */ async () => {
+  const fetch = setup('/rewards', /* Handle the setup callback using the current operation's state. */ (path) =>
     respond(
       path.endsWith('/daily-chips/')
         ? {
@@ -169,7 +178,7 @@ test('daily claim sends empty JSON and CSRF, updates displayed balance and disab
     ).getByText('1,500'),
   ).toBeVisible()
   expect(screen.getByText(/Next reward:/)).toBeVisible()
-  const call = fetch.mock.calls.find(([path]) =>
+  const call = fetch.mock.calls.find(/* Handle the find callback using the current operation's state. */ ([path]) =>
     path.endsWith('/daily-chips/'),
   )!
   expect(call[1]).toMatchObject({
@@ -178,12 +187,12 @@ test('daily claim sends empty JSON and CSRF, updates displayed balance and disab
     headers: { 'X-CSRFToken': 'profile-csrf' },
   })
   expect(
-    fetch.mock.calls.filter(([path]) => path.endsWith('/daily-chips/')),
+    fetch.mock.calls.filter(/* Keep only entries satisfying the surrounding collection rule. */ ([path]) => path.endsWith('/daily-chips/')),
   ).toHaveLength(1)
 })
 
-test('existing account balance and already claimed reward persist on reload', async () => {
-  setup('/rewards', () =>
+test('existing account balance and already claimed reward persist on reload', /* Verify existing account balance and already claimed reward persist on reload. */ async () => {
+  setup('/rewards', /* Handle the setup callback using the current operation's state. */ () =>
     respond({
       ...initial,
       chip_balance: 500,
@@ -205,8 +214,9 @@ test('existing account balance and already claimed reward persist on reload', as
 
 test.each([403, 409, 503])(
   'daily error %s does not invent a successful payout',
+  /* Handle the enclosing callback using the current operation's state. */
   async (status) => {
-    setup('/rewards', (path) =>
+    setup('/rewards', /* Handle the setup callback using the current operation's state. */ (path) =>
       respond(
         path.endsWith('/daily-chips/')
           ? { detail: 'Reward was not paid.' }
@@ -231,11 +241,11 @@ test.each([403, 409, 503])(
   },
 )
 
-test('duplicate clicks are blocked while a claim is pending', async () => {
+test('duplicate clicks are blocked while a claim is pending', /* Verify duplicate clicks are blocked while a claim is pending. */ async () => {
   let finish!: (response: Response) => void
-  const fetch = setup('/rewards', (path) =>
+  const fetch = setup('/rewards', /* Handle the setup callback using the current operation's state. */ (path) =>
     path.endsWith('/daily-chips/')
-      ? new Promise((resolve) => {
+      ? new Promise(/* Return the derived value for the enclosing operation. */ (resolve) => {
           finish = resolve
         })
       : respond(initial),
@@ -246,7 +256,7 @@ test('duplicate clicks are blocked while a claim is pending', async () => {
   expect(screen.getByRole('button', { name: 'Claiming…' })).toBeDisabled()
   fireEvent.click(screen.getByRole('button', { name: 'Claiming…' }))
   expect(
-    fetch.mock.calls.filter(([path]) => path.endsWith('/daily-chips/')),
+    fetch.mock.calls.filter(/* Keep only entries satisfying the surrounding collection rule. */ ([path]) => path.endsWith('/daily-chips/')),
   ).toHaveLength(1)
   finish(
     respond({
@@ -262,19 +272,19 @@ test('duplicate clicks are blocked while a claim is pending', async () => {
   await screen.findByText('500 virtual chips added to your balance.')
 })
 
-test('anonymous and guest views require a registered account', async () => {
-  const fetch = setup('/rewards', () => respond(initial), false)
+test('anonymous and guest views require a registered account', /* Verify anonymous and guest views require a registered account. */ async () => {
+  const fetch = setup('/rewards', /* Handle the setup callback using the current operation's state. */ () => respond(initial), false)
   expect(
     await screen.findByText(/Sign in with a registered account to use avatars/),
   ).toBeVisible()
   expect(
-    fetch.mock.calls.filter(([path]) => path === '/api/profile/'),
+    fetch.mock.calls.filter(/* Keep only entries satisfying the surrounding collection rule. */ ([path]) => path === '/api/profile/'),
   ).toHaveLength(0)
 })
 
-test('profile loading errors are retryable', async () => {
+test('profile loading errors are retryable', /* Verify profile loading errors are retryable. */ async () => {
   let fail = true
-  setup('/settings', () =>
+  setup('/settings', /* Handle the setup callback using the current operation's state. */ () =>
     fail ? Promise.reject(new Error('offline')) : respond(initial),
   )
   expect(await screen.findByRole('alert')).toHaveTextContent(
@@ -285,7 +295,7 @@ test('profile loading errors are retryable', async () => {
   expect(await screen.findByLabelText('Avatar image')).toBeVisible()
 })
 
-test('midnight timer refreshes eligibility rather than granting client-side chips', async () => {
+test('midnight timer refreshes eligibility rather than granting client-side chips', /* Verify midnight timer refreshes eligibility rather than granting client-side chips. */ async () => {
   vi.useFakeTimers()
   const refresh = vi.fn()
   render(
@@ -312,20 +322,21 @@ test('midnight timer refreshes eligibility rather than granting client-side chip
       </ProfileContext.Provider>
     </MemoryRouter>,
   )
-  await act(() => vi.advanceTimersByTimeAsync(3001))
+  await act(/* Handle the act callback using the current operation's state. */ () => vi.advanceTimersByTimeAsync(3001))
   expect(refresh).toHaveBeenCalledTimes(1)
   expect(screen.getByRole('button', { name: 'Claimed today' })).toBeDisabled()
 })
 
-test('switching accounts ignores an in-flight previous owner response', async () => {
+test('switching accounts ignores an in-flight previous owner response', /* Verify switching accounts ignores an in-flight previous owner response. */ async () => {
   let finish!: (value: Response) => void
   vi.stubGlobal(
     'fetch',
     vi
       .fn()
       .mockImplementationOnce(
+        /* Handle the mockImplementationOnce callback using the current operation's state. */
         () =>
-          new Promise((resolve) => {
+          new Promise(/* Return the derived value for the enclosing operation. */ (resolve) => {
             finish = resolve
           }),
       )
@@ -333,6 +344,7 @@ test('switching accounts ignores an in-flight previous owner response', async ()
         respond({ ...initial, id: 8, username: 'Other', chip_balance: 9 }),
       ),
   )
+  /** Render the read profile interface and its current state. */
   function ReadProfile() {
     const state = useProfile()
     return <p>{state.profile?.username || 'Loading owner'}</p>
@@ -348,6 +360,6 @@ test('switching accounts ignores an in-flight previous owner response', async ()
     </ProfileProvider>,
   )
   expect(await screen.findByText('Other')).toBeVisible()
-  await act(async () => finish(respond(initial)))
+  await act(/* Handle the act callback using the current operation's state. */ async () => finish(respond(initial)))
   expect(screen.queryByText('RiverJay')).not.toBeInTheDocument()
 })

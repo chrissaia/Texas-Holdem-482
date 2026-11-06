@@ -1,3 +1,7 @@
+/**
+ * Module: achievements/AchievementsPage.tsx.
+ * Render the achievements screen, including user actions, loading states and request feedback.
+ */
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { request } from "../../api/client";
@@ -19,34 +23,36 @@ type Collection = {
   earned: EarnedAchievement[];
 };
 
+/** Render the achievements page interface and its current state. */
 export function AchievementsPage() {
   const { registered, loading: identityLoading } = useProfile();
   const [collection, setCollection] = useState<Collection | null>(null);
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
   const [pending, setPending] = useState(true);
-  useEffect(() => {
+  useEffect(/* Synchronize component state with external data and release resources on cleanup. */ () => {
     if (!registered) return;
     let active = true;
     request<Collection>("/api/achievements/")
-      .then((value) => {
+      .then(/* Apply the successful asynchronous result to the current operation. */ (value) => {
         if (active) setCollection(value);
       })
-      .catch(() => {
+      .catch(/* Handle the failed operation without leaving stale UI feedback. */ () => {
         if (active)
           setError("We could not load your achievements. Please try again.");
       })
-      .finally(() => {
+      .finally(/* Release pending state after the asynchronous operation settles. */ () => {
         if (active) setPending(false);
       });
-    return () => {
+    return /* Return the derived value for the enclosing operation. */ () => {
       active = false;
     };
   }, [registered, attempt]);
+  /** Reload the current server data and clear the previous request error. */
   const refresh = () => {
     setError("");
     setPending(true);
-    setAttempt((n) => n + 1);
+    setAttempt(/* Handle the setAttempt callback using the current operation's state. */ (n) => n + 1);
   };
   return (
     <section className="achievements-page">
@@ -96,7 +102,7 @@ export function AchievementsPage() {
                   <dt>Achievement XP</dt>
                   <dd>
                     {collection.earned
-                      .reduce((sum, a) => sum + a.xp, 0)
+                      .reduce(/* Handle the reduce callback using the current operation's state. */ (sum, a) => sum + a.xp, 0)
                       .toLocaleString("en-US")}
                   </dd>
                 </div>
@@ -109,7 +115,7 @@ export function AchievementsPage() {
               </button>
             </div>
             <div className="achievement-grid">
-              {collection.earned.map((achievement) => (
+              {collection.earned.map(/* Convert this item into the value or UI element expected by the collection. */ (achievement) => (
                 <article
                   className="panel achievement-card earned"
                   key={achievement.code}
@@ -144,6 +150,7 @@ export function AchievementsPage() {
                     collection.total_achievements - collection.earned.length,
                   ),
                 },
+                /* Handle the from callback using the current operation's state. */
                 (_, index) => (
                   <article
                     className="panel achievement-card hidden-achievement"

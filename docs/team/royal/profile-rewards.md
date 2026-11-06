@@ -26,7 +26,7 @@ The user approved 500 chips per UTC calendar day and JPEG/PNG/WebP uploads up to
 
 Balances and reward timestamps are server-owned. PostgreSQL row locks prevent concurrent retries from paying twice; failed grants roll back without changing eligibility. Any future spending or reward service must lock the same account row before updating its balance. Table creation still neither seats a user nor spends chips.
 
-See [contracts.md](contracts.md#s5s14s29-profiles-and-virtual-chips) for exact endpoints and response shapes. Profile responses are private; public table host data remains ID and username only. Uploads stay under ignored `backend/media/`; do not commit them. Docker preserves them through the backend bind mount. Django serves them only in development (`DEBUG`); production requires a configured media server or storage service.
+See [contracts.md](../../architecture/contracts.md#s5s14s29-profiles-and-virtual-chips) for exact endpoints and response shapes. Profile responses are private; public table host data remains ID and username only. Uploads stay under ignored `backend/media/`; do not commit them. Docker preserves them through the backend bind mount. Django serves them only in development (`DEBUG`); production requires a configured media server or storage service.
 
 The Account panel and rewards layout use inspected Figma frames `26:3283` and `26:3466`, with their image assets. Daily streaks, advertising, purchases, email changes, gameplay and cash-out are outside these stories. Kelechi's light/dark theme controls remain intact.
 

@@ -1,3 +1,7 @@
+/**
+ * Regression tests: tables/CreateTablePage.test.tsx.
+ * Exercises observable behavior and isolates API or browser dependencies.
+ */
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, expect, test, vi } from 'vitest'
@@ -20,19 +24,22 @@ const table = {
   created_at: '2026-10-20T00:00:00Z',
   last_activity_at: '2026-10-20T00:00:00Z',
 }
+/** Respond for this module's test scenario. */
 const respond = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status })
+/** Start for this module's test scenario. */
 const start = (path = '/tables/create') =>
   render(
     <MemoryRouter initialEntries={[path]}>
       <AppRoutes />
     </MemoryRouter>,
   )
+/** Validate the form and submit its values while preventing duplicate requests. */
 const submit = async () => {
   fireEvent.change(await screen.findByLabelText('Table name'), {
     target: { value: 'Friday poker' },
   })
-  await waitFor(() =>
+  await waitFor(/* Wait for the expected asynchronous UI or request state. */ () =>
     expect(
       screen.getByRole('button', { name: 'Create Table →' }),
     ).toBeEnabled(),
@@ -40,9 +47,9 @@ const submit = async () => {
   fireEvent.click(screen.getByRole('button', { name: 'Create Table →' }))
 }
 
-afterEach(() => vi.unstubAllGlobals())
+afterEach(/* Restore test isolation after the preceding scenario. */ () => vi.unstubAllGlobals())
 
-test('creates a real-shaped public table request with CSRF and reads saved details', async () => {
+test('creates a real-shaped public table request with CSRF and reads saved details', /* Verify creates a real-shaped public table request with CSRF and reads saved details. */ async () => {
   const fetch = vi
     .fn()
     .mockResolvedValueOnce(respond(context))
@@ -72,12 +79,12 @@ test('creates a real-shaped public table request with CSRF and reads saved detai
   expect(screen.getByText('0 / 6')).toBeVisible()
 })
 
-test('validates empty name, blind relationship and minimum balance before sending', async () => {
+test('validates empty name, blind relationship and minimum balance before sending', /* Verify validates empty name, blind relationship and minimum balance before sending. */ async () => {
   const fetch = vi.fn().mockResolvedValue(respond(context))
   vi.stubGlobal('fetch', fetch)
   start()
   const button = await screen.findByRole('button', { name: 'Create Table →' })
-  await waitFor(() => expect(button).toBeEnabled())
+  await waitFor(/* Wait for the expected asynchronous UI or request state. */ () => expect(button).toBeEnabled())
   fireEvent.click(button)
   expect(
     await screen.findByText('Enter a table name between 1 and 80 characters.'),
@@ -101,7 +108,7 @@ test('validates empty name, blind relationship and minimum balance before sendin
   expect(fetch).toHaveBeenCalledTimes(1)
 })
 
-test('seat selection updates summary, and create another resets the form', async () => {
+test('seat selection updates summary, and create another resets the form', /* Verify seat selection updates summary, and create another resets the form. */ async () => {
   const fetch = vi
     .fn()
     .mockResolvedValueOnce(respond(context))
@@ -119,7 +126,7 @@ test('seat selection updates summary, and create another resets the form', async
   expect(screen.getByRole('radio', { name: '6 seats' })).toBeChecked()
 })
 
-test('anonymous users may configure but cannot submit', async () => {
+test('anonymous users may configure but cannot submit', /* Verify anonymous users may configure but cannot submit. */ async () => {
   const fetch = vi
     .fn()
     .mockResolvedValue(respond({ host: null, csrf_token: 'token' }))
@@ -134,7 +141,7 @@ test('anonymous users may configure but cannot submit', async () => {
   expect(fetch).toHaveBeenCalledTimes(1)
 })
 
-test('context error is retryable and loading disables creation', async () => {
+test('context error is retryable and loading disables creation', /* Verify context error is retryable and loading disables creation. */ async () => {
   const fetch = vi
     .fn()
     .mockRejectedValueOnce(new TypeError('offline'))
@@ -146,7 +153,7 @@ test('context error is retryable and loading disables creation', async () => {
     'We could not check your session',
   )
   fireEvent.click(screen.getByRole('button', { name: 'Try again' }))
-  await waitFor(() =>
+  await waitFor(/* Wait for the expected asynchronous UI or request state. */ () =>
     expect(
       screen.getByRole('button', { name: 'Create Table →' }),
     ).toBeEnabled(),
@@ -163,6 +170,7 @@ test.each([
   [503, { detail: 'Database unavailable' }, 'Database unavailable'],
 ])(
   'handles server error %s without losing form values',
+  /* Handle the enclosing callback using the current operation's state. */
   async (status, body, message) => {
     vi.stubGlobal(
       'fetch',
@@ -179,7 +187,7 @@ test.each([
     if (status === 400)
       expect(screen.getByText('This table name was rejected.')).toBeVisible()
     fireEvent.click(screen.getByRole('button', { name: 'Refresh session' }))
-    await waitFor(() =>
+    await waitFor(/* Wait for the expected asynchronous UI or request state. */ () =>
       expect(
         screen.getByRole('button', { name: 'Create Table →' }),
       ).toBeEnabled(),
@@ -187,7 +195,7 @@ test.each([
   },
 )
 
-test('network failure reports a useful error without automatic POST retry', async () => {
+test('network failure reports a useful error without automatic POST retry', /* Verify network failure reports a useful error without automatic POST retry. */ async () => {
   const fetch = vi
     .fn()
     .mockResolvedValueOnce(respond(context))
@@ -201,14 +209,15 @@ test('network failure reports a useful error without automatic POST retry', asyn
   expect(fetch).toHaveBeenCalledTimes(2)
 })
 
-test('disables duplicate submissions while waiting', async () => {
+test('disables duplicate submissions while waiting', /* Verify disables duplicate submissions while waiting. */ async () => {
   let finish!: (value: Response) => void
   const fetch = vi
     .fn()
     .mockResolvedValueOnce(respond(context))
     .mockImplementationOnce(
+      /* Handle the mockImplementationOnce callback using the current operation's state. */
       () =>
-        new Promise<Response>((resolve) => {
+        new Promise<Response>(/* Return the derived value for the enclosing operation. */ (resolve) => {
           finish = resolve
         }),
     )
@@ -224,7 +233,7 @@ test('disables duplicate submissions while waiting', async () => {
   expect(await screen.findByText('Table created!')).toBeVisible()
 })
 
-test('cancel returns home without creating, and home opens creation', async () => {
+test('cancel returns home without creating, and home opens creation', /* Verify cancel returns home without creating, and home opens creation. */ async () => {
   const fetch = vi.fn().mockResolvedValue(respond(context))
   vi.stubGlobal('fetch', fetch)
   start()
@@ -232,15 +241,15 @@ test('cancel returns home without creating, and home opens creation', async () =
   expect(screen.getByText('Make room for your next poker night.')).toBeVisible()
   fireEvent.click(screen.getByRole('link', { name: 'Create Table →' }))
   expect(screen.getByText('Your table. Your rules.')).toBeVisible()
-  await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1))
+  await waitFor(/* Wait for the expected asynchronous UI or request state. */ () => expect(fetch).toHaveBeenCalledTimes(1))
 })
 
-test('missing table and unknown route have useful recovery links', async () => {
+test('missing table and unknown route have useful recovery links', /* Verify missing table and unknown route have useful recovery links. */ async () => {
   vi.stubGlobal(
     'fetch',
     vi
       .fn()
-      .mockImplementation((path: string) =>
+      .mockImplementation(/* Handle the mockImplementation callback using the current operation's state. */ (path: string) =>
         Promise.resolve(
           path.includes('creation-context')
             ? respond(context)

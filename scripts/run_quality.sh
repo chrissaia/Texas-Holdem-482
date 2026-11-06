@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Purpose: run full application checks and export measured coverage evidence.
 set -euo pipefail
 RIVR_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 RIVR_PYTHON="${RIVR_PYTHON:-$RIVR_ROOT/backend/.venv/bin/python}"

@@ -1,3 +1,7 @@
+/**
+ * Module: src/main.tsx.
+ * Implement main for the shared application feature and its importing components.
+ */
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { initializeTheme } from './features/themes/theme'

@@ -1,6 +1,22 @@
 # S23 administrator cleanup
 
-Historical feature measurements below are not the current full-application coverage. The retained S23 report image measures two cleanup files only; see [the scope correction](s23-coverage/README.md) and [current evidence](quality/README.md).
+## Story record
+
+- Planned owner: Kelechi.
+- Workbook source: [User_Stories.xlsx](../../reference/User_Stories.xlsx), `User Stories!A25:M25`.
+- Workbook points: 2; planned sprint points: 2.
+- Priority: Medium; epic: E15; NFR references: NFR5, NFR11.
+- Tracked issue: [#21](https://github.com/chrissaia/Texas-Holdem-482/issues/21).
+
+**User story:** as a administrator, i want empty or inactive tables to get cleaned up, so that the lobby does not fill with old tables.
+
+**Workbook acceptance target:** done when old empty tables should eventually get deleted.
+
+The workbook is a planning snapshot, not a live acceptance record. Only professor/CTO acceptance establishes Done. Owner names describe the supplied plan, not inferred commit authorship.
+
+## Feature guide
+
+Historical feature measurements below are not the current full-application coverage. The retained S23 report image measures two cleanup files only; see [the scope correction](../../s23-coverage/README.md) and [current evidence](../../quality/README.md).
 
 Story 23 deletes selected old empty public tables through Django's existing admin.
 The default inactivity threshold I set is 30 minutes, approved by Kelechi for this

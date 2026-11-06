@@ -1,5 +1,21 @@
 # S32: XP and twenty-four achievements
 
+## Story record
+
+- Planned owner: Chris.
+- Workbook source: [User_Stories.xlsx](../../reference/User_Stories.xlsx), `User Stories!A34:M34`.
+- Workbook points: 3; planned sprint points: 3.
+- Priority: Low; epic: E22; NFR references: NFR6, NFR11.
+- Tracked issue: [#45](https://github.com/chrissaia/Texas-Holdem-482/issues/45).
+
+**User story:** as a registered player, i want to earn xp and achievements, so that i have goals to work toward.
+
+**Workbook acceptance target:** done when players can earn xp and achievements.
+
+The workbook is a planning snapshot, not a live acceptance record. Only professor/CTO acceptance establishes Done. Owner names describe the supplied plan, not inferred commit authorship.
+
+## Feature guide
+
 Trophies unlock once per registered account and may stack. Most award 50 XP once; Against the Odds awards 50 XP on each qualifying 7–2 offsuit win. Its first 50 XP is the unlock reward, not an additional second bonus. Winning a completed hand outright awards 100 XP per unique hand. Split pots award no win XP, cannot unlock First Pot, and reset the consecutive-win streak. A split or folded hand still counts as a completed dealt hand. Tournament wins award 1,000 XP per unique completed tournament, plus one-time trophies. No participation XP, levels, or leaderboard are added.
 
 | Achievement | Condition | Current integration |

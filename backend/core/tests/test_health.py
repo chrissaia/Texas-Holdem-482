@@ -1,3 +1,5 @@
+"""Tests for shared API infrastructure and readiness checks: health."""
+
 from unittest.mock import patch
 
 import pytest
@@ -8,12 +10,14 @@ from rest_framework.test import APIClient
 
 @pytest.mark.django_db
 def test_health_queries_postgresql():
+    """Verify that health queries postgresql."""
     response = APIClient().get(reverse("health"))
     assert response.status_code == 200
     assert response.json() == {"status": "ok", "database": "ok"}
 
 
 def test_health_reports_unavailable_database_without_leaking_details():
+    """Verify that health reports unavailable database without leaking details."""
     with patch("core.views.connection.cursor", side_effect=OperationalError("secret details")):
         response = APIClient().get(reverse("health"))
     assert response.status_code == 503
@@ -22,4 +26,5 @@ def test_health_reports_unavailable_database_without_leaking_details():
 
 @pytest.mark.django_db
 def test_health_rejects_mutation():
+    """Verify that health rejects mutation."""
     assert APIClient().post(reverse("health"), {}).status_code == 405

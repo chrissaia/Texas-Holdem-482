@@ -1,3 +1,4 @@
+# Purpose: Run backend/frontend checks and publish coverage artifacts for pushes and pull requests.
 name: Application tests and coverage
 on: [push, pull_request]
 permissions:

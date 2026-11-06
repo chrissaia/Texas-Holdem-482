@@ -1,3 +1,7 @@
+/**
+ * Module: profile/context.ts.
+ * Implement context for the profile feature and its importing components.
+ */
 import { createContext, useContext } from 'react'
 import type { Profile } from './types'
 
@@ -16,7 +20,8 @@ export const ProfileContext = createContext<ProfileState>({
   error: '',
   profile: null,
   token: '',
-  refresh: () => {},
-  update: () => {},
+  refresh: /* Return the derived value for the enclosing operation. */ () => {},
+  update: /* Return the derived value for the enclosing operation. */ () => {},
 })
+/** Read the active account profile from its provider. */
 export const useProfile = () => useContext(ProfileContext)

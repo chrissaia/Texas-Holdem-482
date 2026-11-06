@@ -20,6 +20,7 @@ def csrf_client():
 
 
 def sign_in(username, password=TEST_PASSWORD):
+    """Prepare sign in for the surrounding test scenario."""
     client = csrf_client()
     response = client.post(
         reverse("accounts:login"), {"username": username, "password": password}, format="json"
@@ -32,6 +33,7 @@ def sign_in(username, password=TEST_PASSWORD):
 
 @pytest.fixture
 def registered_user(db):
+    """Prepare registered user for the surrounding test scenario."""
     return get_user_model().objects.create_user(
         username="registered-player", email="player@example.com", password=TEST_PASSWORD
     )
@@ -39,6 +41,7 @@ def registered_user(db):
 
 @pytest.fixture
 def rivr_admin(db):
+    """Prepare rivr admin for the surrounding test scenario."""
     return get_user_model().objects.create_superuser(
         username="rivr-admin", email="admin@example.com", password=TEST_PASSWORD
     )
@@ -46,16 +49,19 @@ def rivr_admin(db):
 
 @pytest.fixture
 def registered_client(registered_user):
+    """Prepare registered client for the surrounding test scenario."""
     return sign_in(registered_user.username)
 
 
 @pytest.fixture
 def rivr_admin_client(rivr_admin):
+    """Prepare rivr admin client for the surrounding test scenario."""
     return sign_in(rivr_admin.username)
 
 
 @pytest.fixture
 def guest_client(db):
+    """Prepare guest client for the surrounding test scenario."""
     client = csrf_client()
     response = client.post(reverse("accounts:guest"), {"name": "Guest Ace"}, format="json")
     assert response.status_code == 201, response.data

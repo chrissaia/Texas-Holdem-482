@@ -1,3 +1,7 @@
+/**
+ * Module: auth/AuthLayout.tsx.
+ * Implement AuthLayout for the auth feature and its importing components.
+ */
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import logo from '../../assets/figma/geometric-chip-mark-36.svg'
@@ -27,6 +31,7 @@ const board = [
   ['2♣', '♣'],
 ]
 
+/** Render the playing card interface and its current state. */
 function PlayingCard({ label, suit }: { label: string; suit: string }) {
   const red = suit === '♦' || suit === '♥'
   return (
@@ -37,6 +42,7 @@ function PlayingCard({ label, suit }: { label: string; suit: string }) {
   )
 }
 
+/** Render the hidden card interface and its current state. */
 function HiddenCard() {
   return (
     <div className="brand-card hidden">
@@ -46,6 +52,7 @@ function HiddenCard() {
   )
 }
 
+/** Render the seat interface and its current state. */
 function Seat({
   initials,
   name,
@@ -78,6 +85,7 @@ function Seat({
   )
 }
 
+/** Render the poker table illustration interface and its current state. */
 function PokerTableIllustration() {
   return (
     <div className="brand-table" aria-hidden="true">
@@ -101,7 +109,7 @@ function PokerTableIllustration() {
       </div>
       <div className="brand-board">
         <div className="brand-cards">
-          {board.map(([label, suit]) => (
+          {board.map(/* Convert this item into the value or UI element expected by the collection. */ ([label, suit]) => (
             <PlayingCard key={label} label={label} suit={suit} />
           ))}
         </div>
@@ -111,7 +119,7 @@ function PokerTableIllustration() {
           <span>RIVER</span>
         </div>
       </div>
-      {seats.map(({ left, top, dealer, ...seat }) => (
+      {seats.map(/* Convert this item into the value or UI element expected by the collection. */ ({ left, top, dealer, ...seat }) => (
         <div className="brand-seat" key={seat.name} style={{ left, top }}>
           <Seat {...seat} />
           <div className="brand-hole-cards">
@@ -132,6 +140,7 @@ function PokerTableIllustration() {
   )
 }
 
+/** Render the auth layout interface and its current state. */
 export function AuthLayout({ children }: { children: ReactNode }) {
   return (
     <div className="auth-page">

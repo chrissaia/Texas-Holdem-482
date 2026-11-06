@@ -1,3 +1,5 @@
+/* Lobby styles: layout, component states and responsive presentation. */
+
 .lobby-page {
   display: flex;
   flex-direction: column;

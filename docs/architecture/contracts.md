@@ -51,13 +51,13 @@ User references use `settings.AUTH_USER_MODEL` with `PROTECT` on deletion to pre
 
 For Kelechi: `player_count` is server-owned and constrained to capacity. It stays zero until a future seating service updates it. `last_activity_at` is initialized on creation and indexed; reads do not refresh it. Future seating/game services must update occupancy and activity atomically, locking the table row. Cleanup must recheck occupancy under the same lock. S23 now provides manual admin cleanup with a configurable 30-minute default; see the S23 section below. `status` permits `waiting`, `playing`, `closed`; only `waiting` is created by this endpoint.
 
-The form is at `/tables/create`; saved settings can be read at `/tables/<id>`. Local development uses the normal `/register` and `/login` screens; hosting does not require a staff account. See [the S13 guide](s13-public-tables.md) for exact commands and acceptance evidence.
+The form is at `/tables/create`; saved settings can be read at `/tables/<id>`. Local development uses the normal `/register` and `/login` screens; hosting does not require a staff account. See [the S13 guide](../team/chris/s13-make-a-public-table.md) for exact commands and acceptance evidence.
 
 ## S10 public lobby
 
 `GET /api/tables/` is public and paginated. It includes public tables whose status is not `closed`, using the same safe host serialization as S13. POST remains registered-session-only with CSRF enforcement.
 
-The request supports name/host `search`, `max_buy_in`, exact `big_blind`, exact `max_players`, `available_seats=true|false`, `status=waiting|playing`, fixed `ordering` choices, `page`, and bounded `page_size`. Unknown/repeated/invalid queries are HTTP 400; missing pages are HTTP 404. See [s10-lobby.md](s10-lobby.md) for exact defaults and sort behavior.
+The request supports name/host `search`, `max_buy_in`, exact `big_blind`, exact `max_players`, `available_seats=true|false`, `status=waiting|playing`, fixed `ordering` choices, `page`, and bounded `page_size`. Unknown/repeated/invalid queries are HTTP 400; missing pages are HTTP 404. See [../team/chris/s10-browse-public-tables.md](../team/chris/s10-browse-public-tables.md) for exact defaults and sort behavior.
 
 Response: `{count, next, previous, page, page_size, total_pages, total_tables, total_players, results}`. `results` uses the existing table response shape. `count` reflects applied filters; the two `total_*` values describe all active public tables. The frontend explicitly filters available seats by default, saves view state in the URL, and supports manual refresh.
 
@@ -101,7 +101,7 @@ The system design’s 60% coverage baseline is superseded for Sprint 1 by above 
 
 ## S5/S14/S29 profiles and virtual chips
 
-Implemented on `saia` at Chris's request, covering Royal's three feature stories. Human story ownership and professor acceptance remain unchanged. See [the feature guide](profile-rewards.md).
+Implemented on `saia` at Chris's request, covering Royal's three feature stories. Human story ownership and professor acceptance remain unchanged. See [the feature guide](../team/royal/profile-rewards.md).
 
 `accounts.User` adds `avatar`, `chip_balance`, `starting_chips_granted_at`, and `daily_chips_claimed_at` in migration `0003`. Existing accounts retain their balance (initially zero); no retroactive starting grant runs. Real registration grants 1,000 chips in the account-creation transaction. `profiles.rewards.grant_starting_chips` is retry-safe through a locked timestamp marker. Every future balance writer must lock the same user row and update atomically. Balances are nonnegative integers capped at 9,007,199,254,740,991.
 
@@ -147,9 +147,9 @@ Open decisions: request-and-accept (rather than instant follow), auto-accepting 
 
 ## S32 XP and achievements
 
-The twenty-four one-time achievements and their trusted backend hooks are documented in [xp-achievements.md](xp-achievements.md). `GET /api/achievements/` returns the registered account's total XP, total collection size and earned details only; locked metadata stays on the server. Avatar upload and table creation are integrated atomically. Gameplay/friend/message services must call the trusted hooks when implemented; no client event or claim endpoint exists. Each achievement grants 50 XP once; outright hand wins grant 100 XP per unique hand, while splits never count as wins. The leaderboard is outside this milestone. All progression writes lock the account row and preserve CSRF on originating actions.
+The twenty-four one-time achievements and their trusted backend hooks are documented in [../team/chris/s32-earn-xp-and-achievements.md](../team/chris/s32-earn-xp-and-achievements.md). `GET /api/achievements/` returns the registered account's total XP, total collection size and earned details only; locked metadata stays on the server. Avatar upload and table creation are integrated atomically. Gameplay/friend/message services must call the trusted hooks when implemented; no client event or claim endpoint exists. Each achievement grants 50 XP once; outright hand wins grant 100 XP per unique hand, while splits never count as wins. The leaderboard is outside this milestone. All progression writes lock the account row and preserve CSRF on originating actions.
 
 
 ## S18 all-time XP rankings
 
-`GET /api/leaderboard/` is public, uses the authoritative progression event ledger and includes active registered accounts (including zero XP). Ties share competition rank; IDs stabilize equal-XP pagination. Query fields are only `page` and bounded `page_size`. Public rows expose ID, username, avatar URL, XP, rank and current-user flag; private account fields and chip balances are excluded. Authenticated responses add the viewer's own global rank even off page. All-time only; seasonal rankings remain S33. See [s18-leaderboard.md](s18-leaderboard.md) for response shape, limits, privacy and integration details.
+`GET /api/leaderboard/` is public, uses the authoritative progression event ledger and includes active registered accounts (including zero XP). Ties share competition rank; IDs stabilize equal-XP pagination. Query fields are only `page` and bounded `page_size`. Public rows expose ID, username, avatar URL, XP, rank and current-user flag; private account fields and chip balances are excluded. Authenticated responses add the viewer's own global rank even off page. All-time only; seasonal rankings remain S33. See [../team/chris/s18-see-the-leaderboard.md](../team/chris/s18-see-the-leaderboard.md) for response shape, limits, privacy and integration details.

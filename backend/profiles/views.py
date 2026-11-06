@@ -1,3 +1,5 @@
+"""Http endpoints, permission checks and response construction for avatar storage and virtual-chip rewards."""
+
 from django.middleware.csrf import get_token
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -12,10 +14,12 @@ from .rewards import AlreadyClaimed, BalanceLimit, claim_daily_chips, reward_sta
 
 
 class RegisteredAccountPermission(CanHostTable):
+    """Restrict profile reads and writes to active registered sessions."""
     message = "Sign in with a registered account to use avatars and rewards."
 
 
 def profile_payload(user):
+    """Serialize the account's own avatar, chip balance and daily-reward state."""
     return {
         "id": user.pk, "username": user.username,
         "avatar_url": user.avatar.url if user.avatar else None,
@@ -30,6 +34,7 @@ def profile_payload(user):
 @api_view(["GET"])
 @permission_classes([RegisteredAccountPermission])
 def profile(request):
+    """Return the authenticated account profile and initialize its CSRF cookie."""
     return Response({**profile_payload(request.user), "csrf_token": get_token(request)})
 
 
@@ -38,6 +43,7 @@ def profile(request):
 @permission_classes([RegisteredAccountPermission])
 @parser_classes([MultiPartParser, FormParser])
 def avatar(request):
+    """Validate an avatar upload and replace the current account image."""
     if set(request.data) != {"avatar"} or len(request.FILES.getlist("avatar")) != 1:
         raise ValidationError({"avatar": ["Supply exactly one avatar image and no other fields."]})
     upload = request.FILES["avatar"]
@@ -49,6 +55,7 @@ def avatar(request):
 @api_view(["POST"])
 @permission_classes([RegisteredAccountPermission])
 def daily(request):
+    """Claim the authenticated player's server-controlled daily chip reward."""
     if not isinstance(request.data, dict) or request.data:
         raise ValidationError({"non_field_errors": ["This action accepts an empty JSON object only."]})
     try:
@@ -64,6 +71,7 @@ def daily(request):
 @api_view(["POST"])
 @permission_classes([RegisteredAccountPermission])
 def theme_choice(request):
+    """Save the account theme preference through the progression service."""
     from progression.services import save_theme_choice
     if not isinstance(request.data, dict) or set(request.data) != {"theme"} or request.data["theme"] not in ("dark", "light"):
         raise ValidationError({"theme": ["Supply only a theme: dark or light."]})

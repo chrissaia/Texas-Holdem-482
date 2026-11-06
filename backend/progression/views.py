@@ -1,3 +1,5 @@
+"""Http endpoints, permission checks and response construction for server-owned XP, achievements and ranking."""
+
 from django.db.models import Sum
 from django.views.decorators.cache import never_cache
 from rest_framework.decorators import api_view, permission_classes
@@ -13,6 +15,7 @@ from .models import Achievement, Event
 @permission_classes([RegisteredAccountPermission])
 def collection(request):
     # One SQL snapshot supplies both XP and awards; no client claims or writes.
+    """Return private XP totals and earned trophy details without revealing locked metadata."""
     from django.db import transaction
     from django.contrib.auth import get_user_model
     with transaction.atomic():

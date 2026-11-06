@@ -1,3 +1,7 @@
+/**
+ * Module: profile/types.ts.
+ * Shared request and response contracts for profile; no runtime behavior.
+ */
 export type Profile = {
   id: number
   username: string

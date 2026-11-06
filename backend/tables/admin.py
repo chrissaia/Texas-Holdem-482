@@ -1,3 +1,5 @@
+"""Django administration registration and staff actions for public poker-table configuration and browsing."""
+
 from django.contrib import admin, messages
 from django.core.exceptions import ImproperlyConfigured, PermissionDenied
 from django.template.response import TemplateResponse
@@ -8,6 +10,7 @@ from .models import PokerTable
 
 @admin.register(PokerTable)
 class PokerTableAdmin(admin.ModelAdmin):
+    """Expose table records and the confirmed, permission-checked cleanup action."""
     list_display = (
         "name", "host", "max_players", "player_count", "status", "last_activity_at",
     )
@@ -21,6 +24,7 @@ class PokerTableAdmin(admin.ModelAdmin):
         permissions=["delete"],
     )
     def cleanup_old_empty_tables(self, request, queryset):
+        """Cleanup old empty tables."""
         if not can_cleanup(request.user):
             raise PermissionDenied
         try:

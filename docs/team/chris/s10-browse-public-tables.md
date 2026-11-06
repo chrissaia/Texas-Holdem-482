@@ -1,5 +1,21 @@
 # S10 - Browse public tables
 
+## Story record
+
+- Planned owner: Chris.
+- Workbook source: [User_Stories.xlsx](../../reference/User_Stories.xlsx), `User Stories!A12:M12`.
+- Workbook points: 2; planned sprint points: 2.
+- Priority: High; epic: E7; NFR references: NFR3, NFR5, NFR9, NFR10.
+- Tracked issue: [#19](https://github.com/chrissaia/Texas-Holdem-482/issues/19).
+
+**User story:** as a player, i want to see public tables, so that i can find a game to join.
+
+**Workbook acceptance target:** done when players can see public poker tables in the lobby.
+
+The workbook is a planning snapshot, not a live acceptance record. Only professor/CTO acceptance establishes Done. Owner names describe the supplied plan, not inferred commit authorship.
+
+## Feature guide
+
 Implemented on `saia` for Chris's second selected story (2 points). Professor acceptance is pending. Search/filter/sort behavior also fulfills the technical scope from Chris's original request; filtering remains S11 in the workbook and no additional accepted points are claimed automatically.
 
 ## Try it
@@ -12,7 +28,7 @@ docker compose up -d
 
 Open http://localhost:5173/lobby. Browsing requires no account. The sidebar, mobile header, and home page link to the lobby.
 
-- Create a real table through `/tables/create` using the existing local sign-in workflow in [the S13 guide](s13-public-tables.md).
+- Create a real table through `/tables/create` using the existing local sign-in workflow in [the S13 guide](s13-make-a-public-table.md).
 - Select **See it in the lobby** on success. Its saved name, host, blinds, buy-in, minimum balance, capacity, occupancy, and status appear from PostgreSQL.
 - Search by table name or host, choose filters/sorting, and navigate pages. Search submits with Enter or **Search**; dropdowns apply immediately.
 - **Available seats** starts enabled; turn it off to include full tables. **Reset filters** clears search/sort/page and restores the default available-seat view.

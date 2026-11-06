@@ -1,4 +1,8 @@
-// Mirrors the session contract in docs/contracts.md (S2/S1/S4).
+/**
+ * Module: auth/types.ts.
+ * Shared request and response contracts for auth; no runtime behavior.
+ */
+// Mirrors the session contract in docs/architecture/contracts.md (S2/S1/S4).
 export type SessionUser = {
   id: number
   username: string

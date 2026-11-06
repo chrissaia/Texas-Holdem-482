@@ -1,3 +1,7 @@
+/**
+ * Regression tests: achievements/AchievementsPage.test.tsx.
+ * Exercises observable behavior and isolates API or browser dependencies.
+ */
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, expect, test, vi } from "vitest";
@@ -11,8 +15,10 @@ const earned = {
   xp: 50,
   earned_at: "2026-11-03T00:00:00Z",
 };
+/** Respond for this module's test scenario. */
 const respond = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status });
+/** Page for this module's test scenario. */
 function page(registered = true, loading = false, key = "one") {
   return (
     <MemoryRouter>
@@ -23,8 +29,8 @@ function page(registered = true, loading = false, key = "one") {
           error: "",
           profile: null,
           token: "",
-          refresh: () => {},
-          update: () => {},
+          refresh: /* Return the derived value for the enclosing operation. */ () => {},
+          update: /* Return the derived value for the enclosing operation. */ () => {},
         }}
       >
         <AchievementsPage key={key} />
@@ -32,11 +38,11 @@ function page(registered = true, loading = false, key = "one") {
     </MemoryRouter>
   );
 }
-afterEach(() => {
+afterEach(/* Restore test isolation after the preceding scenario. */ () => {
   vi.unstubAllGlobals();
 });
 
-test("shows only earned details, hidden trophy slots and real XP", async () => {
+test("shows only earned details, hidden trophy slots and real XP", /* Verify shows only earned details, hidden trophy slots and real XP. */ async () => {
   const fetch = vi
     .fn()
     .mockResolvedValue(
@@ -57,7 +63,7 @@ test("shows only earned details, hidden trophy slots and real XP", async () => {
   );
 });
 
-test("empty collection reveals no requirements", async () => {
+test("empty collection reveals no requirements", /* Verify empty collection reveals no requirements. */ async () => {
   vi.stubGlobal(
     "fetch",
     vi
@@ -73,7 +79,7 @@ test("empty collection reveals no requirements", async () => {
   ).not.toBeInTheDocument();
 });
 
-test("anonymous users receive sign in link without fetching", () => {
+test("anonymous users receive sign in link without fetching", /* Verify anonymous users receive sign in link without fetching. */ () => {
   const fetch = vi.fn();
   vi.stubGlobal("fetch", fetch);
   render(page(false));
@@ -84,17 +90,17 @@ test("anonymous users receive sign in link without fetching", () => {
   expect(fetch).not.toHaveBeenCalled();
 });
 
-test("identity loading displays a status", () => {
+test("identity loading displays a status", /* Verify identity loading displays a status. */ () => {
   vi.stubGlobal("fetch", vi.fn());
   render(page(false, true));
   expect(screen.getByRole("status")).toHaveTextContent("Checking your account");
 });
 
-test("failed fetch supports retry and manual refresh without awarding XP", async () => {
+test("failed fetch supports retry and manual refresh without awarding XP", /* Verify failed fetch supports retry and manual refresh without awarding XP. */ async () => {
   const fetch = vi
     .fn()
     .mockResolvedValueOnce(respond({}, 503))
-    .mockImplementation(() =>
+    .mockImplementation(/* Handle the mockImplementation callback using the current operation's state. */ () =>
       Promise.resolve(
         respond({ total_xp: 50, total_achievements: 24, earned: [earned] }),
       ),
@@ -111,13 +117,14 @@ test("failed fetch supports retry and manual refresh without awarding XP", async
     expect(options.method).toBeUndefined();
 });
 
-test("late response from a previous account cannot reveal their collection", async () => {
+test("late response from a previous account cannot reveal their collection", /* Verify late response from a previous account cannot reveal their collection. */ async () => {
   let resolve!: (response: Response) => void;
   const fetch = vi
     .fn()
     .mockImplementationOnce(
+      /* Handle the mockImplementationOnce callback using the current operation's state. */
       () =>
-        new Promise<Response>((r) => {
+        new Promise<Response>(/* Return the derived value for the enclosing operation. */ (r) => {
           resolve = r;
         }),
     )
@@ -128,7 +135,7 @@ test("late response from a previous account cannot reveal their collection", asy
   const view = render(page());
   view.rerender(page(true, false, "two"));
   await screen.findAllByText("Hidden achievement");
-  await act(async () => {
+  await act(/* Handle the act callback using the current operation's state. */ async () => {
     resolve(
       respond({ total_xp: 50, total_achievements: 24, earned: [earned] }),
     );
@@ -136,7 +143,7 @@ test("late response from a previous account cannot reveal their collection", asy
   expect(screen.queryByText("Picture Perfect")).not.toBeInTheDocument();
 });
 
-test("reveals repeat XP only for an earned repeatable trophy", async () => {
+test("reveals repeat XP only for an earned repeatable trophy", /* Verify reveals repeat XP only for an earned repeatable trophy. */ async () => {
   vi.stubGlobal(
     "fetch",
     vi.fn().mockResolvedValue(

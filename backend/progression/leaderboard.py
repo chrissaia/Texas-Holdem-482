@@ -15,16 +15,19 @@ from tables.serializers import WholeNumberField
 
 
 def ranked_accounts():
+    """Aggregate ledger XP for active accounts, including accounts with no events."""
     return get_user_model().objects.filter(is_active=True).annotate(
         total_xp=Coalesce(Sum("event__xp"), Value(0), output_field=BigIntegerField()),
     )
 
 
 class LeaderboardQuery(serializers.Serializer):
+    """Validate the supported ranking query parameters and their bounds."""
     page = WholeNumberField(required=False, min_value=1, max_value=2_147_483_647)
     page_size = WholeNumberField(required=False, min_value=1, max_value=50)
 
     def to_internal_value(self, data):
+        """Validate and normalize external input before it reaches application services."""
         errors = {}
         for key in data:
             if key not in self.fields:
@@ -37,6 +40,7 @@ class LeaderboardQuery(serializers.Serializer):
 
 
 def player_payload(player, viewer_id=None):
+    """Expose only public leaderboard fields and identify the viewer's own row."""
     return {
         "id": player.pk,
         "username": player.username,
@@ -48,6 +52,7 @@ def player_payload(player, viewer_id=None):
 
 
 class LeaderboardPagination(PageNumberPagination):
+    """Limit each leaderboard page to the supported number of player rows."""
     page_size = 10
     page_size_query_param = "page_size"
     max_page_size = 50
@@ -55,10 +60,12 @@ class LeaderboardPagination(PageNumberPagination):
 
 @method_decorator(never_cache, name="dispatch")
 class LeaderboardView(ListAPIView):
+    """Expose public XP rankings and the authenticated viewer's global rank."""
     permission_classes = [AllowAny]
     pagination_class = LeaderboardPagination
 
     def list(self, request, *args, **kwargs):
+        """Validate ranking parameters and return paginated players plus the viewer's rank."""
         query = LeaderboardQuery(data=request.query_params)
         query.is_valid(raise_exception=True)
         # Rows share competition rank (1, 1, 3); IDs only stabilize pagination.

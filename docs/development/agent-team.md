@@ -1,8 +1,8 @@
 # RIVR agent team
 
-For the reusable repository agents intended for teammates, use [.agents/README.md](../.agents/README.md). The roles below describe the earlier one-time analysis team; the reusable briefs are organized by teammate instead.
+For the reusable repository agents intended for teammates, use [.agents/README.md](../../.agents/README.md). The roles below describe the earlier one-time analysis team; the reusable briefs are organized by teammate instead.
 
-Implementation update: S13 has a tested form/API and S10 now has a real public lobby. The table rules and access policy were approved after the analysis below. Use [contracts.md](contracts.md) and [the S13 guide](s13-public-tables.md) for current behavior; unresolved findings below describe the earlier planning state.
+Implementation update: S13 has a tested form/API and S10 now has a real public lobby. The table rules and access policy were approved after the analysis below. Use [../architecture/contracts.md](../architecture/contracts.md) and [the S13 guide](../team/chris/s13-make-a-public-table.md) for current behavior; unresolved findings below describe the earlier planning state.
 
 This team supports the students' existing Sprint 1 ownership. Agents do not take credit for student contributions or change story assignments. Initial assignments are read-only analysis; feature implementation still proceeds one milestone at a time.
 
@@ -43,7 +43,7 @@ The sprint plan selects S1, S2, S4, S5, S10, S13, S14, S23, S29, and S35. The wo
 
 ## Work order and deliverables
 
-1. Coordinator records decisions for user/session identity, guest permissions, table fields, occupancy/activity, chip services, and errors in `docs/contracts.md`.
+1. Coordinator records decisions for user/session identity, guest permissions, table fields, occupancy/activity, chip services, and errors in `docs/architecture/contracts.md`.
 2. `tables_api` prepares the S13/S10 schema/API milestone and acceptance tests. Finn retains account implementation; use real Django session authentication for development rather than an identity bypass.
 3. `ui_quality` inspects the relevant Figma frames using the required Figma workflow when frontend implementation begins, then aligns components and forms with the agreed API. No direct Figma inspection is claimed by this analysis.
 4. Implement and verify S13 end to end, then S10. Filtering/sorting follows the documented scope decision. Keep gameplay, bots, private tables, and joining-seat behavior outside this milestone.

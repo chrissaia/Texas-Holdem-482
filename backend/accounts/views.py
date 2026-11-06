@@ -1,3 +1,5 @@
+"""Http endpoints, permission checks and response construction for account identity, authentication and guest sessions."""
+
 from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.db import IntegrityError
 from django.middleware.csrf import get_token
@@ -19,12 +21,15 @@ class CsrfSessionAuthentication(SessionAuthentication):
     """DRF skips CSRF for anonymous requests; auth endpoints must check it anyway."""
 
     def authenticate(self, request):
+        """Authenticate the session while retaining the required CSRF checks."""
         self.enforce_csrf(request)
         return super().authenticate(request)
 
 
 def auth_view(methods):
+    """Wrap an authentication endpoint with its HTTP-method and CSRF policy."""
     def decorate(view):
+        """Apply the enclosing endpoint wrapper to the supplied view."""
         view = permission_classes([AllowAny])(view)
         view = authentication_classes([CsrfSessionAuthentication])(view)
         return never_cache(api_view(methods)(view))
@@ -33,21 +38,25 @@ def auth_view(methods):
 
 def session_response(request, status_code=status.HTTP_200_OK):
     # Login/logout rotate the CSRF token, so every response returns the current one.
+    """Session response."""
     return Response({**session_payload(request), "csrf_token": get_token(request)}, status=status_code)
 
 
 def error(message, status_code=status.HTTP_400_BAD_REQUEST):
+    """Construct a structured API error response with the requested status code."""
     return Response({"non_field_errors": [message]}, status=status_code)
 
 
 @ensure_csrf_cookie
 @auth_view(["GET"])
 def session(request):
+    """Return the current registered, guest or anonymous session and CSRF token."""
     return session_response(request)
 
 
 @auth_view(["POST"])
 def register(request):
+    """Validate registration input, create the account and establish its session."""
     if request.user.is_authenticated:
         return error("Log out before creating another account.")
     serializer = RegistrationSerializer(data=request.data)
@@ -67,6 +76,7 @@ def register(request):
 
 @auth_view(["POST"])
 def login_view(request):
+    """Validate credentials and establish a registered account session."""
     serializer = LoginSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     username = serializer.validated_data["username"]
@@ -87,12 +97,14 @@ def login_view(request):
 @auth_view(["POST"])
 def logout_view(request):
     # flush() deletes the server-side session, so the old cookie stops working.
+    """Clear the current session and return the updated anonymous identity."""
     logout(request)
     return session_response(request)
 
 
 @auth_view(["POST"])
 def guest(request):
+    """Validate a guest name and establish a session without creating a user record."""
     if request.user.is_authenticated:
         return error("Log out before continuing as a guest.")
     serializer = GuestSerializer(data=request.data)

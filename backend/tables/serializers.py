@@ -1,3 +1,5 @@
+"""Input validation and public response fields for public poker-table configuration and browsing."""
+
 from collections.abc import Mapping
 
 from django.core.exceptions import ValidationError as DjangoValidationError
@@ -7,13 +9,16 @@ from .models import MAX_CHIPS, PokerTable
 
 
 class WholeNumberField(serializers.IntegerField):
+    """Reject booleans, fractions and malformed values before integer validation."""
     def to_internal_value(self, data):
+        """Validate and normalize external input before it reaches application services."""
         if isinstance(data, bool):
             self.fail("invalid")
         return super().to_internal_value(data)
 
 
 class TableSerializer(serializers.ModelSerializer):
+    """Validate table settings and serialize the safe public table representation."""
     host = serializers.SerializerMethodField()
     max_players = WholeNumberField(min_value=2, max_value=9)
     buy_in = WholeNumberField(min_value=1, max_value=MAX_CHIPS)
@@ -22,6 +27,7 @@ class TableSerializer(serializers.ModelSerializer):
     big_blind = WholeNumberField(min_value=1, max_value=MAX_CHIPS)
 
     class Meta:
+        """Declare Django model or serializer metadata for the enclosing class."""
         model = PokerTable
         fields = (
             "id", "name", "host", "is_public", "max_players", "buy_in",
@@ -33,9 +39,11 @@ class TableSerializer(serializers.ModelSerializer):
         )
 
     def get_host(self, obj):
+        """Return host for the caller."""
         return {"id": obj.host_id, "username": obj.host.username}
 
     def to_internal_value(self, data):
+        """Validate and normalize external input before it reaches application services."""
         if not isinstance(data, Mapping):
             raise serializers.ValidationError({"non_field_errors": ["Expected a JSON object."]})
         allowed = {"name", "max_players", "buy_in", "minimum_balance", "small_blind", "big_blind"}
@@ -45,6 +53,7 @@ class TableSerializer(serializers.ModelSerializer):
         return super().to_internal_value(data)
 
     def validate(self, attrs):
+        """Check cross-field rules and return validated attributes or field errors."""
         table = PokerTable(**attrs)
         try:
             table.full_clean(exclude=["host"], validate_constraints=False)
@@ -55,6 +64,7 @@ class TableSerializer(serializers.ModelSerializer):
 
 
 class TableListQuerySerializer(serializers.Serializer):
+    """Validate supported lobby filters, sort choices and paging inputs."""
     search = serializers.CharField(required=False, allow_blank=True, max_length=150)
     max_buy_in = WholeNumberField(required=False, min_value=1, max_value=MAX_CHIPS)
     big_blind = WholeNumberField(required=False, min_value=1, max_value=MAX_CHIPS)
@@ -69,6 +79,7 @@ class TableListQuerySerializer(serializers.Serializer):
     page_size = WholeNumberField(required=False, min_value=1, max_value=50)
 
     def to_internal_value(self, data):
+        """Validate and normalize external input before it reaches application services."""
         errors = {}
         for key in data:
             if key not in self.fields:

@@ -1,3 +1,4 @@
+# Purpose: Build the Node environment used by the Vite development service.
 FROM node:22-alpine
 WORKDIR /app/frontend
 COPY frontend/package.json frontend/package-lock.json ./
