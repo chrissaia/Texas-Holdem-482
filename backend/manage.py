@@ -5,6 +5,7 @@ import sys
 
 
 def main():
+    """Run the manage command-line workflow."""
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
     from django.core.management import execute_from_command_line
 

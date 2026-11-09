@@ -1,6 +1,6 @@
 # Full-application test and coverage evidence
 
-Current evidence lives in [evidence/](evidence/), including raw tool JSON/XML, per-file report images and `manifest.json`. The manifest identifies source commit, file hashes, scope, measurement time and commands. Coverage images are generated prints of the actual tool report, never manually entered percentages.
+Current evidence lives in [evidence](evidence/), including raw tool JSON/XML, per-file report images and `manifest.json`. The manifest identifies source commit, file hashes, scope, measurement time and commands. Coverage images are generated prints of the actual tool report, never manually entered percentages.
 
 The old [S23 image](../s23-coverage/coverage.png) and JSON are retained as historical **two-file cleanup coverage**, not overall team coverage. The older setup/S10/S13/theme/profile verification notes are dated feature-stage measurements, not the current deliverable's full coverage report. Fixing this now does not make the old submission complete retroactively.
 

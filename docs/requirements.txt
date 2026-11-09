@@ -1,2 +1,3 @@
+# Purpose: Dependencies for rendering the standalone gameplay sequence diagram.
 # Standalone sequence-diagram rendering only.
 reportlab==5.1.0

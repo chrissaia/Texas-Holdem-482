@@ -1,3 +1,5 @@
+"""Persisted records and database constraints for account identity, authentication and guest sessions."""
+
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models import Q
@@ -13,6 +15,7 @@ class User(AbstractUser):
     daily_chips_claimed_at = models.DateTimeField(null=True, blank=True, editable=False)
 
     class Meta(AbstractUser.Meta):
+        """Declare Django model or serializer metadata for the enclosing class."""
         constraints = [
             models.CheckConstraint(
                 condition=Q(chip_balance__lte=9_007_199_254_740_991),

@@ -1,3 +1,7 @@
+/**
+ * Module: tables/LobbyPage.tsx.
+ * Render the tables screen, including user actions, loading states and request feedback.
+ */
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { ApiError } from '../../api/client'
@@ -8,8 +12,10 @@ import type { TableList } from './types'
 import { SEAT_OPTIONS } from './validation'
 import './lobby.css'
 
+/** Format a chip amount for display in the table interface. */
 const format = (n: number) => n.toLocaleString('en-US')
 
+/** Render the lobby page interface and its current state. */
 export function LobbyPage() {
   const [params, setParams] = useSearchParams()
   const [attempt, setAttempt] = useState(0)
@@ -30,13 +36,13 @@ export function LobbyPage() {
   const available = queryParams.get('available_seats') === 'true'
   const search = params.get('search') || ''
 
-  useEffect(() => {
+  useEffect(/* Synchronize component state with external data and release resources on cleanup. */ () => {
     let active = true
     listTables(query)
-      .then((value) => {
+      .then(/* Apply the successful asynchronous result to the current operation. */ (value) => {
         if (active) setResponse({ key: requestKey, data: value })
       })
-      .catch((cause) => {
+      .catch(/* Handle the failed operation without leaving stale UI feedback. */ (cause) => {
         if (!active) return
         let message = 'We could not load public tables. Please try again.'
         if (cause instanceof ApiError && cause.status === 400)
@@ -46,13 +52,14 @@ export function LobbyPage() {
             'This results page is no longer available. Reset filters to return to the first page.'
         setResponse({ key: requestKey, error: message })
       })
-    return () => {
+    return /* Return the derived value for the enclosing operation. */ () => {
       active = false
     }
   }, [query, requestKey])
 
+  /** Set the chosen lobby filter and reset pagination in the URL. */
   function updateFilter(name: string, value: string) {
-    setParams((current) => {
+    setParams(/* Handle the setParams callback using the current operation's state. */ (current) => {
       const next = new URLSearchParams(current)
       if (value) next.set(name, value)
       else next.delete(name)
@@ -60,8 +67,9 @@ export function LobbyPage() {
       return next
     })
   }
+  /** Navigate to the requested lobby page while preserving active filters. */
   function changePage(page: number) {
-    setParams((current) => {
+    setParams(/* Handle the setParams callback using the current operation's state. */ (current) => {
       const next = new URLSearchParams(current)
       next.set('page', String(page))
       return next
@@ -87,7 +95,7 @@ export function LobbyPage() {
       <div className="lobby-search-controls">
         <form
           className="form-field"
-          onSubmit={(event) => {
+          onSubmit={/* Return the derived value for the enclosing operation. */ (event) => {
             event.preventDefault()
             updateFilter(
               'search',
@@ -118,7 +126,7 @@ export function LobbyPage() {
           <select
             id="lobby-sort"
             value={params.get('ordering') || 'newest'}
-            onChange={(e) => updateFilter('ordering', e.target.value)}
+            onChange={/* Return the derived value for the enclosing operation. */ (e) => updateFilter('ordering', e.target.value)}
           >
             <option value="newest">Newest first</option>
             <option value="name">Table name A–Z</option>
@@ -144,9 +152,9 @@ export function LobbyPage() {
           <button
             className="text-button"
             type="button"
-            onClick={() => {
+            onClick={/* Return the derived value for the enclosing operation. */ () => {
               setParams({})
-              setAttempt((n) => n + 1)
+              setAttempt(/* Handle the setAttempt callback using the current operation's state. */ (n) => n + 1)
             }}
           >
             Reset filters
@@ -158,10 +166,10 @@ export function LobbyPage() {
             <select
               id="buy-in-filter"
               value={params.get('max_buy_in') || ''}
-              onChange={(e) => updateFilter('max_buy_in', e.target.value)}
+              onChange={/* Return the derived value for the enclosing operation. */ (e) => updateFilter('max_buy_in', e.target.value)}
             >
               <option value="">Any amount</option>
-              {[400, 1000, 2000, 20000].map((n) => (
+              {[400, 1000, 2000, 20000].map(/* Convert this item into the value or UI element expected by the collection. */ (n) => (
                 <option key={n} value={n}>
                   Up to {format(n)} chips
                 </option>
@@ -173,10 +181,10 @@ export function LobbyPage() {
             <select
               id="blinds-filter"
               value={params.get('big_blind') || ''}
-              onChange={(e) => updateFilter('big_blind', e.target.value)}
+              onChange={/* Return the derived value for the enclosing operation. */ (e) => updateFilter('big_blind', e.target.value)}
             >
               <option value="">All blinds</option>
-              {[10, 20, 50, 100, 1000].map((n) => (
+              {[10, 20, 50, 100, 1000].map(/* Convert this item into the value or UI element expected by the collection. */ (n) => (
                 <option key={n} value={n}>
                   {format(n / 2)} / {format(n)}
                 </option>
@@ -188,10 +196,10 @@ export function LobbyPage() {
             <select
               id="players-filter"
               value={params.get('max_players') || ''}
-              onChange={(e) => updateFilter('max_players', e.target.value)}
+              onChange={/* Return the derived value for the enclosing operation. */ (e) => updateFilter('max_players', e.target.value)}
             >
               <option value="">2–9 seats</option>
-              {SEAT_OPTIONS.map((n) => (
+              {SEAT_OPTIONS.map(/* Convert this item into the value or UI element expected by the collection. */ (n) => (
                 <option key={n} value={n}>
                   {n} seats
                 </option>
@@ -204,7 +212,7 @@ export function LobbyPage() {
             className={`button ${available ? 'primary' : ''}`}
             type="button"
             aria-pressed={available}
-            onClick={() =>
+            onClick={/* Return the derived value for the enclosing operation. */ () =>
               updateFilter('available_seats', available ? 'false' : 'true')
             }
           >
@@ -244,7 +252,7 @@ export function LobbyPage() {
             <button
               className="button"
               type="button"
-              onClick={() => setAttempt((n) => n + 1)}
+              onClick={/* Return the derived value for the enclosing operation. */ () => setAttempt(/* Handle the setAttempt callback using the current operation's state. */ (n) => n + 1)}
             >
               Try again
             </button>
@@ -297,7 +305,7 @@ export function LobbyPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {data.results.map((table) => (
+                      {data.results.map(/* Convert this item into the value or UI element expected by the collection. */ (table) => (
                         <tr key={table.id}>
                           <th scope="row">
                             <Link to={`/tables/${table.id}`}>{table.name}</Link>
@@ -356,7 +364,7 @@ export function LobbyPage() {
                     type="button"
                     className="text-button"
                     disabled={!data.previous}
-                    onClick={() => changePage(data.page - 1)}
+                    onClick={/* Return the derived value for the enclosing operation. */ () => changePage(data.page - 1)}
                   >
                     Previous
                   </button>
@@ -367,7 +375,7 @@ export function LobbyPage() {
                     type="button"
                     className="text-button"
                     disabled={!data.next}
-                    onClick={() => changePage(data.page + 1)}
+                    onClick={/* Return the derived value for the enclosing operation. */ () => changePage(data.page + 1)}
                   >
                     Next
                   </button>
@@ -392,7 +400,7 @@ export function LobbyPage() {
           className="button"
           type="button"
           disabled={loading}
-          onClick={() => setAttempt((n) => n + 1)}
+          onClick={/* Return the derived value for the enclosing operation. */ () => setAttempt(/* Handle the setAttempt callback using the current operation's state. */ (n) => n + 1)}
         >
           Refresh tables
         </button>

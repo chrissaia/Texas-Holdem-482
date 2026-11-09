@@ -1,3 +1,5 @@
+"""Http endpoints, permission checks and response construction for friend requests, relationships and player discovery."""
+
 from django.middleware.csrf import get_token
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -12,22 +14,27 @@ from .serializers import FriendRequestSerializer
 
 
 class RegisteredPlayerPermission(CanHostTable):
+    """Restrict friendship operations to active registered sessions."""
     message = "Sign in with a registered account to manage friends."
 
 
 def friends_response(request, status_code=status.HTTP_200_OK):
     # Every write returns the full lists so the page can replace its state in one step.
+    """Serialize the current friend lists with a CSRF token for subsequent writes."""
     payload = services.friends_payload(request.user)
     return Response({**payload, "csrf_token": get_token(request)}, status=status_code)
 
 
 def require_empty_body(request):
+    """Reject request bodies containing fields for actions that take no input."""
     if not isinstance(request.data, dict) or request.data:
         raise ValidationError({"non_field_errors": ["This action accepts an empty JSON object only."]})
 
 
 def friends_view(methods):
+    """Wrap a friend endpoint with registered-session permissions and cache prevention."""
     def decorate(view):
+        """Apply the enclosing endpoint wrapper to the supplied view."""
         return never_cache(api_view(methods)(permission_classes([RegisteredPlayerPermission])(view)))
     return decorate
 
@@ -35,11 +42,13 @@ def friends_view(methods):
 @ensure_csrf_cookie
 @friends_view(["GET"])
 def friend_list(request):
+    """Return the authenticated player's friends and pending requests."""
     return friends_response(request)
 
 
 @friends_view(["POST"])
 def send_request(request):
+    """Send request."""
     serializer = FriendRequestSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     try:
@@ -50,8 +59,10 @@ def send_request(request):
 
 
 def request_action(action):
+    """Build a protected endpoint that delegates a friendship action to its service."""
     @friends_view(["POST"])
     def view(request, pk):
+        """Validate the action request, invoke its service and return the updated friend lists."""
         require_empty_body(request)
         action(request.user, pk)
         return friends_response(request)
@@ -65,6 +76,7 @@ cancel_request = request_action(services.cancel_request)
 
 @friends_view(["DELETE"])
 def remove_friend(request, pk):
+    """Remove an accepted friendship owned by the current player."""
     services.remove_friend(request.user, pk)
     return friends_response(request)
 

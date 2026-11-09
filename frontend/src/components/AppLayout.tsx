@@ -1,3 +1,7 @@
+/**
+ * Module: components/AppLayout.tsx.
+ * Implement AppLayout for the shared application feature and its importing components.
+ */
 import { useProfile } from "../features/profile/context";
 import type { ProfileSummary } from "../features/profile/types";
 import "../features/profile/profile.css";
@@ -36,6 +40,7 @@ const navigation = [
   ["Settings", settings],
 ];
 
+/** Render the app layout interface and its current state. */
 export function AppLayout({
   host,
   summary,
@@ -67,7 +72,7 @@ export function AppLayout({
             <img src={house} alt="" />
             Home
           </Link>
-          {navigation.map(([label, icon]) => {
+          {navigation.map(/* Convert this item into the value or UI element expected by the collection. */ ([label, icon]) => {
             const routes: Record<string, string> = {
               Lobby: "/lobby",
               Friends: "/friends",
@@ -75,6 +80,7 @@ export function AppLayout({
               "Store / Get Chips": "/rewards",
               Achievements: "/achievements",
               Leaderboard: "/leaderboard",
+              Statistics: "/statistics",
             };
             const route = routes[label];
             const active =
@@ -156,6 +162,9 @@ export function AppLayout({
             </Link>
             <Link className="mobile-settings-link" to="/achievements">
               Trophies
+            </Link>
+            <Link className="mobile-settings-link" to="/statistics">
+              Stats
             </Link>
             <Link className="mobile-settings-link" to="/settings">
               Settings

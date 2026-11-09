@@ -1,3 +1,7 @@
+/**
+ * Regression tests: friends/FriendsPage.test.tsx.
+ * Exercises observable behavior and isolates API or browser dependencies.
+ */
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, expect, test, vi } from 'vitest'
@@ -6,11 +10,13 @@ import type { FriendEntry, FriendsResponse } from './types'
 
 const me = { id: 1, username: 'alice' }
 const context = { host: me, csrf_token: 'context-csrf' }
+/** Entry for this module's test scenario. */
 const entry = (id: number, username: string): FriendEntry => ({
   id,
   player: { id: id + 100, username },
   created_at: '2026-11-02T12:00:00Z',
 })
+/** Lists for this module's test scenario. */
 const lists = (overrides: Partial<FriendsResponse> = {}): FriendsResponse => ({
   friends: [entry(1, 'Mira')],
   incoming: [entry(2, 'Eli')],
@@ -18,13 +24,15 @@ const lists = (overrides: Partial<FriendsResponse> = {}): FriendsResponse => ({
   csrf_token: 'csrf-1',
   ...overrides,
 })
+/** Respond for this module's test scenario. */
 const respond = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status })
 
 type Handler = (url: URL, init?: RequestInit) => Response | Promise<Response>
 
-function setup(write: Handler = () => respond(lists()), first = lists()) {
-  const fetch = vi.fn().mockImplementation((path: string, init?: RequestInit) => {
+/** Setup for this module's test scenario. */
+function setup(write: Handler = /* Return the derived value for the enclosing operation. */ () => respond(lists()), first = lists()) {
+  const fetch = vi.fn().mockImplementation(/* Handle the mockImplementation callback using the current operation's state. */ (path: string, init?: RequestInit) => {
     const url = new URL(path, 'http://localhost')
     if (url.pathname.includes('creation-context'))
       return Promise.resolve(respond(context))
@@ -40,20 +48,25 @@ function setup(write: Handler = () => respond(lists()), first = lists()) {
   )
   return fetch
 }
+/** Writes for this module's test scenario. */
 const writes = (fetch: ReturnType<typeof vi.fn>) =>
-  fetch.mock.calls.filter(([, init]) => init?.method && init.method !== 'GET')
+  fetch.mock.calls.filter(/* Keep only entries satisfying the surrounding collection rule. */ ([, init]) => init?.method && init.method !== 'GET')
+/** Gets for this module's test scenario. */
 const gets = (fetch: ReturnType<typeof vi.fn>) =>
   fetch.mock.calls.filter(
+    /* Keep only entries satisfying the surrounding collection rule. */
     ([path, init]) => String(path) === '/api/friends/' && !init?.method,
   )
+/** Search for this module's test scenario. */
 const search = () => screen.getByLabelText('Find a friend')
+/** Send to for this module's test scenario. */
 const sendTo = (name: string) => {
   fireEvent.change(search(), { target: { value: name } })
   fireEvent.click(screen.getByRole('button', { name: 'Send Request' }))
 }
-afterEach(() => vi.unstubAllGlobals())
+afterEach(/* Restore test isolation after the preceding scenario. */ () => vi.unstubAllGlobals())
 
-test('shows friends, incoming and sent requests from the API', async () => {
+test('shows friends, incoming and sent requests from the API', /* Verify shows friends, incoming and sent requests from the API. */ async () => {
   setup()
   const grid = await screen.findByRole('list', { name: 'Your friends' })
   expect(within(grid).getByRole('heading', { name: 'Mira' })).toBeVisible()
@@ -69,7 +82,7 @@ test('shows friends, incoming and sent requests from the API', async () => {
   expect(within(nav).getByRole('link', { name: 'Friends' })).toHaveAttribute('aria-current', 'page')
 })
 
-test('features from later stories are visible but unavailable', async () => {
+test('features from later stories are visible but unavailable', /* Verify features from later stories are visible but unavailable. */ async () => {
   setup()
   await screen.findByRole('list', { name: 'Your friends' })
   expect(screen.getByText('Online')).toHaveAttribute('aria-disabled', 'true')
@@ -78,8 +91,8 @@ test('features from later stories are visible but unavailable', async () => {
   expect(screen.getByRole('button', { name: 'Invite to Table' })).toBeDisabled()
 })
 
-test('sends a trimmed username with the CSRF token and shows the result', async () => {
-  const fetch = setup(() =>
+test('sends a trimmed username with the CSRF token and shows the result', /* Verify sends a trimmed username with the CSRF token and shows the result. */ async () => {
+  const fetch = setup(/* Handle the setup callback using the current operation's state. */ () =>
     respond(lists({ outgoing: [entry(3, 'Rowan'), entry(4, 'bob')], csrf_token: 'csrf-2' }), 201),
   )
   await screen.findByRole('list', { name: 'Your friends' })
@@ -92,18 +105,18 @@ test('sends a trimmed username with the CSRF token and shows the result', async 
   expect(search()).toHaveValue('')
   // The next write uses the token from the latest response.
   sendTo('carol')
-  await waitFor(() => expect(writes(fetch)).toHaveLength(2))
+  await waitFor(/* Wait for the expected asynchronous UI or request state. */ () => expect(writes(fetch)).toHaveLength(2))
   expect(writes(fetch)[1][1].headers['X-CSRFToken']).toBe('csrf-2')
 })
 
-test('a crossed request reports the new friendship', async () => {
-  setup(() => respond(lists({ friends: [entry(1, 'Mira'), entry(5, 'Bob')] })))
+test('a crossed request reports the new friendship', /* Verify a crossed request reports the new friendship. */ async () => {
+  setup(/* Handle the setup callback using the current operation's state. */ () => respond(lists({ friends: [entry(1, 'Mira'), entry(5, 'Bob')] })))
   await screen.findByRole('list', { name: 'Your friends' })
   sendTo('bob')
   expect(await screen.findByText('You and bob are now friends.')).toBeVisible()
 })
 
-test('a blank username is flagged without calling the API', async () => {
+test('a blank username is flagged without calling the API', /* Verify a blank username is flagged without calling the API. */ async () => {
   const fetch = setup()
   await screen.findByRole('list', { name: 'Your friends' })
   sendTo('   ')
@@ -113,9 +126,9 @@ test('a blank username is flagged without calling the API', async () => {
   expect(writes(fetch)).toHaveLength(0)
 })
 
-test('server errors appear under the field or as an alert', async () => {
+test('server errors appear under the field or as an alert', /* Verify server errors appear under the field or as an alert. */ async () => {
   let reply = respond({ username: ['No registered player has that username.'] }, 400)
-  setup(() => reply)
+  setup(/* Handle the setup callback using the current operation's state. */ () => reply)
   await screen.findByRole('list', { name: 'Your friends' })
   sendTo('ghost')
   expect(await screen.findByText('No registered player has that username.')).toBeVisible()
@@ -129,7 +142,7 @@ test('server errors appear under the field or as an alert', async () => {
 
   reply = respond({}, 400)
   sendTo('Rowan')
-  await waitFor(() =>
+  await waitFor(/* Wait for the expected asynchronous UI or request state. */ () =>
     expect(screen.getByRole('alert')).toHaveTextContent('That did not work. Please try again.'),
   )
 })
@@ -138,7 +151,7 @@ test.each([
   ['Accept', 'Friend requests', '/api/friends/requests/2/accept/', 'You and Eli are now friends.'],
   ['Decline', 'Friend requests', '/api/friends/requests/2/decline/', "Declined Eli's request."],
   ['Cancel', 'Sent requests', '/api/friends/requests/3/cancel/', 'Cancelled your request to Rowan.'],
-])('%s calls the request endpoint', async (button, panel, url, message) => {
+])('%s calls the request endpoint', /* Handle the enclosing callback using the current operation's state. */ async (button, panel, url, message) => {
   const fetch = setup()
   const region = await screen.findByRole('region', { name: panel })
   fireEvent.click(within(region).getByRole('button', { name: button }))
@@ -148,8 +161,8 @@ test.each([
   expect(init).toMatchObject({ method: 'POST', body: '{}' })
 })
 
-test('removing a friend asks for confirmation first', async () => {
-  const fetch = setup(() => respond(lists({ friends: [] })))
+test('removing a friend asks for confirmation first', /* Verify removing a friend asks for confirmation first. */ async () => {
+  const fetch = setup(/* Handle the setup callback using the current operation's state. */ () => respond(lists({ friends: [] })))
   await screen.findByRole('list', { name: 'Your friends' })
   fireEvent.click(screen.getByRole('button', { name: 'Remove Friend' }))
   fireEvent.click(screen.getByRole('button', { name: 'Keep' }))
@@ -162,32 +175,34 @@ test('removing a friend asks for confirmation first', async () => {
   expect(screen.getByText('YOUR CREW · 0 FRIENDS')).toBeVisible()
 })
 
-test('a request answered elsewhere shows a message and reloads the lists', async () => {
-  const fetch = setup(() => respond({ detail: 'Not found.' }, 404))
+test('a request answered elsewhere shows a message and reloads the lists', /* Verify a request answered elsewhere shows a message and reloads the lists. */ async () => {
+  const fetch = setup(/* Handle the setup callback using the current operation's state. */ () => respond({ detail: 'Not found.' }, 404))
   const region = await screen.findByRole('region', { name: 'Friend requests' })
   fireEvent.click(within(region).getByRole('button', { name: 'Accept' }))
   expect(await screen.findByRole('alert')).toHaveTextContent('That request or friend is no longer available.')
-  await waitFor(() => expect(gets(fetch)).toHaveLength(2))
+  await waitFor(/* Wait for the expected asynchronous UI or request state. */ () => expect(gets(fetch)).toHaveLength(2))
 })
 
-test('an expired session and a lost connection are reported', async () => {
+test('an expired session and a lost connection are reported', /* Verify an expired session and a lost connection are reported. */ async () => {
+  /** Fail for this module's test scenario. */
   let fail: () => Response = () => respond({ detail: 'CSRF Failed' }, 403)
-  setup(() => fail())
+  setup(/* Handle the setup callback using the current operation's state. */ () => fail())
   await screen.findByRole('list', { name: 'Your friends' })
   sendTo('bob')
   expect(await screen.findByRole('alert')).toHaveTextContent('Your session changed.')
-  fail = () => {
+  fail = /* Return the derived value for the enclosing operation. */ () => {
     throw new TypeError('offline')
   }
   sendTo('bob')
-  await waitFor(() =>
+  await waitFor(/* Wait for the expected asynchronous UI or request state. */ () =>
     expect(screen.getByRole('alert')).toHaveTextContent('Unable to reach RIVR.'),
   )
 })
 
-test('only one action is sent while another is in flight', async () => {
+test('only one action is sent while another is in flight', /* Verify only one action is sent while another is in flight. */ async () => {
+  /** Finish for this module's test scenario. */
   let finish: (value: Response) => void = () => {}
-  const fetch = setup(() => new Promise<Response>((resolve) => (finish = resolve)))
+  const fetch = setup(/* Handle the setup callback using the current operation's state. */ () => new Promise<Response>(/* Return the derived value for the enclosing operation. */ (resolve) => (finish = resolve)))
   const region = await screen.findByRole('region', { name: 'Friend requests' })
   fireEvent.click(within(region).getByRole('button', { name: 'Accept' }))
   fireEvent.click(within(region).getByRole('button', { name: 'Decline' }))
@@ -198,7 +213,7 @@ test('only one action is sent while another is in flight', async () => {
   expect(await screen.findByText('You and Eli are now friends.')).toBeVisible()
 })
 
-test('the Requests tab hides the friend cards and Add Friend focuses the search', async () => {
+test('the Requests tab hides the friend cards and Add Friend focuses the search', /* Verify the Requests tab hides the friend cards and Add Friend focuses the search. */ async () => {
   setup()
   await screen.findByRole('list', { name: 'Your friends' })
   fireEvent.click(screen.getByRole('button', { name: 'Requests · 2' }))
@@ -210,15 +225,15 @@ test('the Requests tab hides the friend cards and Add Friend focuses the search'
   expect(search()).toHaveFocus()
 })
 
-test('empty lists explain what to do next', async () => {
+test('empty lists explain what to do next', /* Verify empty lists explain what to do next. */ async () => {
   setup(undefined, lists({ friends: [], incoming: [], outgoing: [] }))
   expect(await screen.findByText('No friends yet.')).toBeVisible()
   expect(screen.getByText('No requests right now.')).toBeVisible()
   expect(screen.getByText('You have no requests waiting.')).toBeVisible()
 })
 
-test('guests and signed-out visitors are asked to sign in', async () => {
-  const fetch = vi.fn().mockImplementation((path: string) =>
+test('guests and signed-out visitors are asked to sign in', /* Verify guests and signed-out visitors are asked to sign in. */ async () => {
+  const fetch = vi.fn().mockImplementation(/* Handle the mockImplementation callback using the current operation's state. */ (path: string) =>
     Promise.resolve(
       String(path).includes('creation-context')
         ? respond({ host: null, csrf_token: 'x' })
@@ -235,9 +250,9 @@ test('guests and signed-out visitors are asked to sign in', async () => {
   expect(screen.getByRole('link', { name: 'Sign in' })).toHaveAttribute('href', '/login')
 })
 
-test('a failed load can be retried', async () => {
+test('a failed load can be retried', /* Verify a failed load can be retried. */ async () => {
   let fail = true
-  const fetch = vi.fn().mockImplementation((path: string) =>
+  const fetch = vi.fn().mockImplementation(/* Handle the mockImplementation callback using the current operation's state. */ (path: string) =>
     Promise.resolve(
       String(path).includes('creation-context')
         ? respond(context)

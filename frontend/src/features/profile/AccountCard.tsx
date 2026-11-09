@@ -1,3 +1,7 @@
+/**
+ * Module: profile/AccountCard.tsx.
+ * Implement AccountCard for the profile feature and its importing components.
+ */
 import { useRef, useState } from 'react'
 import { ApiError } from '../../api/client'
 import avatarSurface from '../../assets/figma/avatar-settings-64.svg'
@@ -6,6 +10,7 @@ import { ProfileGate } from './ProfileGate'
 import { useProfile } from './context'
 import './profile.css'
 
+/** Render the account card interface and its current state. */
 export function AccountCard() {
   const { profile, token, update, refresh } = useProfile()
   const [file, setFile] = useState<File | null>(null)
@@ -14,6 +19,7 @@ export function AccountCard() {
   const [pending, setPending] = useState(false)
   const busy = useRef(false)
   const input = useRef<HTMLInputElement>(null)
+  /** Validate a selected avatar file and update its local preview state. */
   function select(next: File | undefined) {
     setError('')
     setMessage('')
@@ -25,6 +31,7 @@ export function AccountCard() {
       return setError('Choose an image no larger than 2 MB.')
     setFile(next)
   }
+  /** Submit the selected avatar and refresh the persisted account profile. */
   async function upload(event: React.FormEvent) {
     event.preventDefault()
     if (!file || !profile || busy.current) return
@@ -81,7 +88,7 @@ export function AccountCard() {
                 className="button"
                 type="button"
                 disabled={pending}
-                onClick={() => input.current?.click()}
+                onClick={/* Return the derived value for the enclosing operation. */ () => input.current?.click()}
               >
                 Change avatar
               </button>
@@ -94,7 +101,7 @@ export function AccountCard() {
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
                 disabled={pending}
-                onChange={(e) => select(e.target.files?.[0])}
+                onChange={/* Return the derived value for the enclosing operation. */ (e) => select(e.target.files?.[0])}
                 aria-describedby="avatar-hint"
               />
               <p id="avatar-hint" className="field-hint">

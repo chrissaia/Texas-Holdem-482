@@ -1,3 +1,7 @@
+/**
+ * Module: auth/GuestPage.tsx.
+ * Render the auth screen, including user actions, loading states and request feedback.
+ */
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FormField } from '../../components/FormField'
@@ -14,6 +18,7 @@ import { validateGuestName } from './validation'
 // Avatars and chip balances belong to Royal's stories, so these are display-only for now.
 const AVATARS = ['RV', 'SP', 'CL', 'DI', 'HE']
 
+/** Render the guest page interface and its current state. */
 export function GuestPage({ onSignedIn }: { onSignedIn: () => void }) {
   const { form: formRef, pending, errors, submit, ...gate } =
     useAuthForm(onSignedIn)
@@ -30,9 +35,9 @@ export function GuestPage({ onSignedIn }: { onSignedIn: () => void }) {
           ref={formRef}
           className="auth-form"
           noValidate
-          onSubmit={(event) => {
+          onSubmit={/* Return the derived value for the enclosing operation. */ (event) => {
             event.preventDefault()
-            submit(validateGuestName(name), (csrf) =>
+            submit(validateGuestName(name), /* Handle the submit callback using the current operation's state. */ (csrf) =>
               startGuest({ name: name.trim() }, csrf),
             )
           }}
@@ -45,7 +50,7 @@ export function GuestPage({ onSignedIn }: { onSignedIn: () => void }) {
             hint="Your guest name is reserved for this browser session."
             value={name}
             errors={errors.name}
-            onChange={(event) => setName(event.target.value)}
+            onChange={/* Return the derived value for the enclosing operation. */ (event) => setName(event.target.value)}
           />
           <div
             className="auth-avatars unavailable"
@@ -55,7 +60,7 @@ export function GuestPage({ onSignedIn }: { onSignedIn: () => void }) {
           >
             <p className="field-label">Choose a temporary avatar</p>
             <div className="auth-avatar-row">
-              {AVATARS.map((initials) => (
+              {AVATARS.map(/* Convert this item into the value or UI element expected by the collection. */ (initials) => (
                 <div className="avatar auth-avatar" key={initials}>
                   <img src={avatarGuest} alt="" width="54" height="54" />
                   <span>{initials}</span>

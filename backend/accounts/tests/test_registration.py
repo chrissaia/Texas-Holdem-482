@@ -15,10 +15,12 @@ URL = reverse("accounts:register")
 
 @pytest.fixture
 def payload():
+    """Prepare payload for the surrounding test scenario."""
     return {"username": "river_rat", "email": "River.Rat@Example.com", "password": "flop-turn-river-9"}
 
 
 def test_register_creates_hashed_account_and_signs_in(payload):
+    """Verify that register creates hashed account and signs in."""
     client = csrf_client()
     response = client.post(URL, payload, format="json")
     assert response.status_code == 201
@@ -35,12 +37,14 @@ def test_register_creates_hashed_account_and_signs_in(payload):
 
 
 def test_duplicate_username_is_case_insensitive(payload, registered_user):
+    """Verify that duplicate username is case insensitive."""
     response = csrf_client().post(URL, {**payload, "username": "REGISTERED-player"}, format="json")
     assert response.status_code == 400
     assert response.data["username"] == ["A user with that username already exists."]
 
 
 def test_duplicate_email_is_case_insensitive(payload, registered_user):
+    """Verify that duplicate email is case insensitive."""
     response = csrf_client().post(URL, {**payload, "email": "PLAYER@example.com"}, format="json")
     assert response.status_code == 400
     assert response.data["email"] == ["An account with that email already exists."]
@@ -59,6 +63,7 @@ def test_duplicate_email_is_case_insensitive(payload, registered_user):
     ({"is_staff": True}, "is_staff"),
 ])
 def test_invalid_registration_is_rejected(payload, changes, field):
+    """Verify that invalid registration is rejected."""
     response = csrf_client().post(URL, {**payload, **changes}, format="json")
     assert response.status_code == 400
     assert field in response.data
@@ -67,12 +72,14 @@ def test_invalid_registration_is_rejected(payload, changes, field):
 
 @pytest.mark.parametrize("missing", ["username", "email", "password"])
 def test_required_fields(payload, missing):
+    """Verify that required fields."""
     del payload[missing]
     response = csrf_client().post(URL, payload, format="json")
     assert response.status_code == 400 and missing in response.data
 
 
 def test_database_enforces_case_insensitive_uniqueness():
+    """Verify that database enforces case insensitive uniqueness."""
     User.objects.create_user(username="Mira", email="mira@example.com")
     for duplicate in ({"username": "mira"}, {"username": "other", "email": "MIRA@example.com"}):
         with pytest.raises(IntegrityError), transaction.atomic():
@@ -84,6 +91,7 @@ def test_database_enforces_case_insensitive_uniqueness():
 
 def test_simultaneous_registration_race_returns_400(payload, monkeypatch):
     # Simulate another request committing the name after this request validated it.
+    """Verify that simultaneous registration race returns 400."""
     User.objects.create_user(username="river_rat", email="first@example.com")
     monkeypatch.setattr(RegistrationSerializer, "validate_username", lambda self, value: value)
     response = csrf_client().post(URL, payload, format="json")
@@ -94,9 +102,11 @@ def test_simultaneous_registration_race_returns_400(payload, monkeypatch):
 
 def test_failure_inside_registration_rolls_back_account(payload, monkeypatch):
     # Stands in for a failed starting-chip grant inside the same transaction.
+    """Verify that failure inside registration rolls back account."""
     real_create = User.objects.create_user
 
     def create_then_fail(**kwargs):
+        """Prepare create then fail for the surrounding test scenario."""
         real_create(**kwargs)
         raise RuntimeError("grant failed")
 
@@ -107,6 +117,7 @@ def test_failure_inside_registration_rolls_back_account(payload, monkeypatch):
 
 
 def test_registration_requires_csrf(payload):
+    """Verify that registration requires csrf."""
     from rest_framework.test import APIClient
 
     response = APIClient(enforce_csrf_checks=True).post(URL, payload, format="json")
@@ -115,12 +126,14 @@ def test_registration_requires_csrf(payload):
 
 
 def test_signed_in_user_cannot_register_again(payload, registered_client):
+    """Verify that signed in user cannot register again."""
     response = registered_client.post(URL, payload, format="json")
     assert response.status_code == 400
     assert not User.objects.filter(username="river_rat").exists()
 
 
 def test_guest_can_register_and_loses_guest_marker(payload, guest_client):
+    """Verify that guest can register and loses guest marker."""
     response = guest_client.post(URL, payload, format="json")
     assert response.status_code == 201
     assert response.data["state"] == "registered" and response.data["guest"] is None

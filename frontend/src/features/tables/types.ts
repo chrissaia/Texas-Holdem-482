@@ -1,3 +1,7 @@
+/**
+ * Module: tables/types.ts.
+ * Shared request and response contracts for tables; no runtime behavior.
+ */
 export type Host = { id: number; username: string }
 export type CreationContext = {
   host: Host | null

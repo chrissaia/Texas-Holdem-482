@@ -9,10 +9,12 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def git(*args):
+    """Run a Git command and return its text output for the evidence snapshot."""
     return subprocess.check_output(["git", *args], cwd=ROOT, text=True).strip()
 
 
 def main():
+    """Run the capture branch evidence command-line workflow."""
     rows = []
     for line in git("for-each-ref", "--format=%(refname:short)|%(objectname)", "refs/heads", "refs/remotes/origin").splitlines():
         ref, sha = line.split("|", 1)

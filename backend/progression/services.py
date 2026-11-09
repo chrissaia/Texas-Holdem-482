@@ -14,6 +14,7 @@ from .models import Achievement, Event, Progress
 
 @transaction.atomic
 def record_event(user_id, kind, source, *, outcome="", facts=None):
+    """Record event."""
     if kind not in {"hand", "avatar", "game", "friend", "message", "tournament", "tournament_stage", "theme"}:
         raise ValueError("Unknown event kind")
     if not isinstance(source, str) or not source.strip() or len(source) > 100:

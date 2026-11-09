@@ -1,3 +1,5 @@
+"""Application operations and transactional state changes for account identity, authentication and guest sessions."""
+
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from profiles.rewards import grant_starting_chips
@@ -17,12 +19,14 @@ def register_user(*, username, email, password):
 
 
 def clear_guest(session):
+    """Clear guest."""
     for key in GUEST_SESSION_KEYS:
         session.pop(key, None)
 
 
 def start_guest(session, name):
     # A new key prevents a pre-planted session ID from being reused (fixation).
+    """Start guest."""
     session.cycle_key()
     session["is_guest"] = True
     session["guest_name"] = name

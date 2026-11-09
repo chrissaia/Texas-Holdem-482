@@ -1,3 +1,5 @@
+"""Url patterns mapped to application views for account identity, authentication and guest sessions."""
+
 from django.urls import path
 
 from . import views

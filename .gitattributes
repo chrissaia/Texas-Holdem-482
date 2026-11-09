@@ -1,2 +1,3 @@
+# Purpose: Git file handling, including binary treatment for PDF artifacts.
 # PDF artifacts must not be treated as mergeable text.
 *.pdf binary

@@ -1,6 +1,11 @@
+/**
+ * Module: profile/ProfileGate.tsx.
+ * Implement ProfileGate for the profile feature and its importing components.
+ */
 import type { ReactNode } from 'react'
 import { useProfile } from './context'
 
+/** Render the profile gate interface and its current state. */
 export function ProfileGate({ children }: { children: ReactNode }) {
   const state = useProfile()
   if (state.loading && !state.profile)

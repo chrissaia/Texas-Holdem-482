@@ -1,3 +1,7 @@
+/**
+ * Module: auth/useAuthForm.ts.
+ * Implement useAuthForm for the auth feature and its importing components.
+ */
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ApiError } from '../../api/client'
@@ -19,33 +23,36 @@ export function useAuthForm(onSignedIn: () => void) {
   const submitting = useRef(false)
   const form = useRef<HTMLFormElement>(null)
 
-  const reload = useCallback(() => {
+  const reload = useCallback(/* Provide a stable callback for the dependent component operations. */ () => {
     setLoadError('')
-    setAttempt((n) => n + 1)
+    setAttempt(/* Handle the setAttempt callback using the current operation's state. */ (n) => n + 1)
   }, [])
-  useEffect(() => {
+  useEffect(/* Synchronize component state with external data and release resources on cleanup. */ () => {
     let active = true
     getSession()
-      .then((value) => active && setSession(value))
+      .then(/* Apply the successful asynchronous result to the current operation. */ (value) => active && setSession(value))
       .catch(
+        /* Handle the failed operation without leaving stale UI feedback. */
         () =>
           active &&
           setLoadError('We could not check your session. Please try again.'),
       )
-    return () => {
+    return /* Return the derived value for the enclosing operation. */ () => {
       active = false
     }
   }, [attempt])
 
+  /** Move keyboard focus to the first invalid authentication field. */
   function focusFirstError() {
     // Wait for React to attach aria-invalid, then move keyboard focus there.
-    requestAnimationFrame(() =>
+    requestAnimationFrame(/* Handle the requestAnimationFrame callback using the current operation's state. */ () =>
       form.current
         ?.querySelector<HTMLElement>('[aria-invalid="true"]')
         ?.focus(),
     )
   }
 
+  /** Validate the form and submit its values while preventing duplicate requests. */
   async function submit(
     localErrors: AuthErrors,
     send: (csrfToken: string) => Promise<Session>,
@@ -85,6 +92,7 @@ export function useAuthForm(onSignedIn: () => void) {
     }
   }
 
+  /** Clear the current server session and refresh the displayed identity. */
   async function signOut() {
     if (!session) return
     try {

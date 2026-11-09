@@ -1,3 +1,7 @@
+/**
+ * Module: profile/RewardsPage.tsx.
+ * Render the profile screen, including user actions, loading states and request feedback.
+ */
 import { useEffect, useRef, useState } from 'react'
 import { ApiError } from '../../api/client'
 import info from '../../assets/figma/info.svg'
@@ -10,6 +14,7 @@ import { ProfileGate } from './ProfileGate'
 import { useProfile } from './context'
 import './profile.css'
 
+/** Render the rewards page interface and its current state. */
 export function RewardsPage() {
   return (
     <div className="rewards-page">
@@ -34,6 +39,7 @@ export function RewardsPage() {
     </div>
   )
 }
+/** Render the reward cards interface and its current state. */
 function RewardCards() {
   const { profile, token, update, refresh } = useProfile()
   const [pending, setPending] = useState(false)
@@ -41,13 +47,14 @@ function RewardCards() {
   const [error, setError] = useState('')
   const busy = useRef(false)
   const nextClaim = profile?.daily_reward.next_claim_at
-  useEffect(() => {
+  useEffect(/* Synchronize component state with external data and release resources on cleanup. */ () => {
     if (!nextClaim) return
     const delay = new Date(nextClaim).getTime() - Date.now()
     if (delay <= 0) return // A manual refresh also handles clocks with a different time.
     const timer = setTimeout(refresh, Math.min(delay + 1000, 2_147_483_647))
-    return () => clearTimeout(timer)
+    return /* Return the derived value for the enclosing operation. */ () => clearTimeout(timer)
   }, [nextClaim, refresh])
+  /** Request the daily chip credit and refresh the resulting balance and availability. */
   async function claim() {
     if (!profile?.daily_reward.available || busy.current) return
     busy.current = true

@@ -1,3 +1,7 @@
+/**
+ * Module: friends/FriendsPage.tsx.
+ * Render the friends screen, including user actions, loading states and request feedback.
+ */
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link } from 'react-router-dom'
@@ -17,18 +21,21 @@ import './friends.css'
 
 const LATER = 'Coming in a later story'
 
+/** Format the friendship request timestamp as a short display date. */
 const sentOn = (entry: FriendEntry) =>
   new Date(entry.created_at).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
   })
 
+/** Extract the first readable field-validation message from an API error. */
 function firstMessage(value: unknown) {
   return Array.isArray(value) && typeof value[0] === 'string'
     ? value[0]
     : undefined
 }
 
+/** Render the player initials using the shared friend-avatar artwork. */
 function Avatar({ username, size }: { username: string; size: 38 | 44 }) {
   return (
     <div className={`avatar friend-avatar-${size}`}>
@@ -38,6 +45,7 @@ function Avatar({ username, size }: { username: string; size: 38 | 44 }) {
   )
 }
 
+/** Render the friends page interface and its current state. */
 export function FriendsPage() {
   const [data, setData] = useState<FriendsResponse | null>(null)
   const [loadError, setLoadError] = useState('')
@@ -54,22 +62,22 @@ export function FriendsPage() {
   const busy = useRef(false)
   const input = useRef<HTMLInputElement>(null)
 
-  const reload = useCallback(() => setAttempt((n) => n + 1), [])
-  useEffect(() => {
+  const reload = useCallback(/* Provide a stable callback for the dependent component operations. */ () => setAttempt(/* Handle the setAttempt callback using the current operation's state. */ (n) => n + 1), [])
+  useEffect(/* Synchronize component state with external data and release resources on cleanup. */ () => {
     let active = true
     getFriends()
-      .then((value) => {
+      .then(/* Apply the successful asynchronous result to the current operation. */ (value) => {
         if (!active) return
         setData(value)
         setLoadError('')
       })
-      .catch((cause) => {
+      .catch(/* Handle the failed operation without leaving stale UI feedback. */ (cause) => {
         if (!active) return
         if (cause instanceof ApiError && cause.status === 403)
           setSignedOut(true)
         else setLoadError('We could not load your friends. Please try again.')
       })
-    return () => {
+    return /* Return the derived value for the enclosing operation. */ () => {
       active = false
     }
   }, [attempt])
@@ -86,6 +94,7 @@ export function FriendsPage() {
     return () => { active = false; window.clearTimeout(timer) }
   }, [username, data, signedOut])
 
+  /** Execute a protected friendship write and update the current lists and feedback. */
   async function run(
     send: (token: string) => Promise<FriendsResponse>,
     success: (next: FriendsResponse) => string,
@@ -131,6 +140,7 @@ export function FriendsPage() {
     }
   }
 
+  /** Validate the form and submit its values while preventing duplicate requests. */
   async function submit(event: FormEvent) {
     event.preventDefault()
     const name = username.trim()
@@ -140,9 +150,12 @@ export function FriendsPage() {
       return
     }
     const sent = await run(
+      /* Handle the run callback using the current operation's state. */
       (token) => sendFriendRequest(name, token),
+      /* Handle the run callback using the current operation's state. */
       (next) =>
         next.friends.some(
+          /* Handle the some callback using the current operation's state. */
           (f) => f.player.username.toLowerCase() === name.toLowerCase(),
         )
           ? `You and ${name} are now friends.`
@@ -152,9 +165,12 @@ export function FriendsPage() {
     else input.current?.focus()
   }
 
+  /** Respond to a pending friendship request and report the resulting relationship. */
   const answer = (entry: FriendEntry, action: RequestAction) =>
     run(
+      /* Handle the run callback using the current operation's state. */
       (token) => answerRequest(entry.id, action, token),
+      /* Handle the run callback using the current operation's state. */
       () =>
         ({
           accept: `You and ${entry.player.username} are now friends.`,
@@ -163,9 +179,12 @@ export function FriendsPage() {
         })[action],
     )
 
+  /** Request removal of the selected friendship through the authenticated API. */
   const remove = (entry: FriendEntry) =>
     run(
+      /* Handle the run callback using the current operation's state. */
       (token) => removeFriend(entry.id, token),
+      /* Handle the run callback using the current operation's state. */
       () => `Removed ${entry.player.username} from your friends.`,
     )
 
@@ -212,7 +231,7 @@ export function FriendsPage() {
           <button
             className="button primary"
             type="button"
-            onClick={() => input.current?.focus()}
+            onClick={/* Return the derived value for the enclosing operation. */ () => input.current?.focus()}
           >
             Add Friend
           </button>
@@ -230,7 +249,7 @@ export function FriendsPage() {
           type="button"
           className={`friends-tab ${tab === 'all' ? 'active' : ''}`}
           aria-pressed={tab === 'all'}
-          onClick={() => setTab('all')}
+          onClick={/* Return the derived value for the enclosing operation. */ () => setTab('all')}
         >
           All Friends · {friends.length}
         </button>
@@ -238,7 +257,7 @@ export function FriendsPage() {
           type="button"
           className={`friends-tab ${tab === 'requests' ? 'active' : ''}`}
           aria-pressed={tab === 'requests'}
-          onClick={() => setTab('requests')}
+          onClick={/* Return the derived value for the enclosing operation. */ () => setTab('requests')}
         >
           Requests · {requestCount}
         </button>
@@ -288,7 +307,7 @@ export function FriendsPage() {
       {tab === 'all' &&
         (friends.length ? (
           <ul className="friend-grid" aria-label="Your friends">
-            {friends.map((entry) => (
+            {friends.map(/* Convert this item into the value or UI element expected by the collection. */ (entry) => (
               <li key={entry.id} className="friend-card">
                 <div className="friend-row">
                   <Avatar username={entry.player.username} size={44} />
@@ -312,14 +331,14 @@ export function FriendsPage() {
                       className="link-action danger"
                       type="button"
                       disabled={pending}
-                      onClick={() => remove(entry)}
+                      onClick={/* Return the derived value for the enclosing operation. */ () => remove(entry)}
                     >
                       Yes, remove
                     </button>
                     <button
                       className="link-action"
                       type="button"
-                      onClick={() => setConfirming(null)}
+                      onClick={/* Return the derived value for the enclosing operation. */ () => setConfirming(null)}
                     >
                       Keep
                     </button>
@@ -328,7 +347,7 @@ export function FriendsPage() {
                   <button
                     className="link-action"
                     type="button"
-                    onClick={() => setConfirming(entry.id)}
+                    onClick={/* Return the derived value for the enclosing operation. */ () => setConfirming(entry.id)}
                   >
                     Remove Friend
                   </button>
@@ -354,7 +373,7 @@ export function FriendsPage() {
           <p className="muted">New players who want to join your crew.</p>
           {incoming.length ? (
             <ul className="request-list">
-              {incoming.map((entry) => (
+              {incoming.map(/* Convert this item into the value or UI element expected by the collection. */ (entry) => (
                 <li key={entry.id} className="request-row">
                   <Avatar username={entry.player.username} size={38} />
                   <div className="friend-name">
@@ -365,7 +384,7 @@ export function FriendsPage() {
                     className="button primary"
                     type="button"
                     disabled={pending}
-                    onClick={() => answer(entry, 'accept')}
+                    onClick={/* Return the derived value for the enclosing operation. */ () => answer(entry, 'accept')}
                   >
                     Accept
                   </button>
@@ -373,7 +392,7 @@ export function FriendsPage() {
                     className="button"
                     type="button"
                     disabled={pending}
-                    onClick={() => answer(entry, 'decline')}
+                    onClick={/* Return the derived value for the enclosing operation. */ () => answer(entry, 'decline')}
                   >
                     Decline
                   </button>
@@ -392,7 +411,7 @@ export function FriendsPage() {
           <p className="muted">Players you have asked to join your crew.</p>
           {outgoing.length ? (
             <ul className="request-list">
-              {outgoing.map((entry) => (
+              {outgoing.map(/* Convert this item into the value or UI element expected by the collection. */ (entry) => (
                 <li key={entry.id} className="request-row">
                   <Avatar username={entry.player.username} size={38} />
                   <div className="friend-name">
@@ -403,7 +422,7 @@ export function FriendsPage() {
                     className="button"
                     type="button"
                     disabled={pending}
-                    onClick={() => answer(entry, 'cancel')}
+                    onClick={/* Return the derived value for the enclosing operation. */ () => answer(entry, 'cancel')}
                   >
                     Cancel
                   </button>

@@ -1,3 +1,7 @@
+/**
+ * Module: tables/CreateTablePage.tsx.
+ * Render the tables screen, including user actions, loading states and request feedback.
+ */
 import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ApiError } from '../../api/client'
@@ -23,9 +27,11 @@ export type ContextState = {
   error: string
   refresh: () => void
 }
+/** Format a chip amount for display in the table interface. */
 const format = (n: number) =>
   Number.isFinite(n) ? n.toLocaleString('en-US') : '-'
 
+/** Render the create table page interface and its current state. */
 export function CreateTablePage({
   context,
   loading,
@@ -41,6 +47,7 @@ export function CreateTablePage({
   const form = useRef<HTMLFormElement>(null)
   const status = useRef<HTMLDivElement>(null)
 
+  /** Update the chosen form field and clear feedback from the previous submission. */
   function update<K extends keyof TableInput>(field: K, value: TableInput[K]) {
     setInput((current) => ({
       ...current,
@@ -51,6 +58,7 @@ export function CreateTablePage({
     setMessage('')
   }
 
+  /** Validate the form and submit its values while preventing duplicate requests. */
   async function submit(event: React.FormEvent) {
     event.preventDefault()
     if (submitting.current || created || !context?.host) return
@@ -59,7 +67,7 @@ export function CreateTablePage({
     setMessage('')
     if (Object.keys(nextErrors).length) {
       // Wait for React to attach aria-invalid, then move keyboard focus to the first error.
-      requestAnimationFrame(() =>
+      requestAnimationFrame(/* Handle the requestAnimationFrame callback using the current operation's state. */ () =>
         form.current
           ?.querySelector<HTMLElement>('[aria-invalid="true"]')
           ?.focus(),
@@ -92,10 +100,11 @@ export function CreateTablePage({
     } finally {
       submitting.current = false
       setPending(false)
-      requestAnimationFrame(() => status.current?.focus())
+      requestAnimationFrame(/* Handle the requestAnimationFrame callback using the current operation's state. */ () => status.current?.focus())
     }
   }
 
+  /** Restore the initial form values and clear the completed submission. */
   function reset() {
     setInput({ ...DEFAULT_TABLE })
     setErrors({})
@@ -143,7 +152,7 @@ export function CreateTablePage({
                   maxLength={80}
                   required
                   errors={errors.name}
-                  onChange={(e) => update('name', e.target.value)}
+                  onChange={/* Return the derived value for the enclosing operation. */ (e) => update('name', e.target.value)}
                 />
                 <div className="form-field">
                   <label htmlFor="game-type">Game type</label>
@@ -173,14 +182,14 @@ export function CreateTablePage({
                 <fieldset className="seat-field">
                   <legend>Table size</legend>
                   <div className="seat-options">
-                    {SEAT_OPTIONS.map((n) => (
+                    {SEAT_OPTIONS.map(/* Convert this item into the value or UI element expected by the collection. */ (n) => (
                       <label className="seat-option" key={n}>
                         <input
                           type="radio"
                           name="capacity"
                           value={n}
                           checked={input.max_players === n}
-                          onChange={() => update('max_players', n)}
+                          onChange={/* Return the derived value for the enclosing operation. */ () => update('max_players', n)}
                         />
                         <span>{n} seats</span>
                       </label>
@@ -200,7 +209,7 @@ export function CreateTablePage({
                       ['small_blind', 'Small blind'],
                       ['big_blind', 'Big blind'],
                     ] as const
-                  ).map(([field, label]) => (
+                  ).map(/* Convert this item into the value or UI element expected by the collection. */ ([field, label]) => (
                     <FormField
                       key={field}
                       label={label}
@@ -219,7 +228,7 @@ export function CreateTablePage({
                       required
                       value={Number.isNaN(input[field]) ? '' : input[field]}
                       errors={errors[field]}
-                      onChange={(e) => update(field, e.target.valueAsNumber)}
+                      onChange={/* Return the derived value for the enclosing operation. */ (e) => update(field, e.target.valueAsNumber)}
                     />
                   ))}
                 </div>
@@ -345,7 +354,7 @@ export function CreateTablePage({
                 className={`button quiet full-width ${pending ? 'disabled-link' : ''}`}
                 aria-disabled={pending}
                 to="/"
-                onClick={(e) => {
+                onClick={/* Return the derived value for the enclosing operation. */ (e) => {
                   if (pending) e.preventDefault()
                 }}
               >

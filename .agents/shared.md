@@ -2,8 +2,8 @@
 
 ## Read the current project
 
-- Read `instructions.md` and `docs/contracts.md`, then inspect the existing implementation and Git status before editing. Preserve unrelated local work.
-- Consult `docs/reference/User_Stories.xlsx` for the requested stories and `docs/reference/CS495_Project_System_Design.pdf` for architecture. `docs/agent-team.md` records planning findings and unresolved requirements; it does not prove features are implemented.
+- Read `instructions.md` and `docs/architecture/contracts.md`, then inspect the existing implementation and Git status before editing. Preserve unrelated local work.
+- Consult `docs/reference/User_Stories.xlsx` for the requested stories and `docs/reference/CS495_Project_System_Design.pdf` for architecture. `docs/development/agent-team.md` records planning findings and unresolved requirements; it does not prove features are implemented.
 - Use React/TypeScript/Vite/React Router, Django/REST Framework/ORM, PostgreSQL, Vitest, and pytest/pytest-django. Add Channels only when real-time functionality is needed.
 - Use the actual Figma design when implementing screens. Follow the available tool's required skill/workflow. If inaccessible, identify the limitation and use available references; never claim an inspection that did not happen.
 

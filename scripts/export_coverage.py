@@ -20,14 +20,17 @@ OUT = ROOT / "docs/quality/evidence"
 
 
 def load(path):
+    """Read and decode a JSON evidence file."""
     return json.loads(path.read_text())
 
 
 def percent(covered, total):
+    """Calculate a percentage from covered and total counts, retaining an empty denominator."""
     return round(100 * covered / total, 4) if total else None
 
 
 def font(size):
+    """Load a readable monospace font for generated coverage report images."""
     for path in ("/System/Library/Fonts/Menlo.ttc", "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf"):
         if Path(path).exists():
             return ImageFont.truetype(path, size)
@@ -36,6 +39,7 @@ def font(size):
 
 def screenshot(title, rows, totals, destination, source_commit):
     # A print of the generated tool report, not a screenshot of source code.
+    """Screenshot."""
     lines = [title, "Measured runtime files (including unexecuted files)",
              "Source commit: " + source_commit, "File                                                        Statements      Branches", "-" * 87]
     for name, statement, branch in rows:
@@ -52,6 +56,7 @@ def screenshot(title, rows, totals, destination, source_commit):
 
 
 def junit_counts(path):
+    """Extract test, failure, error and skip totals from a JUnit report."""
     root = ET.parse(path).getroot()
     suites = [root] if root.tag == "testsuite" else root.findall("testsuite")
     if not suites:
@@ -60,6 +65,7 @@ def junit_counts(path):
 
 
 def source_manifest():
+    """Hash the measured source files so coverage evidence can be traced to exact inputs."""
     names = subprocess.check_output(["git", "ls-files"], cwd=ROOT, text=True).splitlines()
     prefixes = ("backend/", "frontend/", "scripts/", ".github/")
     files = {}
@@ -73,6 +79,7 @@ def source_manifest():
 
 
 def main():
+    """Run the export coverage command-line workflow."""
     OUT.mkdir(parents=True, exist_ok=True)
     backend = load(ROOT / "backend/coverage.json")
     frontend_summary = load(ROOT / "frontend/coverage/coverage-summary.json")

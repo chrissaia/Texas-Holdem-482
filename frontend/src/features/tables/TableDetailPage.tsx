@@ -1,29 +1,36 @@
+/**
+ * Module: tables/TableDetailPage.tsx.
+ * Render the tables screen, including user actions, loading states and request feedback.
+ */
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { getTable } from './api'
+import { SeatPanel } from './SeatPanel'
 import type { PokerTable } from './types'
 
+/** Render the table detail page interface and its current state. */
 export function TableDetailPage() {
   const { id = '' } = useParams()
   return <TableRecord key={id} id={id} />
 }
 
+/** Render the table record interface and its current state. */
 function TableRecord({ id }: { id: string }) {
   const [table, setTable] = useState<PokerTable | null>(null)
   const [error, setError] = useState('')
-  useEffect(() => {
+  useEffect(/* Synchronize component state with external data and release resources on cleanup. */ () => {
     let active = true
     getTable(id)
-      .then((value) => {
+      .then(/* Apply the successful asynchronous result to the current operation. */ (value) => {
         if (active) setTable(value)
       })
-      .catch(() => {
+      .catch(/* Handle the failed operation without leaving stale UI feedback. */ () => {
         if (active)
           setError(
             'This table could not be loaded. It may no longer be available.',
           )
       })
-    return () => {
+    return /* Return the derived value for the enclosing operation. */ () => {
       active = false
     }
   }, [id])
@@ -65,9 +72,9 @@ function TableRecord({ id }: { id: string }) {
               <dd>{table.minimum_balance.toLocaleString('en-US')}</dd>
             </div>
           </dl>
+          <SeatPanel table={table} onOccupancy={count => setTable(current => current ? { ...current, player_count: count } : current)} />
           <p className="field-hint">
-            Your table settings are saved. Joining and gameplay are coming in
-            later stories.
+            Your seat and buy-in can be saved here. Poker hands are not available yet.
           </p>
         </section>
       )}

@@ -1,8 +1,12 @@
+/**
+ * Module: frontend/vite.config.ts.
+ * Implement vite.config for the shared application feature and its importing components.
+ */
 import react from "@vitejs/plugin-react";
 import { loadEnv } from "vite";
 import { defineConfig } from "vitest/config";
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(/* Handle the defineConfig callback using the current operation's state. */ ({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
   return {
     plugins: [react()],

@@ -1,3 +1,5 @@
+"""Persisted records and database constraints for public poker-table configuration and browsing."""
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
@@ -11,13 +13,16 @@ MAX_CHIPS = 2_147_483_647
 
 
 def chip_field():
+    """Construct a positive whole-chip model field with the shared storage limits."""
     return models.PositiveIntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(MAX_CHIPS)]
     )
 
 
 class PokerTable(models.Model):
+    """Store host-owned table settings and server-controlled occupancy and activity."""
     class Status(models.TextChoices):
+        """Enumerate the persisted friendship states accepted by the model."""
         WAITING = "waiting", "Waiting"
         PLAYING = "playing", "Playing"
         CLOSED = "closed", "Closed"
@@ -38,6 +43,7 @@ class PokerTable(models.Model):
     last_activity_at = models.DateTimeField(default=timezone.now, db_index=True, editable=False)
 
     class Meta:
+        """Declare Django model or serializer metadata for the enclosing class."""
         ordering = ["-created_at", "-id"]
         constraints = [
             models.CheckConstraint(condition=~Q(name__regex=r"^\s*$"), name="table_name_not_blank"),
@@ -57,6 +63,7 @@ class PokerTable(models.Model):
         ]
 
     def clean(self):
+        """Clean."""
         super().clean()
         self.name = self.name.strip()
         errors = {}
@@ -74,4 +81,22 @@ class PokerTable(models.Model):
             raise ValidationError(errors)
 
     def __str__(self):
+        """Return the human-readable label used by Django administration and diagnostics."""
         return self.name
+
+
+class TableSeat(models.Model):
+    """One funded seat per registered player; held chips are separate from the wallet."""
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.PROTECT,
+                               related_name="table_seat")
+    table = models.ForeignKey(PokerTable, on_delete=models.PROTECT, related_name="seats")
+    buy_in = models.PositiveIntegerField()
+    stack = models.PositiveBigIntegerField()
+    joined_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(condition=Q(buy_in__gte=1), name="seat_positive_buy_in"),
+            models.CheckConstraint(condition=Q(stack__lte=9_007_199_254_740_991),
+                                   name="seat_stack_safe_integer"),
+        ]

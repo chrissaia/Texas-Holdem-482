@@ -1,3 +1,7 @@
+/**
+ * Module: auth/SignInPage.tsx.
+ * Render the auth screen, including user actions, loading states and request feedback.
+ */
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FormField } from '../../components/FormField'
@@ -8,6 +12,7 @@ import { FormMessage, SessionGate } from './SessionGate'
 import { useAuthForm } from './useAuthForm'
 import { validateLogin } from './validation'
 
+/** Render the sign in page interface and its current state. */
 export function SignInPage({ onSignedIn }: { onSignedIn: () => void }) {
   const { form: formRef, pending, errors, submit, ...gate } =
     useAuthForm(onSignedIn)
@@ -25,9 +30,9 @@ export function SignInPage({ onSignedIn }: { onSignedIn: () => void }) {
           ref={formRef}
           className="auth-form"
           noValidate
-          onSubmit={(event) => {
+          onSubmit={/* Return the derived value for the enclosing operation. */ (event) => {
             event.preventDefault()
-            submit(validateLogin(username, password), (csrf) =>
+            submit(validateLogin(username, password), /* Handle the submit callback using the current operation's state. */ (csrf) =>
               login({ username: username.trim(), password }, csrf),
             )
           }}
@@ -40,7 +45,7 @@ export function SignInPage({ onSignedIn }: { onSignedIn: () => void }) {
             placeholder="riverjay"
             value={username}
             errors={errors.username}
-            onChange={(event) => setUsername(event.target.value)}
+            onChange={/* Return the derived value for the enclosing operation. */ (event) => setUsername(event.target.value)}
           />
           <FormField
             id="login-password"
@@ -50,7 +55,7 @@ export function SignInPage({ onSignedIn }: { onSignedIn: () => void }) {
             placeholder="••••••••••••"
             value={password}
             errors={errors.password}
-            onChange={(event) => setPassword(event.target.value)}
+            onChange={/* Return the derived value for the enclosing operation. */ (event) => setPassword(event.target.value)}
           />
           <div className="auth-options">
             <label

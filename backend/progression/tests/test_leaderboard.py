@@ -1,3 +1,5 @@
+"""Tests for server-owned XP, achievements and ranking: leaderboard."""
+
 import pytest
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
@@ -9,6 +11,7 @@ URL = "/api/leaderboard/"
 
 
 def account(name, xp=0, active=True):
+    """Prepare account for the surrounding test scenario."""
     user = get_user_model().objects.create_user(username=name, email=f"{name}@example.com", is_active=active)
     if xp:
         Event.objects.create(user=user, kind="game", source="test-fixture", xp=xp)
@@ -16,6 +19,7 @@ def account(name, xp=0, active=True):
 
 
 def test_real_xp_order_ties_and_zero_players():
+    """Verify that real xp order ties and zero players."""
     first = account("first", 100)
     second = account("second", 100)
     third = account("third", 50)
@@ -32,6 +36,7 @@ def test_real_xp_order_ties_and_zero_players():
 
 
 def test_empty_leaderboard():
+    """Verify that empty leaderboard."""
     response = APIClient().get(URL)
     assert response.status_code == 200
     assert response.data["results"] == []
@@ -40,6 +45,7 @@ def test_empty_leaderboard():
 
 
 def test_current_user_rank_outside_requested_page(registered_client, registered_user):
+    """Verify that current user rank outside requested page."""
     for i in range(3):
         account(f"leader{i}", 100)
     record_event(registered_user.pk, "avatar", "real-action")
@@ -55,6 +61,7 @@ def test_current_user_rank_outside_requested_page(registered_client, registered_
 
 
 def test_guest_is_public_view(guest_client):
+    """Verify that guest is public view."""
     account("visible", 100)
     response = guest_client.get(URL)
     assert response.status_code == 200
@@ -63,6 +70,7 @@ def test_guest_is_public_view(guest_client):
 
 
 def test_rank_changes_only_after_real_ledger_changes(registered_user, registered_client):
+    """Verify that rank changes only after real ledger changes."""
     account("rival", 25)
     assert registered_client.get(URL).data["current_user"]["rank"] == 2
     record_event(registered_user.pk, "game", "new-game")
@@ -76,14 +84,17 @@ def test_rank_changes_only_after_real_ledger_changes(registered_user, registered
 
 @pytest.mark.parametrize("query", ["page=0", "page=-1", "page=x", "page=1.5", "page=2147483648", "page_size=0", "page_size=51", "page_size=x", "page=1&page=2", "sort=email", "user_id=1", "period=season"])
 def test_invalid_queries(query):
+    """Verify that invalid queries."""
     assert APIClient().get(URL + "?" + query).status_code == 400
 
 
 def test_unknown_page_is_404():
+    """Verify that unknown page is 404."""
     assert APIClient().get(URL + "?page=2").status_code == 404
 
 
 def test_public_payload_only_and_avatar(registered_user):
+    """Verify that public payload only and avatar."""
     registered_user.avatar = "avatars/generated.webp"
     registered_user.save(update_fields=["avatar"])
     row = APIClient().get(URL).data["results"][0]
@@ -94,6 +105,7 @@ def test_public_payload_only_and_avatar(registered_user):
 
 
 def test_page_boundary_preserves_tied_global_rank():
+    """Verify that page boundary preserves tied global rank."""
     for i in range(5):
         account(f"tie{i}", 50)
     client = APIClient()
@@ -106,6 +118,7 @@ def test_page_boundary_preserves_tied_global_rank():
 
 
 def test_query_count_does_not_grow_per_player(django_assert_num_queries):
+    """Verify that query count does not grow per player."""
     for i in range(15):
         account(f"query{i}", i)
     with django_assert_num_queries(2):
@@ -115,6 +128,7 @@ def test_query_count_does_not_grow_per_player(django_assert_num_queries):
 
 def test_deactivation_after_authentication_omits_personal_rank(registered_user):
     # Middleware may have cached the active user just before another request deactivates it.
+    """Verify that deactivation after authentication omits personal rank."""
     client = APIClient()
     client.force_authenticate(registered_user)
     get_user_model().objects.filter(pk=registered_user.pk).update(is_active=False)

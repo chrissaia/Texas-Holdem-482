@@ -1,3 +1,7 @@
+/**
+ * Module: tables/api.ts.
+ * Typed HTTP operations for tables, using the shared same-origin API client.
+ */
 import { request } from '../../api/client'
 import type {
   CreationContext,
@@ -6,10 +10,13 @@ import type {
   TableList,
 } from './types'
 
+/** Fetch host identity, profile summary and the table form's CSRF token. */
 export const getCreationContext = () =>
   request<CreationContext>('/api/tables/creation-context/')
+/** Fetch saved public-table settings by table ID. */
 export const getTable = (id: string) =>
   request<PokerTable>(`/api/tables/${id}/`)
+/** Post validated table settings with the authenticated form's CSRF token. */
 export const createTable = (input: TableInput, csrfToken: string) =>
   request<PokerTable>('/api/tables/', {
     method: 'POST',
@@ -17,5 +24,23 @@ export const createTable = (input: TableInput, csrfToken: string) =>
     body: JSON.stringify(input),
   })
 
+/** Fetch public tables using the encoded lobby query parameters. */
 export const listTables = (query: string) =>
   request<TableList>(`/api/tables/?${query}`)
+
+export type SeatStatus = {
+  table_id: number
+  player_count: number
+  chip_balance: number
+  seat: { id: number; buy_in: number; stack: number } | null
+  other_table_id: number | null
+  csrf_token: string
+}
+
+export const getSeat = (id: number) => request<SeatStatus>(`/api/tables/${id}/seat/`)
+export const changeSeat = (id: number, method: 'POST' | 'DELETE', token: string) =>
+  request<SeatStatus>(`/api/tables/${id}/seat/`, {
+    method,
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': token },
+    body: JSON.stringify({}),
+  })

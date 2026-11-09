@@ -1,3 +1,5 @@
+"""Input validation and public response fields for account identity, authentication and guest sessions."""
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
@@ -16,6 +18,7 @@ class StrictSerializer(serializers.Serializer):
     """Reject fields the endpoint does not accept, matching the tables API."""
 
     def validate(self, attrs):
+        """Check cross-field rules and return validated attributes or field errors."""
         unknown = set(self.initial_data) - set(self.fields)
         if unknown:
             raise serializers.ValidationError(
@@ -25,22 +28,26 @@ class StrictSerializer(serializers.Serializer):
 
 
 class RegistrationSerializer(StrictSerializer):
+    """Validate account identifiers, uniqueness and password requirements."""
     username = serializers.CharField(min_length=3, max_length=30, validators=[USERNAME_RULE])
     email = serializers.EmailField(max_length=254)
     password = serializers.CharField(max_length=128, write_only=True, trim_whitespace=False)
 
     def validate_username(self, value):
+        """Validate username before accepting the request."""
         if get_user_model().objects.filter(username__iexact=value).exists():
             raise serializers.ValidationError("A user with that username already exists.")
         return value
 
     def validate_email(self, value):
+        """Validate email before accepting the request."""
         value = value.lower()
         if get_user_model().objects.filter(email__iexact=value).exists():
             raise serializers.ValidationError("An account with that email already exists.")
         return value
 
     def validate(self, attrs):
+        """Check cross-field rules and return validated attributes or field errors."""
         attrs = super().validate(attrs)
         # The unsaved user lets Django reject passwords similar to the username/email.
         candidate = get_user_model()(username=attrs["username"], email=attrs["email"])
@@ -52,15 +59,18 @@ class RegistrationSerializer(StrictSerializer):
 
 
 class LoginSerializer(StrictSerializer):
+    """Validate credentials while keeping invalid-account responses indistinguishable."""
     username = serializers.CharField(max_length=150)
     password = serializers.CharField(max_length=128, write_only=True, trim_whitespace=False)
 
 
 class GuestSerializer(StrictSerializer):
+    """Validate session-only guest names and registered-username collisions."""
     name = serializers.CharField(min_length=2, max_length=20, validators=[GUEST_NAME_RULE])
 
     def validate_name(self, value):
         # Guests cannot impersonate a registered player.
+        """Validate name before accepting the request."""
         if get_user_model().objects.filter(username__iexact=value).exists():
             raise serializers.ValidationError("That name belongs to a registered player.")
         return value

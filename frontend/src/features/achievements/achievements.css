@@ -1,3 +1,5 @@
+/* Achievements styles: layout, component states and responsive presentation. */
+
 .achievements-page {
   display: flex;
   flex-direction: column;

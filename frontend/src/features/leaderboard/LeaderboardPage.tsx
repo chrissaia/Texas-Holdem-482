@@ -1,3 +1,7 @@
+/**
+ * Module: leaderboard/LeaderboardPage.tsx.
+ * Render the leaderboard screen, including user actions, loading states and request feedback.
+ */
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { request } from "../../api/client";
@@ -23,6 +27,7 @@ type Rankings = {
   results: Player[];
 };
 
+/** Render a ranked player's avatar, username and current-account marker. */
 function PlayerIdentity({
   player,
   podium = 0,
@@ -57,6 +62,7 @@ function PlayerIdentity({
   );
 }
 
+/** Render the leaderboard page interface and its current state. */
 export function LeaderboardPage() {
   const [params, setParams] = useSearchParams();
   const page = params.get("page") || "1";
@@ -68,13 +74,13 @@ export function LeaderboardPage() {
   const [attempt, setAttempt] = useState(0);
   const key = `${page}:${attempt}`;
   const current = result?.key === key ? result : null;
-  useEffect(() => {
+  useEffect(/* Synchronize component state with external data and release resources on cleanup. */ () => {
     let active = true;
     request<Rankings>(`/api/leaderboard/?${new URLSearchParams({ page })}`)
-      .then((data) => {
+      .then(/* Apply the successful asynchronous result to the current operation. */ (data) => {
         if (active) setResult({ key, data, error: "" });
       })
-      .catch(() => {
+      .catch(/* Handle the failed operation without leaving stale UI feedback. */ () => {
         if (active)
           setResult({
             key,
@@ -83,7 +89,7 @@ export function LeaderboardPage() {
               "We could not load these rankings. Try again or return to page 1.",
           });
       });
-    return () => {
+    return /* Return the derived value for the enclosing operation. */ () => {
       active = false;
     };
   }, [page, key]);
@@ -102,7 +108,7 @@ export function LeaderboardPage() {
         <button
           type="button"
           className="text-button"
-          onClick={() => setAttempt((n) => n + 1)}
+          onClick={/* Return the derived value for the enclosing operation. */ () => setAttempt(/* Handle the setAttempt callback using the current operation's state. */ (n) => n + 1)}
         >
           Refresh rankings
         </button>
@@ -114,14 +120,14 @@ export function LeaderboardPage() {
           {current.error}
           <button
             className="text-button"
-            onClick={() => setAttempt((n) => n + 1)}
+            onClick={/* Return the derived value for the enclosing operation. */ () => setAttempt(/* Handle the setAttempt callback using the current operation's state. */ (n) => n + 1)}
           >
             Try again
           </button>
           <button
             className="text-button"
-            onClick={() => {
-              if (page === "1") setAttempt((n) => n + 1);
+            onClick={/* Return the derived value for the enclosing operation. */ () => {
+              if (page === "1") setAttempt(/* Handle the setAttempt callback using the current operation's state. */ (n) => n + 1);
               else setParams({});
             }}
           >
@@ -145,7 +151,7 @@ export function LeaderboardPage() {
                     className="leaderboard-podium"
                     aria-label="Leading players"
                   >
-                    {data.results.slice(0, 3).map((player, index) => (
+                    {data.results.slice(0, 3).map(/* Convert this item into the value or UI element expected by the collection. */ (player, index) => (
                       <article
                         key={player.id}
                         className={`panel podium-card podium-${index + 1}`}
@@ -179,7 +185,7 @@ export function LeaderboardPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {data.results.map((player) => (
+                      {data.results.map(/* Convert this item into the value or UI element expected by the collection. */ (player) => (
                         <tr
                           key={player.id}
                           className={
@@ -202,7 +208,7 @@ export function LeaderboardPage() {
                     <button
                       className="button"
                       disabled={data.page <= 1}
-                      onClick={() => setParams({ page: String(data.page - 1) })}
+                      onClick={/* Return the derived value for the enclosing operation. */ () => setParams({ page: String(data.page - 1) })}
                     >
                       Previous
                     </button>
@@ -212,7 +218,7 @@ export function LeaderboardPage() {
                     <button
                       className="button"
                       disabled={data.page >= data.total_pages}
-                      onClick={() => setParams({ page: String(data.page + 1) })}
+                      onClick={/* Return the derived value for the enclosing operation. */ () => setParams({ page: String(data.page + 1) })}
                     >
                       Next
                     </button>

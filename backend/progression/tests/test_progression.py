@@ -1,3 +1,5 @@
+"""Tests for server-owned XP, achievements and ranking: progression."""
+
 from concurrent.futures import ThreadPoolExecutor
 from threading import Barrier
 from unittest.mock import patch
@@ -16,16 +18,19 @@ pytestmark = pytest.mark.django_db
 
 
 def xp(user):
+    """Prepare xp for the surrounding test scenario."""
     return Event.objects.filter(user=user).aggregate(value=Sum("xp"))["value"] or 0
 
 
 def test_catalog_preserves_first_ten():
+    """Verify that catalog preserves first ten."""
     assert len(ACHIEVEMENTS) == 24
     assert list(ACHIEVEMENTS)[:10] == ["welcome", "picture", "host", "friend", "message", "hands_10", "hands_100", "hands_1000", "first_win", "streak"]
 
 
 @pytest.mark.parametrize(("kind", "code"), [("avatar", "picture"), ("game", "host"), ("friend", "friend"), ("message", "message")])
 def test_actions_award_once_even_with_new_sources(registered_user, kind, code):
+    """Verify that actions award once even with new sources."""
     assert record_event(registered_user.pk, kind, "1") == [code]
     assert record_event(registered_user.pk, kind, "1") == []
     assert record_event(registered_user.pk, kind, "2") == []
@@ -33,6 +38,7 @@ def test_actions_award_once_even_with_new_sources(registered_user, kind, code):
 
 
 def test_wins_stack_but_retries_do_not(registered_user):
+    """Verify that wins stack but retries do not."""
     assert record_event(registered_user.pk, "hand", "h1", outcome="win") == ["welcome", "first_win"]
     assert xp(registered_user) == 200
     record_event(registered_user.pk, "hand", "h2", outcome="win")
@@ -44,6 +50,7 @@ def test_wins_stack_but_retries_do_not(registered_user):
 
 
 def test_split_counts_participation_only_and_breaks_streak(registered_user):
+    """Verify that split counts participation only and breaks streak."""
     for i in range(2):
         record_event(registered_user.pk, "hand", str(i), outcome="win")
     record_event(registered_user.pk, "hand", "split", outcome="split")
@@ -54,12 +61,14 @@ def test_split_counts_participation_only_and_breaks_streak(registered_user):
 
 
 def test_split_is_not_first_win(registered_user):
+    """Verify that split is not first win."""
     assert record_event(registered_user.pk, "hand", "split", outcome="split") == ["welcome"]
     assert xp(registered_user) == 50
 
 
 @pytest.mark.parametrize(("before", "code"), [(9, "hands_10"), (99, "hands_100"), (999, "hands_1000")])
 def test_hand_milestones_include_folded_hands(registered_user, before, code):
+    """Verify that hand milestones include folded hands."""
     Progress.objects.create(user=registered_user, hands_played=before)
     record_event(registered_user.pk, "hand", "fold", outcome="loss")
     assert Achievement.objects.filter(user=registered_user, code=code).exists()
@@ -69,6 +78,7 @@ def test_hand_milestones_include_folded_hands(registered_user, before, code):
 
 @pytest.mark.parametrize(("kind", "source", "outcome"), [("fake", "1", ""), ("hand", "", "win"), ("hand", "x" * 101, "win"), ("hand", "1", "tie"), ("game", "1", "win"), ("hand", 123, "win")])
 def test_invalid_events_do_not_mutate(registered_user, kind, source, outcome):
+    """Verify that invalid events do not mutate."""
     with pytest.raises(ValueError):
         record_event(registered_user.pk, kind, source, outcome=outcome)
     assert not Event.objects.exists()
@@ -76,6 +86,7 @@ def test_invalid_events_do_not_mutate(registered_user, kind, source, outcome):
 
 
 def test_cannot_rewrite_hand(registered_user):
+    """Verify that cannot rewrite hand."""
     record_event(registered_user.pk, "hand", "1", outcome="split")
     with pytest.raises(ValueError):
         record_event(registered_user.pk, "hand", "1", outcome="win")
@@ -83,6 +94,7 @@ def test_cannot_rewrite_hand(registered_user):
 
 
 def test_inactive_denied(registered_user):
+    """Verify that inactive denied."""
     registered_user.is_active = False
     registered_user.save()
     with pytest.raises(ValueError):
@@ -91,6 +103,7 @@ def test_inactive_denied(registered_user):
 
 
 def test_originating_failure_rolls_back_award(registered_user):
+    """Verify that originating failure rolls back award."""
     with pytest.raises(RuntimeError), transaction.atomic():
         record_event(registered_user.pk, "game", "1")
         raise RuntimeError("action failed")
@@ -99,6 +112,7 @@ def test_originating_failure_rolls_back_award(registered_user):
 
 
 def test_collection_hides_locked_details_and_other_users(registered_client, registered_user):
+    """Verify that collection hides locked details and other users."""
     other = get_user_model().objects.create_user(username="other")
     record_event(other.pk, "game", "1")
     record_event(registered_user.pk, "avatar", "a")
@@ -115,11 +129,13 @@ def test_collection_hides_locked_details_and_other_users(registered_client, regi
 
 
 def test_anonymous_and_guests_cannot_read(guest_client):
+    """Verify that anonymous and guests cannot read."""
     assert APIClient().get("/api/achievements/").status_code == 403
     assert guest_client.get("/api/achievements/").status_code == 403
 
 
 def test_real_table_creation_hook(registered_client, registered_user):
+    """Verify that real table creation hook."""
     data = {"name": "XP table", "max_players": 6, "buy_in": 100, "minimum_balance": 100, "small_blind": 5, "big_blind": 10}
     assert registered_client.post("/api/tables/", data, format="json").status_code == 201
     assert registered_client.post("/api/tables/", data, format="json").status_code == 201
@@ -128,11 +144,13 @@ def test_real_table_creation_hook(registered_client, registered_user):
 
 
 def test_invalid_table_does_not_award(registered_client):
+    """Verify that invalid table does not award."""
     assert registered_client.post("/api/tables/", {}, format="json").status_code == 400
     assert not Achievement.objects.exists()
 
 
 def test_avatar_hook_and_failure_cleanup(registered_user, tmp_path, settings):
+    """Verify that avatar hook and failure cleanup."""
     from django.core.files.base import ContentFile
     from profiles.avatars import replace_avatar
     settings.MEDIA_ROOT = tmp_path
@@ -149,9 +167,11 @@ def test_avatar_hook_and_failure_cleanup(registered_user, tmp_path, settings):
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.parametrize("same_source", [True, False])
 def test_concurrent_actions_pay_achievement_once(same_source):
+    """Verify that concurrent actions pay achievement once."""
     user = get_user_model().objects.create_user(username="race")
     barrier = Barrier(2)
     def worker(index):
+        """Prepare worker for the surrounding test scenario."""
         close_old_connections()
         try:
             barrier.wait(timeout=10)
@@ -172,6 +192,7 @@ def test_concurrent_actions_pay_achievement_once(same_source):
     *[({"showdown": True, "category": category}, category) for category in ("straight", "flush", "full_house", "four_of_a_kind", "royal_flush")],
 ])
 def test_new_hand_trophies_pay_once_and_stack(registered_user, facts, code):
+    """Verify that new hand trophies pay once and stack."""
     awarded = record_event(registered_user.pk, "hand", "new1", outcome="win", facts=facts)
     assert code in awarded
     assert xp(registered_user) == 100 + 50 * len(awarded)
@@ -183,6 +204,7 @@ def test_new_hand_trophies_pay_once_and_stack(registered_user, facts, code):
 
 @pytest.mark.parametrize("outcome", ["split", "loss"])
 def test_non_wins_cannot_earn_win_trophies(registered_user, outcome):
+    """Verify that non wins cannot earn win trophies."""
     earned = record_event(registered_user.pk, "hand", "no-win", outcome=outcome,
                           facts={"hole_cards": ["7s", "2h"], "preflop_all_in": True, "showdown": True, "category": "royal_flush"})
     assert earned == ["welcome"]
@@ -190,6 +212,7 @@ def test_non_wins_cannot_earn_win_trophies(registered_user, outcome):
 
 
 def test_pocket_aces_requires_only_being_dealt(registered_user):
+    """Verify that pocket aces requires only being dealt."""
     earned = record_event(registered_user.pk, "hand", "fold-aces", outcome="loss", facts={"hole_cards": ["Ah", "As"]})
     assert earned == ["welcome", "pocket_aces"]
     assert record_event(registered_user.pk, "hand", "fold-aces", outcome="loss", facts={"hole_cards": ["As", "Ah"]}) == []
@@ -197,6 +220,7 @@ def test_pocket_aces_requires_only_being_dealt(registered_user):
 
 
 def test_seven_two_suited_is_not_offsuit(registered_user):
+    """Verify that seven two suited is not offsuit."""
     assert "seven_two" not in record_event(registered_user.pk, "hand", "suited", outcome="win", facts={"hole_cards": ["7s", "2s"]})
 
 
@@ -208,6 +232,7 @@ def test_seven_two_suited_is_not_offsuit(registered_user):
     {"showdown": True, "category": "invented"}, {"showdown": True, "category": []},
 ])
 def test_malformed_hand_facts_do_not_award(registered_user, facts):
+    """Verify that malformed hand facts do not award."""
     with pytest.raises(ValueError):
         record_event(registered_user.pk, "hand", "invalid", outcome="win", facts=facts)
     assert not Event.objects.exists()
@@ -215,6 +240,7 @@ def test_malformed_hand_facts_do_not_award(registered_user, facts):
 
 
 def test_replayed_hand_cannot_change_facts(registered_user):
+    """Verify that replayed hand cannot change facts."""
     record_event(registered_user.pk, "hand", "immutable", outcome="win")
     with pytest.raises(ValueError):
         record_event(registered_user.pk, "hand", "immutable", outcome="win", facts={"hole_cards": ["As", "Ah"]})
@@ -222,6 +248,7 @@ def test_replayed_hand_cannot_change_facts(registered_user):
 
 
 def test_tournament_debut_champion_and_retry(registered_user):
+    """Verify that tournament debut champion and retry."""
     assert record_event(registered_user.pk, "tournament", "t1", outcome="loss") == ["tournament_debut"]
     assert xp(registered_user) == 50
     assert record_event(registered_user.pk, "tournament", "t2", outcome="win") == ["tournament_champion"]
@@ -233,18 +260,21 @@ def test_tournament_debut_champion_and_retry(registered_user):
 
 @pytest.mark.parametrize(("outcome", "facts"), [("split", None), ("", None), ("win", {"hole_cards": ["As", "Ah"]})])
 def test_invalid_tournament_events(registered_user, outcome, facts):
+    """Verify that invalid tournament events."""
     with pytest.raises(ValueError):
         record_event(registered_user.pk, "tournament", "bad", outcome=outcome, facts=facts)
     assert not Event.objects.exists()
 
 
 def test_multiple_new_trophies_stack(registered_user):
+    """Verify that multiple new trophies stack."""
     codes = record_event(registered_user.pk, "hand", "stack", outcome="win", facts={"hole_cards": ["7s", "2h"], "preflop_all_in": True, "showdown": True, "category": "full_house"})
     assert set(codes) == {"welcome", "first_win", "seven_two", "preflop_all_in", "full_house"}
     assert xp(registered_user) == 350
 
 
 def test_seven_two_repeat_bonus_stacks_without_duplicate_trophy(registered_user, registered_client):
+    """Verify that seven two repeat bonus stacks without duplicate trophy."""
     facts = {"hole_cards": ["7s", "2h"]}
     record_event(registered_user.pk, "hand", "first72", outcome="win", facts=facts)
     assert xp(registered_user) == 250
@@ -261,6 +291,7 @@ def test_seven_two_repeat_bonus_stacks_without_duplicate_trophy(registered_user,
 
 @pytest.mark.parametrize("outcome", ["split", "loss"])
 def test_repeat_seven_two_requires_an_outright_win(registered_user, outcome):
+    """Verify that repeat seven two requires an outright win."""
     facts = {"hole_cards": ["7s", "2h"]}
     record_event(registered_user.pk, "hand", "won72", outcome="win", facts=facts)
     record_event(registered_user.pk, "hand", "notwon72", outcome=outcome, facts=facts)
@@ -270,6 +301,7 @@ def test_repeat_seven_two_requires_an_outright_win(registered_user, outcome):
 
 @pytest.mark.parametrize(("kind", "base_xp"), [("hand", 100), ("tournament", 1000)])
 def test_repeated_wins_pay_base_xp_once_per_source(registered_user, kind, base_xp):
+    """Verify that repeated wins pay base xp once per source."""
     record_event(registered_user.pk, kind, "win1", outcome="win")
     initial = xp(registered_user)
     record_event(registered_user.pk, kind, "win2", outcome="win")
@@ -286,6 +318,7 @@ def test_repeated_wins_pay_base_xp_once_per_source(registered_user, kind, base_x
     ("loss", 10, [10, 100, 200], False),
 ])
 def test_comeback_uses_unique_smallest_starting_stack(registered_user, outcome, stack, stacks, eligible):
+    """Verify that comeback uses unique smallest starting stack."""
     codes = record_event(registered_user.pk, "hand", "comeback", outcome=outcome, facts={"starting_stack": stack, "starting_stacks": stacks})
     assert ("comeback" in codes) == eligible
     if eligible:
@@ -304,6 +337,7 @@ def test_comeback_uses_unique_smallest_starting_stack(registered_user, outcome, 
     {"starting_stack": 10, "starting_stacks": [10] * 10},
 ])
 def test_invalid_starting_stack_facts(registered_user, facts):
+    """Verify that invalid starting stack facts."""
     with pytest.raises(ValueError):
         record_event(registered_user.pk, "hand", "badstacks", outcome="win", facts=facts)
     assert not Event.objects.exists()
@@ -316,6 +350,7 @@ def test_invalid_starting_stack_facts(registered_user, facts):
     ("heads_up", 2, 1, None),
 ])
 def test_tournament_stage_rewards_do_not_award_completion_or_win_xp(registered_user, stage, entrants, tables, code):
+    """Verify that tournament stage rewards do not award completion or win xp."""
     facts = {"stage": stage, "entrants": entrants, "starting_tables": tables}
     earned = record_event(registered_user.pk, "tournament_stage", "t1:" + stage, facts=facts)
     assert earned == ([code] if code else [])
@@ -333,12 +368,14 @@ def test_tournament_stage_rewards_do_not_award_completion_or_win_xp(registered_u
     {"stage": "unknown", "entrants": 3, "starting_tables": 1},
 ])
 def test_invalid_tournament_stage(registered_user, facts):
+    """Verify that invalid tournament stage."""
     with pytest.raises(ValueError):
         record_event(registered_user.pk, "tournament_stage", "bad-stage", facts=facts)
     assert not Event.objects.exists()
 
 
 def test_theme_endpoint_awards_once_for_real_change(registered_user, registered_client):
+    """Verify that theme endpoint awards once for real change."""
     endpoint = "/api/profile/theme/"
     assert registered_client.post(endpoint, {"theme": "dark"}, format="json").status_code == 200
     assert xp(registered_user) == 0
@@ -353,11 +390,13 @@ def test_theme_endpoint_awards_once_for_real_change(registered_user, registered_
 
 @pytest.mark.parametrize("body", [{}, {"theme": "purple"}, {"theme": "light", "user_id": 1}, {"theme": ["light"]}])
 def test_theme_endpoint_rejects_untrusted_fields(registered_client, body):
+    """Verify that theme endpoint rejects untrusted fields."""
     assert registered_client.post("/api/profile/theme/", body, format="json").status_code == 400
     assert not Achievement.objects.exists()
 
 
 def test_theme_endpoint_requires_registered_session_and_csrf(registered_user, guest_client):
+    """Verify that theme endpoint requires registered session and csrf."""
     endpoint = "/api/profile/theme/"
     assert guest_client.post(endpoint, {"theme": "light"}, format="json").status_code == 403
     assert APIClient().post(endpoint, {"theme": "light"}, format="json").status_code == 403
@@ -368,6 +407,7 @@ def test_theme_endpoint_requires_registered_session_and_csrf(registered_user, gu
 
 
 def test_theme_award_failure_rolls_back_choice(registered_user):
+    """Verify that theme award failure rolls back choice."""
     from progression.services import save_theme_choice
     with patch("progression.services.record_event", side_effect=RuntimeError("failed")), pytest.raises(RuntimeError):
         save_theme_choice(registered_user.pk, "light")

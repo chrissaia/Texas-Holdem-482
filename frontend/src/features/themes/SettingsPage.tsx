@@ -1,3 +1,7 @@
+/**
+ * Module: themes/SettingsPage.tsx.
+ * Render the themes screen, including user actions, loading states and request feedback.
+ */
 import { useState } from "react";
 import { request } from "../../api/client";
 import { getProfile } from "../profile/api";
@@ -5,11 +9,13 @@ import { useProfile } from "../profile/context";
 import { AccountCard } from "../profile/AccountCard";
 import { useTheme } from "./useTheme";
 
+/** Render the settings page interface and its current state. */
 export function SettingsPage() {
   const { theme, setTheme, storageError } = useTheme();
   const { registered, token, loading } = useProfile();
   const [saveError, setSaveError] = useState("");
   const [saving, setSaving] = useState(false);
+  /** Persist a registered account's theme choice and reflect save failures. */
   async function changeTheme(next: "dark" | "light") {
     if (next === theme) return;
     setTheme(next);
@@ -50,7 +56,7 @@ export function SettingsPage() {
               id="theme"
               value={theme}
               disabled={saving || loading}
-              onChange={(event) =>
+              onChange={/* Return the derived value for the enclosing operation. */ (event) =>
                 void changeTheme(
                   event.target.value === "light" ? "light" : "dark",
                 )

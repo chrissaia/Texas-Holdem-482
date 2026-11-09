@@ -1,3 +1,5 @@
+"""Tests for avatar storage and virtual-chip rewards: rewards."""
+
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from threading import Barrier
@@ -18,6 +20,7 @@ pytestmark = pytest.mark.django_db
 
 
 def test_registration_grants_exactly_1000_once():
+    """Verify that registration grants exactly 1000 once."""
     client = csrf_client()
     response = client.post(reverse('accounts:register'), {
         'username': 'new-player', 'email': 'new@example.com', 'password': 'flop-turn-river-9',
@@ -34,7 +37,9 @@ def test_registration_grants_exactly_1000_once():
 
 
 def test_failed_grant_rolls_back_registration(monkeypatch):
+    """Verify that failed grant rolls back registration."""
     def fail(user_id):
+        """Prepare fail for the surrounding test scenario."""
         grant_starting_chips(user_id)
         raise RuntimeError('grant failure')
     monkeypatch.setattr('accounts.services.grant_starting_chips', fail)
@@ -44,6 +49,7 @@ def test_failed_grant_rolls_back_registration(monkeypatch):
 
 
 def test_daily_claim_persists_and_cannot_be_repeated(registered_client, registered_user):
+    """Verify that daily claim persists and cannot be repeated."""
     response = registered_client.post(reverse('profiles:daily'), {}, format='json')
     assert response.status_code == 200 and response.data['chip_balance'] == 500
     assert not response.data['daily_reward']['available']
@@ -56,6 +62,7 @@ def test_daily_claim_persists_and_cannot_be_repeated(registered_client, register
 
 
 def test_utc_midnight_and_backward_clock(registered_user, monkeypatch):
+    """Verify that utc midnight and backward clock."""
     now = datetime(2026, 10, 25, 23, 59, 59, tzinfo=timezone.utc)
     monkeypatch.setattr('profiles.rewards.timezone.now', lambda: now)
     user = claim_daily_chips(registered_user.pk)
@@ -74,6 +81,7 @@ def test_utc_midnight_and_backward_clock(registered_user, monkeypatch):
 
 @pytest.mark.parametrize('service,amount', [(claim_daily_chips, 500), (grant_starting_chips, 1000)])
 def test_balance_limit_is_atomic(registered_user, service, amount):
+    """Verify that balance limit is atomic."""
     registered_user.chip_balance = MAX_BALANCE - amount + 1
     registered_user.save(update_fields=['chip_balance'])
     with pytest.raises(BalanceLimit):
@@ -85,6 +93,7 @@ def test_balance_limit_is_atomic(registered_user, service, amount):
 
 
 def test_daily_limit_response_and_untrusted_body(registered_user, registered_client):
+    """Verify that daily limit response and untrusted body."""
     registered_user.chip_balance = MAX_BALANCE
     registered_user.save(update_fields=['chip_balance'])
     assert registered_client.post(reverse('profiles:daily'), {}, format='json').status_code == 409
@@ -93,6 +102,7 @@ def test_daily_limit_response_and_untrusted_body(registered_user, registered_cli
 
 
 def test_profile_private_permissions_and_csrf(registered_user, guest_client):
+    """Verify that profile private permissions and csrf."""
     from rest_framework.test import APIClient
     for client in [APIClient(), guest_client]:
         assert client.get(reverse('profiles:profile')).status_code == 403
@@ -109,6 +119,7 @@ def test_profile_private_permissions_and_csrf(registered_user, guest_client):
 
 @pytest.mark.parametrize('balance', [-1, MAX_BALANCE + 1])
 def test_database_balance_constraints(registered_user, balance):
+    """Verify that database balance constraints."""
     with pytest.raises(IntegrityError), transaction.atomic():
         get_user_model().objects.filter(pk=registered_user.pk).update(chip_balance=balance)
 
@@ -116,9 +127,11 @@ def test_database_balance_constraints(registered_user, balance):
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.parametrize('service,expected', [(claim_daily_chips, 500), (grant_starting_chips, 1000)])
 def test_simultaneous_requests_pay_once(service, expected):
+    """Verify that simultaneous requests pay once."""
     user = get_user_model().objects.create_user(username='concurrent')
     barrier = Barrier(2)
     def worker():
+        """Prepare worker for the surrounding test scenario."""
         close_old_connections()
         try:
             barrier.wait(timeout=10)

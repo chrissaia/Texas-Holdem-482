@@ -1,3 +1,7 @@
+/**
+ * Module: auth/validation.ts.
+ * Implement validation for the auth feature and its importing components.
+ */
 import type { AuthErrors } from './types'
 
 // Quick browser-side checks that mirror backend/accounts/serializers.py. The
@@ -13,6 +17,7 @@ export type RegisterForm = {
   age: boolean
 }
 
+/** Check registration fields and password confirmation before calling the API. */
 export function validateRegister(form: RegisterForm): AuthErrors {
   const errors: AuthErrors = {}
   if (!form.email.trim()) errors.email = ['Enter your email address.']
@@ -31,6 +36,7 @@ export function validateRegister(form: RegisterForm): AuthErrors {
   return errors
 }
 
+/** Require both username and password before attempting authentication. */
 export function validateLogin(username: string, password: string): AuthErrors {
   const errors: AuthErrors = {}
   if (!username.trim()) errors.username = ['Enter your username.']
@@ -38,6 +44,7 @@ export function validateLogin(username: string, password: string): AuthErrors {
   return errors
 }
 
+/** Check the supported guest-name length and characters. */
 export function validateGuestName(raw: string): AuthErrors {
   const name = raw.trim()
   if (name.length < 2 || name.length > 20)

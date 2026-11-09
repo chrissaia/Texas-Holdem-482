@@ -12,14 +12,17 @@ UTC = dt_timezone.utc
 
 
 class AlreadyClaimed(Exception):
+    """Signal that this account already received the daily UTC reward."""
     pass
 
 
 class BalanceLimit(Exception):
+    """Signal that a reward would exceed the supported whole-chip balance."""
     pass
 
 
 def reward_status(user, now=None):
+    """Describe daily-reward availability using the supplied or current UTC time."""
     now = (now or timezone.now()).astimezone(UTC)
     last = user.daily_chips_claimed_at
     eligible = last is None or last.astimezone(UTC).date() < now.date()
@@ -31,6 +34,7 @@ def reward_status(user, now=None):
 
 @transaction.atomic
 def grant_starting_chips(user_id):
+    """Grant starting chips."""
     user = get_user_model().objects.select_for_update().get(pk=user_id)
     if user.starting_chips_granted_at is None:
         if user.chip_balance > MAX_BALANCE - STARTING_CHIPS:
@@ -43,6 +47,7 @@ def grant_starting_chips(user_id):
 
 @transaction.atomic
 def claim_daily_chips(user_id):
+    """Claim daily chips."""
     user = get_user_model().objects.select_for_update().get(pk=user_id)
     now = timezone.now()
     if not reward_status(user, now)["available"]:

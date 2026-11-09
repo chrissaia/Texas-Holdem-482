@@ -12,6 +12,7 @@ from .models import PokerTable
 
 
 def can_cleanup(user):
+    """Check the actor's staff status and table-deletion permission."""
     return bool(
         user.is_authenticated
         and user.is_active
@@ -21,6 +22,7 @@ def can_cleanup(user):
 
 
 def cleanup_minutes():
+    """Read and validate the configured inactivity threshold for table cleanup."""
     minutes = settings.TABLE_CLEANUP_INACTIVITY_MINUTES
     if type(minutes) is not int or minutes <= 0:
         raise ImproperlyConfigured(
@@ -31,6 +33,7 @@ def cleanup_minutes():
 
 @dataclass(frozen=True)
 class CleanupResult:
+    """Define cleanup result."""
     deleted_ids: tuple[int, ...]
     skipped_count: int
 
@@ -55,6 +58,7 @@ def cleanup_tables(*, actor, table_ids, now=None):
         if not (
             table.is_public
             and table.player_count == 0
+            and not table.seats.exists()
             and table.status in (PokerTable.Status.WAITING, PokerTable.Status.CLOSED)
             and table.last_activity_at < cutoff
         ):

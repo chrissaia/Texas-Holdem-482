@@ -1,3 +1,5 @@
+"""Url patterns mapped to application views for Django configuration and application entry points."""
+
 from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static

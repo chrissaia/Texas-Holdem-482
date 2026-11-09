@@ -12,6 +12,7 @@ SESSION = reverse("accounts:session")
 
 
 def test_anonymous_session_sets_csrf_cookie():
+    """Verify that anonymous session sets csrf cookie."""
     client = APIClient()
     response = client.get(SESSION)
     assert response.status_code == 200
@@ -23,6 +24,7 @@ def test_anonymous_session_sets_csrf_cookie():
 
 
 def test_login_starts_registered_session(registered_user):
+    """Verify that login starts registered session."""
     client = csrf_client()
     response = client.post(LOGIN, {"username": "Registered-Player", "password": TEST_PASSWORD}, format="json")
     assert response.status_code == 200
@@ -36,11 +38,13 @@ def test_login_starts_registered_session(registered_user):
 
 
 def test_admin_session_reports_admin(rivr_admin_client):
+    """Verify that admin session reports admin."""
     assert rivr_admin_client.get(SESSION).data["user"]["is_admin"] is True
 
 
 def test_login_rotates_session_key(guest_client, registered_user):
     # Session fixation: a session ID that existed before login must not survive it.
+    """Verify that login rotates session key."""
     before = guest_client.cookies["sessionid"].value
     guest_client.post(LOGIN, {"username": registered_user.username, "password": TEST_PASSWORD}, format="json")
     assert guest_client.cookies["sessionid"].value != before
@@ -51,6 +55,7 @@ def test_login_rotates_session_key(guest_client, registered_user):
     {"username": "nobody-here", "password": TEST_PASSWORD},
 ])
 def test_invalid_credentials_share_one_message(registered_user, credentials):
+    """Verify that invalid credentials share one message."""
     client = csrf_client()
     response = client.post(LOGIN, credentials, format="json")
     assert response.status_code == 400
@@ -59,6 +64,7 @@ def test_invalid_credentials_share_one_message(registered_user, credentials):
 
 
 def test_inactive_account_cannot_log_in(registered_user):
+    """Verify that inactive account cannot log in."""
     registered_user.is_active = False
     registered_user.save()
     response = csrf_client().post(
@@ -70,10 +76,12 @@ def test_inactive_account_cannot_log_in(registered_user):
 
 @pytest.mark.parametrize("body", [{}, {"username": "x"}, {"password": "x"}, {"username": "", "password": ""}])
 def test_login_requires_both_fields(body):
+    """Verify that login requires both fields."""
     assert csrf_client().post(LOGIN, body, format="json").status_code == 400
 
 
 def test_login_requires_csrf(registered_user):
+    """Verify that login requires csrf."""
     client = APIClient(enforce_csrf_checks=True)
     response = client.post(LOGIN, {"username": registered_user.username, "password": TEST_PASSWORD}, format="json")
     assert response.status_code == 403
@@ -81,10 +89,12 @@ def test_login_requires_csrf(registered_user):
 
 
 def test_login_rejects_get(registered_user):
+    """Verify that login rejects get."""
     assert csrf_client().get(LOGIN).status_code == 405
 
 
 def test_logout_ends_session(registered_client):
+    """Verify that logout ends session."""
     response = registered_client.post(LOGOUT)
     assert response.status_code == 200
     assert response.data["state"] == "anonymous"
@@ -92,6 +102,7 @@ def test_logout_ends_session(registered_client):
 
 
 def test_old_session_cookie_is_invalid_after_logout(registered_client):
+    """Verify that old session cookie is invalid after logout."""
     stolen = registered_client.cookies["sessionid"].value
     registered_client.post(LOGOUT)
     replay = APIClient()
@@ -100,6 +111,7 @@ def test_old_session_cookie_is_invalid_after_logout(registered_client):
 
 
 def test_logout_requires_csrf(registered_user):
+    """Verify that logout requires csrf."""
     client = APIClient(enforce_csrf_checks=True)
     client.login(username=registered_user.username, password=TEST_PASSWORD)
     assert client.post(LOGOUT).status_code == 403
@@ -107,5 +119,6 @@ def test_logout_requires_csrf(registered_user):
 
 
 def test_anonymous_logout_is_harmless():
+    """Verify that anonymous logout is harmless."""
     response = csrf_client().post(LOGOUT)
     assert response.status_code == 200 and response.data["state"] == "anonymous"

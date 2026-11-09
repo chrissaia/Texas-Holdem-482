@@ -1,3 +1,5 @@
+"""Http endpoints, permission checks and response construction for public poker-table configuration and browsing."""
+
 from django.middleware.csrf import get_token
 from django.db import transaction
 from progression.services import record_event
@@ -17,14 +19,17 @@ from .pagination import TablePagination
 
 
 class TableListCreateView(ListCreateAPIView):
+    """List public active tables or create a table owned by the authenticated host."""
     serializer_class = TableSerializer
     pagination_class = TablePagination
 
     def get_permissions(self):
+        """Return permissions for the caller."""
         permission = CanHostTable if self.request.method == "POST" else AllowAny
         return [permission()]
 
     def get_queryset(self):
+        """Build the filtered database query used by this endpoint."""
         params = TableListQuerySerializer(data=self.request.query_params)
         params.is_valid(raise_exception=True)
         filters = params.validated_data
@@ -60,11 +65,13 @@ class TableListCreateView(ListCreateAPIView):
 
     @transaction.atomic
     def perform_create(self, serializer):
+        """Save a validated table with ownership derived from the authenticated request."""
         table = serializer.save(host=self.request.user)
         record_event(self.request.user.pk, "game", str(table.pk))
 
 
 class TableDetailView(RetrieveAPIView):
+    """Retrieve public table settings without exposing private tables."""
     serializer_class = TableSerializer
     permission_classes = [AllowAny]
     queryset = PokerTable.objects.filter(is_public=True).select_related("host")

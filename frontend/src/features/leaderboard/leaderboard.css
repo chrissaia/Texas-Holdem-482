@@ -1,3 +1,5 @@
+/* Leaderboard styles: layout, component states and responsive presentation. */
+
 .leaderboard-page {
   display: flex;
   flex-direction: column;

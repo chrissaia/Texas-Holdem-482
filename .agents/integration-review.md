@@ -14,4 +14,4 @@ Read `.agents/shared.md`. Support any teammate with the specific requested revie
 
 Give actionable findings with file/line references, concrete reproduction or missing test, and impact. Report actual commands and results; identify unexecuted checks. Feature authors retain responsibility for their own unit tests and fixes. When asked to implement an integration fix, agree on a narrow file boundary and coordinate shared models/migrations.
 
-Use `docs/contracts.md`, the relevant feature role, and the story workbook as evidence. Do not count S11 filtering as S10 acceptance, proposed S5/S14 estimates as approved, or infrastructure-only coverage as sprint completion. Do not change issue status, push, merge, or claim professor acceptance as part of a review alone.
+Use `docs/architecture/contracts.md`, the relevant feature role, and the story workbook as evidence. Do not count S11 filtering as S10 acceptance, proposed S5/S14 estimates as approved, or infrastructure-only coverage as sprint completion. Do not change issue status, push, merge, or claim professor acceptance as part of a review alone.

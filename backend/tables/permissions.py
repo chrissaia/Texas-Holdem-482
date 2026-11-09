@@ -1,3 +1,5 @@
+"""Authorization rules used by table endpoints for public poker-table configuration and browsing."""
+
 from rest_framework.permissions import BasePermission
 
 
@@ -13,7 +15,9 @@ def can_host(request):
 
 
 class CanHostTable(BasePermission):
+    """Require an active registered session before allowing table creation."""
     message = "Sign in with a registered account to create a table."
 
     def has_permission(self, request, view):
+        """Decide whether the requesting session satisfies this endpoint's access policy."""
         return can_host(request)

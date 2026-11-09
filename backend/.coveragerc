@@ -1,3 +1,4 @@
+# Purpose: Measure backend runtime code with branch coverage and explicit generated/test exclusions.
 [run]
 branch = True
 source = .

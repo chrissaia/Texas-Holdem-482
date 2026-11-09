@@ -16,6 +16,7 @@ OUTPUT = SOURCE.with_suffix(".pdf")
 
 
 def main():
+    """Run the render gameplay diagram command-line workflow."""
     lines = [line.strip() for line in SOURCE.read_text().splitlines() if line.strip()]
     actors, events = [], []
     for line in lines[1:]:

@@ -13,29 +13,35 @@ TABLE = dict(name="Session test", max_players=6, buy_in=1000,
 
 @pytest.mark.parametrize("fixture", ["registered_client", "rivr_admin_client"])
 def test_registered_and_admin_sessions_can_create_tables(request, fixture):
+    """Verify that registered and admin sessions can create tables."""
     client = request.getfixturevalue(fixture)
     assert client.post(TABLES, TABLE, format="json").status_code == 201
 
 
 def test_guest_cannot_create_table(guest_client):
+    """Verify that guest cannot create table."""
     assert guest_client.post(TABLES, TABLE, format="json").status_code == 403
 
 
 def test_anonymous_cannot_create_table():
+    """Verify that anonymous cannot create table."""
     assert csrf_client().post(TABLES, TABLE, format="json").status_code == 403
 
 
 def test_logged_out_session_cannot_create_table(registered_client):
+    """Verify that logged out session cannot create table."""
     registered_client.post(reverse("accounts:logout"))
     assert registered_client.post(TABLES, TABLE, format="json").status_code == 403
 
 
 def test_registered_write_without_csrf_is_rejected(registered_client):
+    """Verify that registered write without csrf is rejected."""
     registered_client.credentials()  # drop the CSRF header
     assert registered_client.post(TABLES, TABLE, format="json").status_code == 403
 
 
 def test_creation_context_uses_account_session(guest_client, registered_client, registered_user):
+    """Verify that creation context uses account session."""
     context = reverse("tables:creation-context")
     assert guest_client.get(context).data["host"] is None
     assert registered_client.get(context).data["host"] == {
@@ -44,5 +50,6 @@ def test_creation_context_uses_account_session(guest_client, registered_client, 
 
 
 def test_public_lobby_stays_open_to_everyone(guest_client):
+    """Verify that public lobby stays open to everyone."""
     assert guest_client.get(TABLES).status_code == 200
     assert APIClient().get(TABLES).status_code == 200

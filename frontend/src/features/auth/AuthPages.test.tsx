@@ -1,3 +1,7 @@
+/**
+ * Regression tests: auth/AuthPages.test.tsx.
+ * Exercises observable behavior and isolates API or browser dependencies.
+ */
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, expect, test, vi } from 'vitest'
@@ -21,6 +25,7 @@ const guest = {
   guest: { name: 'River Jay' },
   csrf_token: 'csrf-3',
 }
+/** Respond for this module's test scenario. */
 const respond = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status })
 
@@ -29,7 +34,7 @@ type Handler = (init?: RequestInit) => Response | Promise<Response>
 /** Routes fetch by URL so the page and the app shell can load in any order. */
 function mockApi(handlers: Record<string, Handler>) {
   let host: { id: number; username: string } | null = null
-  const fetch = vi.fn(async (path: string, init?: RequestInit) => {
+  const fetch = vi.fn(/* Handle the fn callback using the current operation's state. */ async (path: string, init?: RequestInit) => {
     if (path === '/api/tables/creation-context/')
       return respond({ host, csrf_token: 'tables-csrf' })
     const handler = handlers[path]
@@ -42,25 +47,29 @@ function mockApi(handlers: Record<string, Handler>) {
   vi.stubGlobal('fetch', fetch)
   return fetch
 }
+/** Posts for this module's test scenario. */
 const posts = (fetch: ReturnType<typeof mockApi>, path: string) =>
-  fetch.mock.calls.filter(([url]) => url === path)
+  fetch.mock.calls.filter(/* Keep only entries satisfying the surrounding collection rule. */ ([url]) => url === path)
+/** Csrf header for this module's test scenario. */
 const csrfHeader = (init?: RequestInit) =>
   ((init?.headers ?? {}) as Record<string, string>)['X-CSRFToken']
+/** Start for this module's test scenario. */
 const start = (path: string) =>
   render(
     <MemoryRouter initialEntries={[path]}>
       <AppRoutes />
     </MemoryRouter>,
   )
+/** Type for this module's test scenario. */
 const type = (label: string, value: string) =>
   fireEvent.change(screen.getByLabelText(label), { target: { value } })
 
-afterEach(() => vi.unstubAllGlobals())
+afterEach(/* Restore test isolation after the preceding scenario. */ () => vi.unstubAllGlobals())
 
-test('signs in with the session CSRF token and returns home as that player', async () => {
+test('signs in with the session CSRF token and returns home as that player', /* Verify signs in with the session CSRF token and returns home as that player. */ async () => {
   const fetch = mockApi({
-    '/api/auth/session/': () => respond(anonymous),
-    '/api/auth/login/': () => respond(registered),
+    '/api/auth/session/': /* Return the derived value for the enclosing operation. */ () => respond(anonymous),
+    '/api/auth/login/': /* Return the derived value for the enclosing operation. */ () => respond(registered),
   })
   start('/login')
   expect(
@@ -90,10 +99,10 @@ test('signs in with the session CSRF token and returns home as that player', asy
   expect(await screen.findByText('Registered player')).toBeVisible()
 })
 
-test('shows the generic invalid-credentials message and stays on sign in', async () => {
+test('shows the generic invalid-credentials message and stays on sign in', /* Verify shows the generic invalid-credentials message and stays on sign in. */ async () => {
   mockApi({
-    '/api/auth/session/': () => respond(anonymous),
-    '/api/auth/login/': () =>
+    '/api/auth/session/': /* Return the derived value for the enclosing operation. */ () => respond(anonymous),
+    '/api/auth/login/': /* Return the derived value for the enclosing operation. */ () =>
       respond({ non_field_errors: ['Invalid username or password.'] }, 400),
   })
   start('/login')
@@ -107,8 +116,8 @@ test('shows the generic invalid-credentials message and stays on sign in', async
   expect(screen.getByRole('button', { name: 'Sign in →' })).toBeEnabled()
 })
 
-test('blank sign-in fields are flagged without calling the API', async () => {
-  const fetch = mockApi({ '/api/auth/session/': () => respond(anonymous) })
+test('blank sign-in fields are flagged without calling the API', /* Verify blank sign-in fields are flagged without calling the API. */ async () => {
+  const fetch = mockApi({ '/api/auth/session/': /* Return the derived value for the enclosing operation. */ () => respond(anonymous) })
   start('/login')
   await screen.findByLabelText('Username')
   fireEvent.click(screen.getByRole('button', { name: 'Sign in →' }))
@@ -118,12 +127,12 @@ test('blank sign-in fields are flagged without calling the API', async () => {
     'aria-invalid',
     'true',
   )
-  await waitFor(() => expect(screen.getByLabelText('Username')).toHaveFocus())
+  await waitFor(/* Wait for the expected asynchronous UI or request state. */ () => expect(screen.getByLabelText('Username')).toHaveFocus())
   expect(posts(fetch, '/api/auth/login/')).toHaveLength(0)
 })
 
-test('features without backend support are visibly unavailable', async () => {
-  mockApi({ '/api/auth/session/': () => respond(anonymous) })
+test('features without backend support are visibly unavailable', /* Verify features without backend support are visibly unavailable. */ async () => {
+  mockApi({ '/api/auth/session/': /* Return the derived value for the enclosing operation. */ () => respond(anonymous) })
   start('/login')
   await screen.findByLabelText('Username')
   expect(screen.getByText('Forgot password?')).toHaveAttribute(
@@ -139,6 +148,7 @@ test('features without backend support are visibly unavailable', async () => {
   ).toBeVisible()
 })
 
+/** Fill registration for this module's test scenario. */
 const fillRegistration = () => {
   type('Email address', ' Finn@Example.com ')
   type('Username', 'Finn')
@@ -151,10 +161,10 @@ const fillRegistration = () => {
   )
 }
 
-test('registers with only the three API fields and signs the player in', async () => {
+test('registers with only the three API fields and signs the player in', /* Verify registers with only the three API fields and signs the player in. */ async () => {
   const fetch = mockApi({
-    '/api/auth/session/': () => respond(anonymous),
-    '/api/auth/register/': () => respond(registered, 201),
+    '/api/auth/session/': /* Return the derived value for the enclosing operation. */ () => respond(anonymous),
+    '/api/auth/register/': /* Return the derived value for the enclosing operation. */ () => respond(registered, 201),
   })
   start('/register')
   await screen.findByLabelText('Email address')
@@ -172,8 +182,8 @@ test('registers with only the three API fields and signs the player in', async (
   })
 })
 
-test('mismatched passwords and a missing age confirmation block registration', async () => {
-  const fetch = mockApi({ '/api/auth/session/': () => respond(anonymous) })
+test('mismatched passwords and a missing age confirmation block registration', /* Verify mismatched passwords and a missing age confirmation block registration. */ async () => {
+  const fetch = mockApi({ '/api/auth/session/': /* Return the derived value for the enclosing operation. */ () => respond(anonymous) })
   start('/register')
   await screen.findByLabelText('Email address')
   type('Email address', 'finn@example.com')
@@ -188,10 +198,10 @@ test('mismatched passwords and a missing age confirmation block registration', a
   expect(posts(fetch, '/api/auth/register/')).toHaveLength(0)
 })
 
-test('server field errors appear under the matching registration field', async () => {
+test('server field errors appear under the matching registration field', /* Verify server field errors appear under the matching registration field. */ async () => {
   mockApi({
-    '/api/auth/session/': () => respond(anonymous),
-    '/api/auth/register/': () =>
+    '/api/auth/session/': /* Return the derived value for the enclosing operation. */ () => respond(anonymous),
+    '/api/auth/register/': /* Return the derived value for the enclosing operation. */ () =>
       respond(
         {
           username: ['A user with that username already exists.'],
@@ -213,13 +223,13 @@ test('server field errors appear under the matching registration field', async (
   expect(username.getAttribute('aria-describedby')).toContain(
     'register-username-error',
   )
-  await waitFor(() => expect(username).toHaveFocus())
+  await waitFor(/* Wait for the expected asynchronous UI or request state. */ () => expect(username).toHaveFocus())
 })
 
-test('starts a guest session with the trimmed name', async () => {
+test('starts a guest session with the trimmed name', /* Verify starts a guest session with the trimmed name. */ async () => {
   const fetch = mockApi({
-    '/api/auth/session/': () => respond(anonymous),
-    '/api/auth/guest/': () => respond(guest, 201),
+    '/api/auth/session/': /* Return the derived value for the enclosing operation. */ () => respond(anonymous),
+    '/api/auth/guest/': /* Return the derived value for the enclosing operation. */ () => respond(guest, 201),
   })
   start('/guest')
   await screen.findByLabelText('Temporary username')
@@ -236,10 +246,10 @@ test('starts a guest session with the trimmed name', async () => {
   expect(screen.getByRole('link', { name: 'Sign in to host a table' })).toBeVisible()
 })
 
-test('rejects too-short guest names locally and shows server name errors', async () => {
+test('rejects too-short guest names locally and shows server name errors', /* Verify rejects too-short guest names locally and shows server name errors. */ async () => {
   const fetch = mockApi({
-    '/api/auth/session/': () => respond(anonymous),
-    '/api/auth/guest/': () =>
+    '/api/auth/session/': /* Return the derived value for the enclosing operation. */ () => respond(anonymous),
+    '/api/auth/guest/': /* Return the derived value for the enclosing operation. */ () =>
       respond({ name: ['That name belongs to a registered player.'] }, 400),
   })
   start('/guest')
@@ -256,10 +266,10 @@ test('rejects too-short guest names locally and shows server name errors', async
   ).toBeVisible()
 })
 
-test('a CSRF failure asks the player to retry and fetches a fresh token', async () => {
+test('a CSRF failure asks the player to retry and fetches a fresh token', /* Verify a CSRF failure asks the player to retry and fetches a fresh token. */ async () => {
   const fetch = mockApi({
-    '/api/auth/session/': () => respond(anonymous),
-    '/api/auth/guest/': () =>
+    '/api/auth/session/': /* Return the derived value for the enclosing operation. */ () => respond(anonymous),
+    '/api/auth/guest/': /* Return the derived value for the enclosing operation. */ () =>
       respond({ detail: 'CSRF Failed: CSRF token missing.' }, 403),
   })
   start('/guest')
@@ -269,15 +279,15 @@ test('a CSRF failure asks the player to retry and fetches a fresh token', async 
   expect(await screen.findByRole('alert')).toHaveTextContent(
     'Your session could not be verified. Please try again.',
   )
-  await waitFor(() =>
+  await waitFor(/* Wait for the expected asynchronous UI or request state. */ () =>
     expect(posts(fetch, '/api/auth/session/').length).toBeGreaterThan(1),
   )
 })
 
-test('a network failure while submitting shows a connection message', async () => {
+test('a network failure while submitting shows a connection message', /* Verify a network failure while submitting shows a connection message. */ async () => {
   mockApi({
-    '/api/auth/session/': () => respond(anonymous),
-    '/api/auth/login/': () => {
+    '/api/auth/session/': /* Return the derived value for the enclosing operation. */ () => respond(anonymous),
+    '/api/auth/login/': /* Return the derived value for the enclosing operation. */ () => {
       throw new TypeError('Failed to fetch')
     },
   })
@@ -291,10 +301,10 @@ test('a network failure while submitting shows a connection message', async () =
   )
 })
 
-test('a failed session check can be retried', async () => {
+test('a failed session check can be retried', /* Verify a failed session check can be retried. */ async () => {
   let calls = 0
   mockApi({
-    '/api/auth/session/': () =>
+    '/api/auth/session/': /* Return the derived value for the enclosing operation. */ () =>
       ++calls === 1 ? respond({}, 500) : respond(anonymous),
   })
   start('/register')
@@ -305,10 +315,10 @@ test('a failed session check can be retried', async () => {
   expect(await screen.findByLabelText('Email address')).toBeVisible()
 })
 
-test('signed-in players see who they are and can sign out', async () => {
+test('signed-in players see who they are and can sign out', /* Verify signed-in players see who they are and can sign out. */ async () => {
   const fetch = mockApi({
-    '/api/auth/session/': () => respond(registered),
-    '/api/auth/logout/': () => respond(anonymous),
+    '/api/auth/session/': /* Return the derived value for the enclosing operation. */ () => respond(registered),
+    '/api/auth/logout/': /* Return the derived value for the enclosing operation. */ () => respond(anonymous),
   })
   start('/login')
   expect(await screen.findByText(/signed in as/)).toHaveTextContent(
@@ -323,10 +333,10 @@ test('signed-in players see who they are and can sign out', async () => {
   )
 })
 
-test('guests are labelled as guests, and a failed sign-out is reported', async () => {
+test('guests are labelled as guests, and a failed sign-out is reported', /* Verify guests are labelled as guests, and a failed sign-out is reported. */ async () => {
   mockApi({
-    '/api/auth/session/': () => respond(guest),
-    '/api/auth/logout/': () => respond({}, 500),
+    '/api/auth/session/': /* Return the derived value for the enclosing operation. */ () => respond(guest),
+    '/api/auth/logout/': /* Return the derived value for the enclosing operation. */ () => respond({}, 500),
   })
   start('/guest')
   expect(await screen.findByText(/signed in as/)).toHaveTextContent(

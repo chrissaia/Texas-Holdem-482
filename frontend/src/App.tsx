@@ -1,3 +1,7 @@
+/**
+ * Module: src/App.tsx.
+ * Implement App for the shared application feature and its importing components.
+ */
 import { useCallback, useEffect, useState } from "react";
 import {
   BrowserRouter,
@@ -23,35 +27,38 @@ import { ProfileProvider } from "./features/profile/ProfileProvider";
 import { RewardsPage } from "./features/profile/RewardsPage";
 import { AchievementsPage } from "./features/achievements/AchievementsPage";
 import { LeaderboardPage } from "./features/leaderboard/LeaderboardPage";
+import { RewardNotifications } from "./features/achievements/RewardNotifications";
+import { StatisticsPage } from "./features/statistics/StatisticsPage";
 import "./App.css";
 
+/** Render the app routes interface and its current state. */
 export function AppRoutes() {
   const { pathname } = useLocation();
   const [context, setContext] = useState<CreationContext | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
-  const refresh = useCallback(() => {
+  const refresh = useCallback(/* Provide a stable callback for the dependent component operations. */ () => {
     setLoading(true);
     setError("");
-    setAttempt((n) => n + 1);
+    setAttempt(/* Handle the setAttempt callback using the current operation's state. */ (n) => n + 1);
   }, []);
-  useEffect(() => {
+  useEffect(/* Synchronize component state with external data and release resources on cleanup. */ () => {
     let active = true;
     getCreationContext()
-      .then((value) => {
+      .then(/* Apply the successful asynchronous result to the current operation. */ (value) => {
         if (active) setContext(value);
       })
-      .catch(() => {
+      .catch(/* Handle the failed operation without leaving stale UI feedback. */ () => {
         if (active) {
           setContext(null);
           setError("We could not check your session. Please try again.");
         }
       })
-      .finally(() => {
+      .finally(/* Release pending state after the asynchronous operation settles. */ () => {
         if (active) setLoading(false);
       });
-    return () => {
+    return /* Return the derived value for the enclosing operation. */ () => {
       active = false;
     };
   }, [attempt]);
@@ -61,8 +68,11 @@ export function AppRoutes() {
         accountId={context?.host?.id ?? null}
         registered={!!context?.host}
         identityLoading={loading}
-        enabled={pathname === "/settings" || pathname === "/rewards"}
+        enabled={pathname === "/settings" || pathname === "/rewards" || (pathname.startsWith("/tables/") && pathname !== "/tables/create")}
       >
+        {!loading && context?.host && (
+          <RewardNotifications key={context.host.id} />
+        )}
         <Routes>
           {/* Account screens use their own full-page layout from Figma, without the sidebar. */}
           <Route path="/login" element={<SignInPage onSignedIn={refresh} />} />
@@ -93,6 +103,7 @@ export function AppRoutes() {
                 <LeaderboardPage key={context?.host?.id ?? "anonymous"} />
               }
             />
+            <Route path="/statistics" element={<StatisticsPage key={context?.host?.id ?? "anonymous"} />} />
             <Route path="/rewards" element={<RewardsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/lobby" element={<LobbyPage />} />
@@ -127,7 +138,7 @@ export function AppRoutes() {
                 />
               }
             />
-            <Route path="/tables/:id" element={<TableDetailPage />} />
+            <Route path="/tables/:id" element={<TableDetailPage key={context?.host?.id ?? "anonymous"} />} />
             <Route
               path="*"
               element={
@@ -144,6 +155,7 @@ export function AppRoutes() {
   );
 }
 
+/* Render the app interface and its current state. */
 export default function App() {
   return (
     <BrowserRouter>

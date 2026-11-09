@@ -1,3 +1,5 @@
+/* App styles: layout, component states and responsive presentation. */
+
 .app-shell {
   display: flex;
   min-height: 100vh;
@@ -561,4 +563,17 @@ input[aria-invalid='true'] {
   .account-controls .account-label {
     display: none;
   }
+}
+
+/* Keep seat actions and balance feedback readable at narrow widths. */
+.seat-panel { display: grid; gap: 12px; margin: 24px 0; }
+.seat-panel h2, .seat-panel p { margin: 0; }
+.seat-panel .button { justify-self: start; max-width: 100%; white-space: normal; }
+
+/* Personal statistics remains reachable with the other mobile navigation links. */
+@media (max-width: 720px) {
+  .topbar { height: auto; min-height: 56px; padding-top: 12px; padding-bottom: 12px; }
+  .account-controls { flex-wrap: wrap; justify-content: flex-start; }
+  .account-controls .mobile-lobby-link { margin-right: 0; }
+  .account-controls .avatar { margin-left: auto; }
 }
