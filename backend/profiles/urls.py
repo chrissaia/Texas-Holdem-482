@@ -2,9 +2,11 @@
 
 from django.urls import path
 from . import views
+from .statistics import statistics
 
 app_name = "profiles"
 urlpatterns = [
+    path("stats/", statistics, name="statistics"),
     path("", views.profile, name="profile"),
     path("avatar/", views.avatar, name="avatar"),
     path("theme/", views.theme_choice, name="theme"),

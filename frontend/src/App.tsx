@@ -28,6 +28,7 @@ import { RewardsPage } from "./features/profile/RewardsPage";
 import { AchievementsPage } from "./features/achievements/AchievementsPage";
 import { LeaderboardPage } from "./features/leaderboard/LeaderboardPage";
 import { RewardNotifications } from "./features/achievements/RewardNotifications";
+import { StatisticsPage } from "./features/statistics/StatisticsPage";
 import "./App.css";
 
 /** Render the app routes interface and its current state. */
@@ -102,6 +103,7 @@ export function AppRoutes() {
                 <LeaderboardPage key={context?.host?.id ?? "anonymous"} />
               }
             />
+            <Route path="/statistics" element={<StatisticsPage key={context?.host?.id ?? "anonymous"} />} />
             <Route path="/rewards" element={<RewardsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/lobby" element={<LobbyPage />} />

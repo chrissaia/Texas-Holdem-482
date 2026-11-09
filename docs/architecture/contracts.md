@@ -191,3 +191,21 @@ Future gameplay must adopt table-then-user locking, serialize stack/pot updates,
 and preserve reserved funds. S16's account-wallet delta must not repeat a buy-in
 or credit chips that remain reserved at a table. Joining is not gameplay; guest,
 private-table and in-hand cash-out policies remain separate integration work.
+
+
+## S17 private all-time hand statistics
+
+`GET /api/profile/stats/` requires an active registered session and returns
+`{username, period: "all_time", hands_played, hands_won, hands_lost, hands_split,
+win_rate}`. It aggregates only the session user's `progression.Event(kind="hand")`
+rows. Win rate is outright wins / all dealt completed hands, rounded to one decimal;
+splits are not wins. An empty ledger returns zero counts and 0.0%. Responses are
+private/no-store; queries and writes are rejected. `/statistics` supplies refresh,
+retry, guest gating and an empty state; it exposes no event write/claim UI.
+
+The existing progression hand hook remains the authoritative writer. The poker
+engine must supply verified completed-hand events exactly once per participant
+and stable hand ID. Chip rewards, wallet deltas, table creation and joining alone
+must not be converted into hand participation. No invented game/action/pot history
+or time-series is derived from missing facts. Actual gameplay integration remains
+a separately planned engine dependency.
