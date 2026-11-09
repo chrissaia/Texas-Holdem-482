@@ -27,3 +27,20 @@ export const createTable = (input: TableInput, csrfToken: string) =>
 /** Fetch public tables using the encoded lobby query parameters. */
 export const listTables = (query: string) =>
   request<TableList>(`/api/tables/?${query}`)
+
+export type SeatStatus = {
+  table_id: number
+  player_count: number
+  chip_balance: number
+  seat: { id: number; buy_in: number; stack: number } | null
+  other_table_id: number | null
+  csrf_token: string
+}
+
+export const getSeat = (id: number) => request<SeatStatus>(`/api/tables/${id}/seat/`)
+export const changeSeat = (id: number, method: 'POST' | 'DELETE', token: string) =>
+  request<SeatStatus>(`/api/tables/${id}/seat/`, {
+    method,
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': token },
+    body: JSON.stringify({}),
+  })

@@ -1,0 +1,55 @@
+Name                         Stmts   Miss Branch BrPart  Cover   Missing
+------------------------------------------------------------------------
+accounts/__init__.py             0      0      0      0   100%
+accounts/admin.py                4      0      0      0   100%
+accounts/models.py              11      0      0      0   100%
+accounts/serializers.py         43      0      8      0   100%
+accounts/services.py            24      0      6      0   100%
+accounts/urls.py                 4      0      0      0   100%
+accounts/views.py               68      0      6      0   100%
+chips/__init__.py                0      0      0      0   100%
+chips/admin.py                  13      0      0      0   100%
+chips/models.py                 13      0      0      0   100%
+chips/services.py               39      0     16      0   100%
+config/__init__.py               0      0      0      0   100%
+config/asgi.py                   4      4      0      0     0%   3-7
+config/settings.py              32      1      2      1    94%   13
+config/urls.py                  10      0      2      1    92%   24->exit
+config/wsgi.py                   4      4      0      0     0%   3-7
+conftest.py                     35      0      0      0   100%
+core/__init__.py                 0      0      0      0   100%
+core/views.py                   15      0      0      0   100%
+friends/__init__.py              0      0      0      0   100%
+friends/admin.py                 8      0      0      0   100%
+friends/models.py               18      0      0      0   100%
+friends/serializers.py          10      0      2      0   100%
+friends/services.py             60      0     14      0   100%
+friends/urls.py                  4      0      0      0   100%
+friends/views.py                49      0      2      0   100%
+manage.py                        8      8      2      0     0%   3-16
+profiles/__init__.py             0      0      0      0   100%
+profiles/avatars.py             59      0     10      1    99%   70->72
+profiles/rewards.py             42      0     10      0   100%
+profiles/statistics.py          18      0      2      0   100%
+profiles/urls.py                 5      0      0      0   100%
+profiles/views.py               52      0      6      0   100%
+progression/__init__.py          0      0      0      0   100%
+progression/catalog.py           5      0      0      0   100%
+progression/facts.py            60      0     50      0   100%
+progression/leaderboard.py      51      0     12      0   100%
+progression/models.py           22      0      0      0   100%
+progression/services.py         73      2     42      2    97%   79, 82
+progression/views.py            18      0      0      0   100%
+tables/__init__.py               0      0      0      0   100%
+tables/admin.py                 39      0      4      0   100%
+tables/cleanup.py               35      0      8      0   100%
+tables/models.py                56      0     12      0   100%
+tables/pagination.py            11      0      0      0   100%
+tables/permissions.py            8      0      0      0   100%
+tables/seating.py               59      0     20      0   100%
+tables/seating_views.py         28      0      4      0   100%
+tables/serializers.py           58      0     14      0   100%
+tables/urls.py                   5      0      0      0   100%
+tables/views.py                 62      0     16      0   100%
+------------------------------------------------------------------------
+TOTAL                         1242     19    270      5    98%

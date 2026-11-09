@@ -68,7 +68,11 @@ function setup(
       return Promise.resolve(
         url.pathname.includes('creation-context')
           ? respond(context)
-          : handler(url, init),
+          : url.pathname.endsWith('/seat/')
+            ? respond({ table_id: blue.id, player_count: blue.player_count, chip_balance: 2000, seat: null, other_table_id: null, csrf_token: 'test-csrf' })
+            : url.pathname === '/api/profile/'
+              ? respond({ id: host.id, username: host.username, avatar_url: null, chip_balance: 2000, starting_chips_granted_at: null, daily_reward: { amount: 500, available: false, next_claim_at: null }, csrf_token: 'test-csrf' })
+              : handler(url, init),
       )
     })
   vi.stubGlobal('fetch', fetch)
@@ -103,6 +107,7 @@ test('loads public database-shaped data and opens saved table details', /* Verif
   expect(within(table).getByText('Available')).toBeVisible()
   fireEvent.click(screen.getByRole('link', { name: 'View Blue Hour' }))
   expect(await screen.findByText('Hosted by Mira')).toBeVisible()
+  expect(await screen.findByRole('button', { name: /Join table/ })).toBeEnabled()
   fireEvent.click(screen.getByRole('link', { name: '← Back to lobby' }))
   expect(await screen.findByRole('link', { name: 'Blue Hour' })).toBeVisible()
 })

@@ -28,6 +28,7 @@ import { RewardsPage } from "./features/profile/RewardsPage";
 import { AchievementsPage } from "./features/achievements/AchievementsPage";
 import { LeaderboardPage } from "./features/leaderboard/LeaderboardPage";
 import { RewardNotifications } from "./features/achievements/RewardNotifications";
+import { StatisticsPage } from "./features/statistics/StatisticsPage";
 import "./App.css";
 
 /** Render the app routes interface and its current state. */
@@ -67,7 +68,7 @@ export function AppRoutes() {
         accountId={context?.host?.id ?? null}
         registered={!!context?.host}
         identityLoading={loading}
-        enabled={pathname === "/settings" || pathname === "/rewards"}
+        enabled={pathname === "/settings" || pathname === "/rewards" || (pathname.startsWith("/tables/") && pathname !== "/tables/create")}
       >
         {!loading && context?.host && (
           <RewardNotifications key={context.host.id} />
@@ -102,6 +103,7 @@ export function AppRoutes() {
                 <LeaderboardPage key={context?.host?.id ?? "anonymous"} />
               }
             />
+            <Route path="/statistics" element={<StatisticsPage key={context?.host?.id ?? "anonymous"} />} />
             <Route path="/rewards" element={<RewardsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/lobby" element={<LobbyPage />} />
@@ -136,7 +138,7 @@ export function AppRoutes() {
                 />
               }
             />
-            <Route path="/tables/:id" element={<TableDetailPage />} />
+            <Route path="/tables/:id" element={<TableDetailPage key={context?.host?.id ?? "anonymous"} />} />
             <Route
               path="*"
               element={

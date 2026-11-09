@@ -153,3 +153,59 @@ The twenty-four one-time achievements and their trusted backend hooks are docume
 ## S18 all-time XP rankings
 
 `GET /api/leaderboard/` is public, uses the authoritative progression event ledger and includes active registered accounts (including zero XP). Ties share competition rank; IDs stabilize equal-XP pagination. Query fields are only `page` and bounded `page_size`. Public rows expose ID, username, avatar URL, XP, rank and current-user flag; private account fields and chip balances are excluded. Authenticated responses add the viewer's own global rank even off page. All-time only; seasonal rankings remain S33. See [../team/chris/s18-see-the-leaderboard.md](../team/chris/s18-see-the-leaderboard.md) for response shape, limits, privacy and integration details.
+
+
+## S16 first milestone: trusted game-result chip persistence
+
+Kelechi owns chips.services.save_chip_result(user_id, source=..., delta=...).
+It records a signed whole-chip account-wallet delta with a unique (user, source)
+receipt in chips.ChipResult. Rewards and result writes lock the same accounts.User
+row. The balance and receipt are atomic; duplicate identical results do not pay
+twice, conflicting deltas are rejected, and bounds remain 0..9,007,199,254,740,991.
+A retry returns the latest account balance, not its receipt's historical snapshot.
+The existing private profile endpoint reads the current saved balance.
+
+This is a trusted Python hook, not a player-write API. The game engine must derive
+IDs/deltas from actual results, resolve wallet versus reserved-table-stack semantics,
+and use an outer transaction with ascending account lock order for multiple players.
+Do not send client-provided balance/outcome claims to this hook. No game engine or
+seating integration is claimed; gameplay acceptance remains pending. See
+[the S16 guide](../team/kelechi/s16-save-chip-balance.md). Existing reward services
+and account fields are unchanged. The only new schema is chips.0001_initial.
+
+
+## S15 public-table buy-in and funded seats
+
+`GET/POST/DELETE /api/tables/<id>/seat/` requires an active registered session.
+GET returns only the viewer's seat, wallet, table occupancy, other_table_id (if
+already seated elsewhere), and CSRF token. POST/DELETE require CSRF plus `{}`.
+Join rechecks current wallet >= max(buy_in, minimum_balance), waiting status, and
+capacity under table-then-user row locks. It debits buy-in into TableSeat.stack;
+OneToOne user prevents two active seats. Identical joins/leaves are repeat-safe.
+Leave returns reserved stack and deletes the seat atomically, except during play.
+Money bounds and failed writes retain all funds. Occupancy/activity update in the
+same transaction; S23 checks seat existence as well as its occupancy counter.
+TableSeat and referenced accounts/tables are protected from accidental deletion.
+
+Future gameplay must adopt table-then-user locking, serialize stack/pot updates,
+and preserve reserved funds. S16's account-wallet delta must not repeat a buy-in
+or credit chips that remain reserved at a table. Joining is not gameplay; guest,
+private-table and in-hand cash-out policies remain separate integration work.
+
+
+## S17 private all-time hand statistics
+
+`GET /api/profile/stats/` requires an active registered session and returns
+`{username, period: "all_time", hands_played, hands_won, hands_lost, hands_split,
+win_rate}`. It aggregates only the session user's `progression.Event(kind="hand")`
+rows. Win rate is outright wins / all dealt completed hands, rounded to one decimal;
+splits are not wins. An empty ledger returns zero counts and 0.0%. Responses are
+private/no-store; queries and writes are rejected. `/statistics` supplies refresh,
+retry, guest gating and an empty state; it exposes no event write/claim UI.
+
+The existing progression hand hook remains the authoritative writer. The poker
+engine must supply verified completed-hand events exactly once per participant
+and stable hand ID. Chip rewards, wallet deltas, table creation and joining alone
+must not be converted into hand participation. No invented game/action/pot history
+or time-series is derived from missing facts. Actual gameplay integration remains
+a separately planned engine dependency.

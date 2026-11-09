@@ -16,11 +16,40 @@ The workbook is a planning snapshot, not a live acceptance record. Only professo
 
 ## Implementation and scope
 
-Table settings validation exists, but it is not proof of an authoritative seating-time affordability check. Story completion is unverified.
+Registered players can join a public waiting table from its existing detail page.
+GET/POST/DELETE /api/tables/<id>/seat/ reads, joins, or leaves only the session's seat.
+Writes require CSRF and an empty object. The server reads its own buy-in, minimum
+balance, occupancy, and saved account balance. Both balance thresholds apply.
 
-- [backend/tables/serializers.py](../../../backend/tables/serializers.py)
-- [docs/architecture/contracts.md](../../architecture/contracts.md)
+A successful join reserves the buy-in: the wallet decreases and a TableSeat holds
+that amount. One funded table per account is allowed. Repeated joins do not debit
+again. Leaving a waiting/closed table refunds the reserved stack once; leaving
+while playing is rejected. A seat and its account/table cannot be deleted through
+ordinary admin actions while funds are held. Admin cannot hide a funded public table.
 
-## Verification handoff
+All writes lock the table then account in one transaction, updating occupancy and
+activity with the seat. Capacity, simultaneous joins, refunds, and storage failures
+cannot silently lose chips. Cleanup also checks actual seat existence.
 
-Demonstrate the workbook acceptance target using real persisted data, record applicable permission/error cases and link the actual automated checks. Record the source commit, actual test result, contributor hours and CTO decision when available; missing records are not zero or automatic acceptance.
+Gameplay is separate: this joins a waiting table; no cards are dealt. Future engine
+writes must hold the same table lock, move reserved stacks/pots atomically, and
+never deduct the original buy-in twice through the S16 wallet service. Guests
+cannot join funded tables because session guests have no persisted chip account.
+Private-table admission belongs to its separate story.
+
+## Verification
+
+- 37 S15 backend tests; all 190 table tests passed.
+- 10 SeatPanel frontend tests passed; frontend build/lint and Django checks passed.
+- Real browser: register temporary account, join, refresh and retain seat, leave
+  and restore wallet, reject unaffordable table. Verified 390px layout with no
+  horizontal overflow or JavaScript errors. Temporary fixtures were removed.
+
+Run `docker compose exec backend python manage.py migrate`, then
+`docker compose exec backend pytest tables/tests/test_seating.py -v`.
+Frontend: `docker compose exec frontend npm test -- --run src/features/tables/SeatPanel.test.tsx`.
+
+Manual demo: create a table whose buy-in/minimum exceed your wallet and confirm
+Join is disabled. Try an affordable table; verify wallet debit, refresh persistence,
+and the refund after Leave. Use a separate test account. Professor acceptance and
+actual hours must be recorded separately; no acceptance or hours are invented.

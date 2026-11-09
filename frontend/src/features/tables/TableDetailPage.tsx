@@ -5,6 +5,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { getTable } from './api'
+import { SeatPanel } from './SeatPanel'
 import type { PokerTable } from './types'
 
 /** Render the table detail page interface and its current state. */
@@ -71,9 +72,9 @@ function TableRecord({ id }: { id: string }) {
               <dd>{table.minimum_balance.toLocaleString('en-US')}</dd>
             </div>
           </dl>
+          <SeatPanel table={table} onOccupancy={count => setTable(current => current ? { ...current, player_count: count } : current)} />
           <p className="field-hint">
-            Your table settings are saved. Joining and gameplay are coming in
-            later stories.
+            Your seat and buy-in can be saved here. Poker hands are not available yet.
           </p>
         </section>
       )}
