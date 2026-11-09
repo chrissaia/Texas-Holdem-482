@@ -58,6 +58,7 @@ def cleanup_tables(*, actor, table_ids, now=None):
         if not (
             table.is_public
             and table.player_count == 0
+            and not table.seats.exists()
             and table.status in (PokerTable.Status.WAITING, PokerTable.Status.CLOSED)
             and table.last_activity_at < cutoff
         ):

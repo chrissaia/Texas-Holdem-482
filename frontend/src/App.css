@@ -564,3 +564,8 @@ input[aria-invalid='true'] {
     display: none;
   }
 }
+
+/* Keep seat actions and balance feedback readable at narrow widths. */
+.seat-panel { display: grid; gap: 12px; margin: 24px 0; }
+.seat-panel h2, .seat-panel p { margin: 0; }
+.seat-panel .button { justify-self: start; max-width: 100%; white-space: normal; }

@@ -67,7 +67,7 @@ export function AppRoutes() {
         accountId={context?.host?.id ?? null}
         registered={!!context?.host}
         identityLoading={loading}
-        enabled={pathname === "/settings" || pathname === "/rewards"}
+        enabled={pathname === "/settings" || pathname === "/rewards" || (pathname.startsWith("/tables/") && pathname !== "/tables/create")}
       >
         {!loading && context?.host && (
           <RewardNotifications key={context.host.id} />
@@ -136,7 +136,7 @@ export function AppRoutes() {
                 />
               }
             />
-            <Route path="/tables/:id" element={<TableDetailPage />} />
+            <Route path="/tables/:id" element={<TableDetailPage key={context?.host?.id ?? "anonymous"} />} />
             <Route
               path="*"
               element={

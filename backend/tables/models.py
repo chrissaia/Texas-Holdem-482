@@ -83,3 +83,20 @@ class PokerTable(models.Model):
     def __str__(self):
         """Return the human-readable label used by Django administration and diagnostics."""
         return self.name
+
+
+class TableSeat(models.Model):
+    """One funded seat per registered player; held chips are separate from the wallet."""
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.PROTECT,
+                               related_name="table_seat")
+    table = models.ForeignKey(PokerTable, on_delete=models.PROTECT, related_name="seats")
+    buy_in = models.PositiveIntegerField()
+    stack = models.PositiveBigIntegerField()
+    joined_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(condition=Q(buy_in__gte=1), name="seat_positive_buy_in"),
+            models.CheckConstraint(condition=Q(stack__lte=9_007_199_254_740_991),
+                                   name="seat_stack_safe_integer"),
+        ]

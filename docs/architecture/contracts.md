@@ -172,3 +172,22 @@ Do not send client-provided balance/outcome claims to this hook. No game engine 
 seating integration is claimed; gameplay acceptance remains pending. See
 [the S16 guide](../team/kelechi/s16-save-chip-balance.md). Existing reward services
 and account fields are unchanged. The only new schema is chips.0001_initial.
+
+
+## S15 public-table buy-in and funded seats
+
+`GET/POST/DELETE /api/tables/<id>/seat/` requires an active registered session.
+GET returns only the viewer's seat, wallet, table occupancy, other_table_id (if
+already seated elsewhere), and CSRF token. POST/DELETE require CSRF plus `{}`.
+Join rechecks current wallet >= max(buy_in, minimum_balance), waiting status, and
+capacity under table-then-user row locks. It debits buy-in into TableSeat.stack;
+OneToOne user prevents two active seats. Identical joins/leaves are repeat-safe.
+Leave returns reserved stack and deletes the seat atomically, except during play.
+Money bounds and failed writes retain all funds. Occupancy/activity update in the
+same transaction; S23 checks seat existence as well as its occupancy counter.
+TableSeat and referenced accounts/tables are protected from accidental deletion.
+
+Future gameplay must adopt table-then-user locking, serialize stack/pot updates,
+and preserve reserved funds. S16's account-wallet delta must not repeat a buy-in
+or credit chips that remain reserved at a table. Joining is not gameplay; guest,
+private-table and in-hand cash-out policies remain separate integration work.
