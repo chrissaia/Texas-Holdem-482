@@ -153,3 +153,22 @@ The twenty-four one-time achievements and their trusted backend hooks are docume
 ## S18 all-time XP rankings
 
 `GET /api/leaderboard/` is public, uses the authoritative progression event ledger and includes active registered accounts (including zero XP). Ties share competition rank; IDs stabilize equal-XP pagination. Query fields are only `page` and bounded `page_size`. Public rows expose ID, username, avatar URL, XP, rank and current-user flag; private account fields and chip balances are excluded. Authenticated responses add the viewer's own global rank even off page. All-time only; seasonal rankings remain S33. See [../team/chris/s18-see-the-leaderboard.md](../team/chris/s18-see-the-leaderboard.md) for response shape, limits, privacy and integration details.
+
+
+## S16 first milestone: trusted game-result chip persistence
+
+Kelechi owns chips.services.save_chip_result(user_id, source=..., delta=...).
+It records a signed whole-chip account-wallet delta with a unique (user, source)
+receipt in chips.ChipResult. Rewards and result writes lock the same accounts.User
+row. The balance and receipt are atomic; duplicate identical results do not pay
+twice, conflicting deltas are rejected, and bounds remain 0..9,007,199,254,740,991.
+A retry returns the latest account balance, not its receipt's historical snapshot.
+The existing private profile endpoint reads the current saved balance.
+
+This is a trusted Python hook, not a player-write API. The game engine must derive
+IDs/deltas from actual results, resolve wallet versus reserved-table-stack semantics,
+and use an outer transaction with ascending account lock order for multiple players.
+Do not send client-provided balance/outcome claims to this hook. No game engine or
+seating integration is claimed; gameplay acceptance remains pending. See
+[the S16 guide](../team/kelechi/s16-save-chip-balance.md). Existing reward services
+and account fields are unchanged. The only new schema is chips.0001_initial.
