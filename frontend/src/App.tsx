@@ -29,6 +29,8 @@ import { AchievementsPage } from "./features/achievements/AchievementsPage";
 import { LeaderboardPage } from "./features/leaderboard/LeaderboardPage";
 import { RewardNotifications } from "./features/achievements/RewardNotifications";
 import { StatisticsPage } from "./features/statistics/StatisticsPage";
+import { PrivateTablesPage } from "./features/tables/PrivateTablesPage";
+import { SpectatorPage } from "./features/tables/SpectatorPage";
 import "./App.css";
 
 /** Render the app routes interface and its current state. */
@@ -138,6 +140,8 @@ export function AppRoutes() {
                 />
               }
             />
+            <Route path="/tables/private" element={<PrivateTablesPage key={context?.host?.id ?? "anonymous"} />} />
+            <Route path="/tables/:id/watch" element={<SpectatorPage key={`${context?.host?.id ?? "anonymous"}:${pathname}`} />} />
             <Route path="/tables/:id" element={<TableDetailPage key={context?.host?.id ?? "anonymous"} />} />
             <Route
               path="*"

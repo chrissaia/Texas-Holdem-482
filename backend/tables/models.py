@@ -22,7 +22,7 @@ def chip_field():
 class PokerTable(models.Model):
     """Store host-owned table settings and server-controlled occupancy and activity."""
     class Status(models.TextChoices):
-        """Enumerate the persisted friendship states accepted by the model."""
+        """Enumerate the persisted lifecycle states accepted by a table."""
         WAITING = "waiting", "Waiting"
         PLAYING = "playing", "Playing"
         CLOSED = "closed", "Closed"
@@ -100,3 +100,15 @@ class TableSeat(models.Model):
             models.CheckConstraint(condition=Q(stack__lte=9_007_199_254_740_991),
                                    name="seat_stack_safe_integer"),
         ]
+
+
+class TableInvitation(models.Model):
+    """Grant one active account access to a host's private table."""
+
+    table = models.ForeignKey(PokerTable, on_delete=models.CASCADE, related_name="invitations")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="table_invitations")
+    created_at = models.DateTimeField(default=timezone.now, editable=False)
+
+    class Meta:
+        """Keep each private-table invitation unique."""
+        constraints = [models.UniqueConstraint(fields=["table", "user"], name="unique_table_invitation")]

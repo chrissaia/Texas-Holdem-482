@@ -79,3 +79,20 @@ def remove_friend(request, pk):
     """Remove an accepted friendship owned by the current player."""
     services.remove_friend(request.user, pk)
     return friends_response(request)
+
+
+@friends_view(["GET"])
+def search_players(request):
+    from django.contrib.auth import get_user_model
+    from django.db.models.functions import Lower
+
+    if set(request.query_params) - {"q"} or len(request.query_params.getlist("q")) > 1:
+        raise ValidationError({"q": ["Supply a single search query only."]})
+    query = request.query_params.get("q", "").strip()
+    if len(query) > 150:
+        raise ValidationError({"q": ["Use at most 150 characters."]})
+    if not query:
+        return Response({"results": []})
+    players = (get_user_model().objects.filter(is_active=True, username__icontains=query)
+               .exclude(pk=request.user.pk).order_by(Lower("username"), "pk")[:5])
+    return Response({"results": [services.player(player) for player in players]})

@@ -129,6 +129,7 @@ Every successful response returns the full lists, so the page replaces its state
 `id` is the friendship row ID that the action endpoints take; `player` is the other person. `friends` is sorted by username, case-insensitively; `incoming` and `outgoing` are newest first. Only `{id, username}` is exposed, never email.
 
 - `GET /api/friends/`: sets the CSRF cookie and returns the lists.
+- `GET /api/friends/search/?q=...`: registered-only username suggestions, at most five `{id, username}` entries in `{results}`. Case-insensitive substring matching, sorted by lowercase username then ID; excludes self and inactive accounts. Blank queries return no suggestions. Repeated/unknown parameters or queries over 150 characters return 400. The input waits 250 ms after typing, ignores stale results and uses the browser's native keyboard-accessible suggestions dropdown. Selecting a name fills the input; Send Request still performs the write.
 - `POST /api/friends/requests/`: `{username}`, matched case-insensitively against active accounts. Returns 201 when a new pending request is created. If that player has already sent you a pending request, it is accepted instead and returns 200. Unknown or inactive usernames return 400 `{"username": ["No registered player has that username."]}`. Adding yourself, an existing friend, or someone you already asked returns 400 `non_field_errors`.
 - `POST /api/friends/requests/<id>/accept/`: empty body `{}`. Only the receiver of a pending request may accept.
 - `POST /api/friends/requests/<id>/decline/`: empty body `{}`. Only the receiver; deletes the request.
@@ -209,3 +210,16 @@ and stable hand ID. Chip rewards, wallet deltas, table creation and joining alon
 must not be converted into hand participation. No invented game/action/pot history
 or time-series is derived from missing facts. Actual gameplay integration remains
 a separately planned engine dependency.
+
+
+## S11/S27/S26 table extensions on saia
+
+Royal's planned Iteration 2 stories now add a minimum buy-in range, private creation/invitations and a read-only spectator foundation. The detailed current boundaries are in [S11](../team/royal/s11-filter-tables.md), [S27](../team/royal/s27-make-a-private-table.md) and [S26](../team/royal/s26-watch-a-game.md). These extend the earlier public-only S13 interfaces; they do not turn public creation into private creation based on client-supplied `is_public`.
+
+`POST /api/tables/private/` uses the existing settings schema and forces private visibility. Registered `GET` lists hosted/invited private tables. Invitations are host-only grants to active accepted friends through `GET/POST/DELETE /api/tables/<id>/invitations/`, with exactly `{user_id}` for writes. Duplicate invitation grants are safe. Revocation locks the table row and rejects seated targets; seating uses the same table lock and checks invitation access before debiting. Existing join capacity, buy-in, wallet and refund rules remain authoritative.
+
+Private detail/seat/watch reads apply one shared host-or-invitation policy, returning 404 to outsiders. Public lobby queries and totals never include private tables. Responses containing private data are non-cacheable. All session-authenticated writes retain CSRF enforcement.
+
+`GET /api/tables/<id>/watch/` returns only table identity, visibility, status, host identity, capacity, blinds, seated player identities/table stacks and `gameplay_available: false`. It performs no writes and exposes no cards or account balances. This is table observation, not completed live-game spectating. Future gameplay integration must publish an explicit public projection; never reuse a private player payload for spectators.
+
+`min_buy_in` is an optional positive whole-chip lobby filter bounded by MAX_CHIPS. Combined ranges are inclusive and inverted min/max pairs return 400. Historical filtering and chip infrastructure must not be counted twice as new iteration work.

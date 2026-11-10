@@ -3,7 +3,7 @@
 ## Story record
 
 - Planned owner: Royal.
-- Workbook source: [User_Stories.xlsx](../../reference/User_Stories.xlsx), `User Stories!A31:M31`.
+- Workbook source: [User_Stories.xlsx](../../iterations_and_LaTeX/User_Stories.xlsx), `User Stories!A31:M31`.
 - Workbook points: 1; planned sprint points: 1.
 - Priority: Low; epic: E20; NFR references: NFR6, NFR11.
 - Tracked issue: [#42](https://github.com/chrissaia/Texas-Holdem-482/issues/42).

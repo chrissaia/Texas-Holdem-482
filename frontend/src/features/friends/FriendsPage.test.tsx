@@ -273,3 +273,20 @@ test('a failed load can be retried', /* Verify a failed load can be retried. */ 
   fireEvent.click(screen.getByRole('button', { name: 'Try again' }))
   expect(await screen.findByRole('list', { name: 'Your friends' })).toBeVisible()
 })
+
+test('friend search offers up to five matching names and selected name is submitted', async () => {
+  const fetch = setup()
+  const original = fetch.getMockImplementation()!
+  fetch.mockImplementation((path: string, init?: RequestInit) => {
+    if (path.startsWith('/api/friends/search/'))
+      return Promise.resolve(respond({ results: Array.from({ length: 7 }, (_, i) => ({ id: 200 + i, username: `Match${i}` })) }))
+    return original(path, init)
+  })
+  await screen.findByLabelText('Find a friend')
+  fireEvent.change(search(), { target: { value: 'mat' } })
+  await waitFor(() => expect(document.querySelectorAll('#friend-matches option')).toHaveLength(5))
+  expect(search()).toHaveAttribute('list', 'friend-matches')
+  fireEvent.change(search(), { target: { value: 'Match2' } })
+  fireEvent.click(screen.getByRole('button', { name: 'Send Request' }))
+  await waitFor(() => expect(fetch.mock.calls.some(([path, init]) => path === '/api/friends/requests/' && init?.body === JSON.stringify({ username: 'Match2' }))).toBe(true))
+})

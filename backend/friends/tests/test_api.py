@@ -349,3 +349,27 @@ def test_writes_require_csrf_token(pending, bob):
 def test_wrong_method_is_rejected(alice_client):
     """Verify that wrong method is rejected."""
     assert alice_client.delete(LIST).status_code == 405
+
+
+def test_search_players_matches_case_insensitively_and_limits_to_five(alice_client, alice):
+    User = get_user_model()
+    for i in range(7):
+        User.objects.create(username=f"Match{i}", email=f"match{i}@example.com")
+    User.objects.create(username="MatchInactive", is_active=False)
+    response = alice_client.get(reverse("friends:search"), {"q": "mAtCh"})
+    assert response.status_code == 200
+    assert [row["username"] for row in response.data["results"]] == [f"Match{i}" for i in range(5)]
+    assert all(set(row) == {"id", "username"} for row in response.data["results"])
+    assert alice_client.get(reverse("friends:search"), {"q": "alice"}).data == {"results": []}
+    assert alice_client.get(reverse("friends:search"), {"q": "  "}).data == {"results": []}
+    assert alice_client.get(reverse("friends:search"), {"q": "no-match"}).data == {"results": []}
+
+
+@pytest.mark.parametrize("query", ["?q=a&q=b", "?other=x", "?q=" + "a" * 151])
+def test_search_players_rejects_invalid_queries(alice_client, query):
+    assert alice_client.get(reverse("friends:search") + query).status_code == 400
+
+
+def test_search_players_requires_registered_account(guest_client):
+    assert APIClient().get(reverse("friends:search"), {"q": "a"}).status_code == 403
+    assert guest_client.get(reverse("friends:search"), {"q": "a"}).status_code == 403

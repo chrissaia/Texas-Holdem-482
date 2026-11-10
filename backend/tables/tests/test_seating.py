@@ -109,7 +109,8 @@ def test_client_cannot_choose_account_buy_in_or_balance(table, registered_client
     assert not TableSeat.objects.exists()
 
 
-def test_private_and_unknown_tables_not_exposed(table, registered_client):
+def test_uninvited_private_and_unknown_tables_not_exposed(table, registered_client):
+    table.host = get_user_model().objects.create_user(username="different-private-host")
     table.is_public = False
     table.save()
     assert registered_client.get(url(table)).status_code == 404

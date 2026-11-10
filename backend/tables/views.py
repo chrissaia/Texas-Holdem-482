@@ -1,6 +1,7 @@
 """Http endpoints, permission checks and response construction for public poker-table configuration and browsing."""
 
 from django.middleware.csrf import get_token
+from django.utils.decorators import method_decorator
 from django.db import transaction
 from progression.services import record_event
 from django.db.models import Count, F, Q, Sum
@@ -12,6 +13,7 @@ from rest_framework.generics import ListCreateAPIView, RetrieveAPIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
+from .access import visible_tables
 from .models import PokerTable
 from .permissions import CanHostTable, can_host
 from .serializers import TableListQuerySerializer, TableSerializer
@@ -41,6 +43,8 @@ class TableListCreateView(ListCreateAPIView):
         if filters.get("search"):
             term = filters["search"]
             tables = tables.filter(Q(name__icontains=term) | Q(host__username__icontains=term))
+        if "min_buy_in" in filters:
+            tables = tables.filter(buy_in__gte=filters["min_buy_in"])
         if "max_buy_in" in filters:
             tables = tables.filter(buy_in__lte=filters["max_buy_in"])
         if "big_blind" in filters:
@@ -70,11 +74,14 @@ class TableListCreateView(ListCreateAPIView):
         record_event(self.request.user.pk, "game", str(table.pk))
 
 
+@method_decorator(never_cache, name="dispatch")
 class TableDetailView(RetrieveAPIView):
-    """Retrieve public table settings without exposing private tables."""
+    """Retrieve public settings or private settings for the host and invited accounts."""
     serializer_class = TableSerializer
     permission_classes = [AllowAny]
-    queryset = PokerTable.objects.filter(is_public=True).select_related("host")
+    def get_queryset(self):
+        """Apply the same invitation policy used by seating and spectators."""
+        return visible_tables(self.request.user).select_related("host")
 
 
 @never_cache

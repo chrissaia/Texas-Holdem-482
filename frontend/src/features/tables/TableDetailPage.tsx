@@ -5,6 +5,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { getTable } from './api'
+import { InvitationPanel } from './InvitationPanel'
 import { SeatPanel } from './SeatPanel'
 import type { PokerTable } from './types'
 
@@ -47,7 +48,7 @@ function TableRecord({ id }: { id: string }) {
         <p role="status">Loading table…</p>
       ) : (
         <section className="panel table-detail">
-          <span className="badge">Public · {table.status}</span>
+          <span className="badge">{table.is_public ? "Public" : "Private"} · {table.status}</span>
           <h1>{table.name}</h1>
           <p className="muted">Hosted by {table.host.username}</p>
           <dl className="summary-list">
@@ -72,6 +73,8 @@ function TableRecord({ id }: { id: string }) {
               <dd>{table.minimum_balance.toLocaleString('en-US')}</dd>
             </div>
           </dl>
+          <Link className="button" to={`/tables/${table.id}/watch`}>Watch table without taking a seat</Link>
+          {!table.is_public && <InvitationPanel table={table} />}
           <SeatPanel table={table} onOccupancy={count => setTable(current => current ? { ...current, player_count: count } : current)} />
           <p className="field-hint">
             Your seat and buy-in can be saved here. Poker hands are not available yet.

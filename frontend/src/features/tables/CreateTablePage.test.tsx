@@ -82,7 +82,7 @@ test('creates a real-shaped public table request with CSRF and reads saved detai
   expect(screen.getByText('0 / 6')).toBeVisible()
 })
 
-test('validates empty name, blind relationship and minimum balance before sending', /* Verify validates empty name, blind relationship and minimum balance before sending. */ async () => {
+test('validates empty name and minimum balance before sending', async () => {
   const fetch = vi.fn().mockResolvedValue(respond(context))
   vi.stubGlobal('fetch', fetch)
   start()
@@ -95,16 +95,10 @@ test('validates empty name, blind relationship and minimum balance before sendin
   fireEvent.change(screen.getByLabelText('Table name'), {
     target: { value: 'Friday poker' },
   })
-  fireEvent.change(screen.getByLabelText('Big blind'), {
-    target: { value: '51' },
-  })
   fireEvent.change(screen.getByLabelText('Minimum balance'), {
     target: { value: '900' },
   })
   fireEvent.click(button)
-  expect(
-    await screen.findByText('Big blind must be twice the small blind.'),
-  ).toBeVisible()
   expect(
     screen.getByText('Minimum balance must be at least the buy-in.'),
   ).toBeVisible()
@@ -269,4 +263,35 @@ test('missing table and unknown route have useful recovery links', /* Verify mis
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue(respond(context)))
   start('/missing')
   expect(screen.getByText('Page not found')).toBeVisible()
+})
+
+
+test('small blind updates the read-only big blind and submits matching whole-chip amounts', async () => {
+  const fetch = vi.fn().mockResolvedValueOnce(respond(context)).mockResolvedValueOnce(respond(table, 201))
+  vi.stubGlobal('fetch', fetch)
+  start()
+  await screen.findByLabelText('Small blind')
+  const small = screen.getByLabelText('Small blind')
+  const big = screen.getByLabelText('Big blind')
+  expect(big).toHaveAttribute('readonly')
+  fireEvent.change(small, { target: { value: '40' } })
+  expect(big).toHaveValue(80)
+  fireEvent.change(small, { target: { value: '' } })
+  expect(big).toHaveValue(null)
+  fireEvent.change(small, { target: { value: '15' } })
+  expect(big).toHaveValue(30)
+  await submit()
+  expect(JSON.parse(fetch.mock.calls[1][1].body)).toMatchObject({ small_blind: 15, big_blind: 30 })
+})
+
+/** Private creation must use its protected endpoint without client-owned host fields. */
+test('creates an invite-only table using the private creation endpoint', async () => {
+  const fetch = vi.fn().mockResolvedValueOnce(respond(context)).mockResolvedValueOnce(respond({ ...table, is_public: false }, 201))
+  vi.stubGlobal('fetch', fetch)
+  start()
+  fireEvent.click(await screen.findByRole('checkbox', { name: /Private table/ }))
+  await submit()
+  await screen.findByText('Table created!')
+  expect(fetch.mock.calls[1][0]).toBe('/api/tables/private/')
+  expect(JSON.parse(fetch.mock.calls[1][1].body)).not.toHaveProperty('host')
 })
