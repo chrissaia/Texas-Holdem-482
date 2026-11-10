@@ -3,7 +3,7 @@
 ## Story record
 
 - Planned owner: Royal.
-- Workbook source: [User_Stories.xlsx](../../reference/User_Stories.xlsx), `User Stories!A13:M13`.
+- Workbook source: [User_Stories.xlsx](../../iterations_and_LaTeX/User_Stories.xlsx), `User Stories!A13:M13`.
 - Workbook points: 1; planned sprint points: 1.
 - Priority: Medium; epic: E7; NFR references: NFR5, NFR9, NFR10.
 - Tracked issue: [#25](https://github.com/chrissaia/Texas-Holdem-482/issues/25).
@@ -16,11 +16,10 @@ The workbook is a planning snapshot, not a live acceptance record. Only professo
 
 ## Implementation and scope
 
-The lobby already contains server-side filters. New iteration-specific work and credit must be distinguished from this baseline.
+Public lobby filtering supports search, capacity, availability, status, blind level and maximum buy-in from the existing baseline. This change adds **minimum buy-in**, combines it with the maximum bound, rejects inverted ranges, and resets it with the other filters. Private tables remain excluded regardless of the chosen range.
 
-- [backend/tables/serializers.py](../../../backend/tables/serializers.py)
-- [frontend/src/features/tables/LobbyPage.tsx](../../../frontend/src/features/tables/LobbyPage.tsx)
+Open `/lobby`, enter a minimum buy-in, choose a maximum using the existing Buy-in filter and inspect the matching records. The range is saved in the URL, and changing filters resets pagination. Reset filters restores the default available-seat view.
 
-## Verification handoff
+## Verification
 
-Demonstrate the workbook acceptance target using real persisted data, record applicable permission/error cases and link the actual automated checks. Record the source commit, actual test result, contributor hours and CTO decision when available; missing records are not zero or automatic acceptance.
+`backend/tables/tests/test_private_spectating.py` checks combined inclusive ranges, inverted ranges and private-table exclusion. `frontend/src/features/tables/LobbyPage.test.tsx` checks the minimum parameter and reset behavior. Existing S10 filtering behavior is baseline, not additional newly earned story points. Professor acceptance is pending.

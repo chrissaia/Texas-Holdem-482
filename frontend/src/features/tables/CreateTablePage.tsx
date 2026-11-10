@@ -39,6 +39,7 @@ export function CreateTablePage({
   refresh,
 }: ContextState) {
   const [input, setInput] = useState<TableInput>({ ...DEFAULT_TABLE })
+  const [privateTable, setPrivateTable] = useState(false)
   const [errors, setErrors] = useState<FieldErrors>({})
   const [message, setMessage] = useState('')
   const [pending, setPending] = useState(false)
@@ -80,6 +81,7 @@ export function CreateTablePage({
       const table = await createTable(
         { ...input, name: input.name.trim() },
         context.csrf_token,
+        privateTable,
       )
       setCreated(table)
     } catch (cause) {
@@ -110,6 +112,7 @@ export function CreateTablePage({
     setErrors({})
     setMessage('')
     setCreated(null)
+    setPrivateTable(false)
     form.current?.querySelector('input')?.focus()
   }
 
@@ -164,19 +167,12 @@ export function CreateTablePage({
                   <span className="field-label" id="privacy-label">
                     Privacy
                   </span>
-                  <div className="option-row" aria-labelledby="privacy-label">
-                    <span className="badge">Public</span>
-                    <button
-                      type="button"
-                      className="button quiet"
-                      disabled
-                      title="Private tables are coming later"
-                    >
-                      Private
-                    </button>
-                  </div>
+                  <label>
+                    <input type="checkbox" checked={privateTable} onChange={e => setPrivateTable(e.target.checked)} />
+                    Private table — invite friends only
+                  </label>
                   <p className="field-hint divider">
-                    Your table is public and visible to other players.
+                    {privateTable ? 'Hidden from the public lobby. Invite friends after creating your table.' : 'Visible in the public lobby.'}
                   </p>
                 </div>
                 <fieldset className="seat-field">
@@ -253,19 +249,18 @@ export function CreateTablePage({
           </div>
           <aside className="configuration-summary">
             <section className="panel" aria-labelledby="public-title">
-              <h2 id="public-title">Open to everyone</h2>
+              <h2 id="public-title">{privateTable ? "Invite your crew" : "Open to everyone"}</h2>
               <p className="muted">
-                Create a public place for your next poker night. Other players
-                will be able to find it in the lobby.
+                {privateTable ? "Only you and invited friends can access this table." : "Other players can find this table in the public lobby."}
               </p>
               <dl className="summary-list">
                 <div>
                   <dt>Visibility</dt>
-                  <dd>Public</dd>
+                  <dd>{privateTable ? "Private" : "Public"}</dd>
                 </div>
                 <div>
                   <dt>Invitations</dt>
-                  <dd>No invite needed</dd>
+                  <dd>{privateTable ? "Host invites accepted friends" : "No invite needed"}</dd>
                 </div>
                 <div>
                   <dt>Players on creation</dt>
@@ -280,7 +275,7 @@ export function CreateTablePage({
               <h2 id="ready-title">Ready to host</h2>
               <h3>{input.name.trim() || 'Your new table'}</h3>
               <p className="muted">
-                Public · {input.max_players} seats · Texas Hold’em
+                {privateTable ? "Private" : "Public"} · {input.max_players} seats · Texas Hold’em
                 <br />
                 {format(input.small_blind)} / {format(input.big_blind)} blinds ·
                 No bots

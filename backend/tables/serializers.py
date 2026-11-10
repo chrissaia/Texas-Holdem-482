@@ -66,6 +66,7 @@ class TableSerializer(serializers.ModelSerializer):
 class TableListQuerySerializer(serializers.Serializer):
     """Validate supported lobby filters, sort choices and paging inputs."""
     search = serializers.CharField(required=False, allow_blank=True, max_length=150)
+    min_buy_in = WholeNumberField(required=False, min_value=1, max_value=MAX_CHIPS)
     max_buy_in = WholeNumberField(required=False, min_value=1, max_value=MAX_CHIPS)
     big_blind = WholeNumberField(required=False, min_value=1, max_value=MAX_CHIPS)
     max_players = serializers.ChoiceField(required=False, choices=(2, 4, 6, 8, 9))
@@ -77,6 +78,12 @@ class TableListQuerySerializer(serializers.Serializer):
     )
     page = WholeNumberField(required=False, min_value=1, max_value=2_147_483_647)
     page_size = WholeNumberField(required=False, min_value=1, max_value=50)
+
+    def validate(self, attrs):
+        """Reject inverted buy-in ranges instead of silently returning no tables."""
+        if attrs.get("min_buy_in", 0) > attrs.get("max_buy_in", MAX_CHIPS):
+            raise serializers.ValidationError({"min_buy_in": ["Minimum buy-in must not exceed maximum buy-in."]})
+        return attrs
 
     def to_internal_value(self, data):
         """Validate and normalize external input before it reaches application services."""

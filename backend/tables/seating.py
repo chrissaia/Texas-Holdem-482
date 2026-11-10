@@ -7,6 +7,7 @@ from rest_framework.exceptions import APIException, PermissionDenied
 
 from profiles.rewards import MAX_BALANCE
 from .models import PokerTable, TableSeat
+from .access import require_table_access
 
 
 class SeatingConflict(APIException):
@@ -15,10 +16,11 @@ class SeatingConflict(APIException):
 
 
 def _locked_records(table_id, user_id):
-    table = get_object_or_404(PokerTable.objects.select_for_update(), pk=table_id, is_public=True)
+    table = get_object_or_404(PokerTable.objects.select_for_update(), pk=table_id)
     user = get_user_model().objects.select_for_update().get(pk=user_id)
     if not user.is_active or getattr(user, "is_guest", False):
         raise PermissionDenied("Sign in with an active registered account to join.")
+    require_table_access(table, user)
     return table, user
 
 

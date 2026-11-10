@@ -8,6 +8,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
 from .models import PokerTable, TableSeat
+from .access import visible_tables
 from .permissions import CanHostTable
 from .seating import join_table, leave_table, _payload
 
@@ -23,7 +24,7 @@ class CanJoinTable(CanHostTable):
 def seat(request, pk):
     """Read, reserve, or release only the authenticated player's seat."""
     if request.method == "GET":
-        table = get_object_or_404(PokerTable, pk=pk, is_public=True)
+        table = get_object_or_404(visible_tables(request.user), pk=pk)
         current = TableSeat.objects.filter(user=request.user, table=table).first()
         payload = _payload(table, request.user, current)
         other = TableSeat.objects.filter(user=request.user).exclude(table=table).first()

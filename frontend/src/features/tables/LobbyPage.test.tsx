@@ -332,3 +332,13 @@ test('creation appears in lobby through the new success link', /* Verify creatio
   fireEvent.click(screen.getByRole('link', { name: 'See it in the lobby →' }))
   expect(await screen.findByRole('link', { name: 'Blue Hour' })).toBeVisible()
 })
+
+/** Range filters survive in the request URL alongside existing lobby filters. */
+test('minimum buy-in is sent to the server and reset with other filters', async () => {
+  const fetch = setup()
+  await screen.findByLabelText('Minimum buy-in')
+  fireEvent.change(screen.getByLabelText('Minimum buy-in'), { target: { value: '100' } })
+  await waitFor(() => expect(fetch.mock.calls.some(([path]) => String(path).includes('min_buy_in=100'))).toBe(true))
+  fireEvent.click(screen.getByRole('button', { name: 'Reset filters' }))
+  await waitFor(() => expect(screen.getByLabelText('Minimum buy-in')).toHaveValue(null))
+})

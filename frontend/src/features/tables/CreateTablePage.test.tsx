@@ -283,3 +283,15 @@ test('small blind updates the read-only big blind and submits matching whole-chi
   await submit()
   expect(JSON.parse(fetch.mock.calls[1][1].body)).toMatchObject({ small_blind: 15, big_blind: 30 })
 })
+
+/** Private creation must use its protected endpoint without client-owned host fields. */
+test('creates an invite-only table using the private creation endpoint', async () => {
+  const fetch = vi.fn().mockResolvedValueOnce(respond(context)).mockResolvedValueOnce(respond({ ...table, is_public: false }, 201))
+  vi.stubGlobal('fetch', fetch)
+  start()
+  fireEvent.click(await screen.findByRole('checkbox', { name: /Private table/ }))
+  await submit()
+  await screen.findByText('Table created!')
+  expect(fetch.mock.calls[1][0]).toBe('/api/tables/private/')
+  expect(JSON.parse(fetch.mock.calls[1][1].body)).not.toHaveProperty('host')
+})

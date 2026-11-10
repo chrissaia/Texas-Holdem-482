@@ -146,6 +146,7 @@ export function LobbyPage() {
           Quick Join
         </button>
       </div>
+      <Link className="button" to="/tables/private">My private tables and invitations</Link>
       <section className="panel lobby-filters" aria-labelledby="filters-title">
         <div className="panel-heading">
           <h2 id="filters-title">Table filters</h2>
@@ -161,6 +162,12 @@ export function LobbyPage() {
           </button>
         </div>
         <div className="lobby-filter-fields">
+          <div className="form-field">
+            <label htmlFor="minimum-buy-in-filter">Minimum buy-in</label>
+            <input id="minimum-buy-in-filter" type="number" min="1" step="1"
+              value={params.get('min_buy_in') || ''}
+              onChange={e => updateFilter('min_buy_in', e.target.value)} />
+          </div>
           <div className="form-field">
             <label htmlFor="buy-in-filter">Buy-in</label>
             <select

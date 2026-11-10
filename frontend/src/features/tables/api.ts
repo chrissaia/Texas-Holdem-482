@@ -17,8 +17,8 @@ export const getCreationContext = () =>
 export const getTable = (id: string) =>
   request<PokerTable>(`/api/tables/${id}/`)
 /** Post validated table settings with the authenticated form's CSRF token. */
-export const createTable = (input: TableInput, csrfToken: string) =>
-  request<PokerTable>('/api/tables/', {
+export const createTable = (input: TableInput, csrfToken: string, privateTable = false) =>
+  request<PokerTable>(privateTable ? '/api/tables/private/' : '/api/tables/', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
     body: JSON.stringify(input),
