@@ -1,0 +1,48 @@
+/* S8: Figma 26:3716 Tutorial, adapted without the guided bot-practice table. */
+.rules-page { display: flex; flex-direction: column; gap: 26px; }
+.rules-page .page-intro { margin: 0; }
+.rules-page h2 { font-size: 18px; font-weight: 600; margin: 0; }
+.rules-page h3 { font-size: 15px; font-weight: 600; margin: 0; }
+
+.rules-learning { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 20px; align-items: start; }
+.rules-path { display: flex; flex-direction: column; gap: 12px; }
+.rules-path-status { margin: 0; font-size: 13px; }
+.rules-progress { height: 4px; border-radius: 2px; background: var(--surface); overflow: hidden; }
+.rules-progress span { display: block; height: 100%; background: var(--accent); transition: width 0.2s; }
+.rules-path ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.rules-lesson-link { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; border: 1px solid transparent; border-radius: 8px; background: none; color: var(--text); font: inherit; font-size: 14px; text-align: left; cursor: pointer; }
+.rules-lesson-link:hover { background: var(--surface); }
+.rules-lesson-link.active { background: var(--accent-soft); border-color: var(--accent); }
+.rules-lesson-link.done .rules-lesson-mark { color: var(--green); }
+.rules-lesson-mark { width: 14px; color: var(--muted); }
+.rules-path > .button { align-self: flex-start; }
+
+.rules-lesson { display: flex; flex-direction: column; gap: 12px; }
+.rules-lesson .badge { align-self: flex-start; }
+.rules-lesson p { margin: 0; line-height: 1.6; }
+.rules-lesson-summary { color: var(--cyan); }
+.rules-lesson-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; }
+
+.rules-section-heading { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.rules-order { color: var(--cyan); font-size: 12px; }
+.rules-hands { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.rules-hand { padding: 14px 16px; background: var(--surface); border-radius: 8px; display: grid; gap: 12px; }
+.rules-hand-title { display: flex; align-items: center; gap: 10px; }
+.rules-hand-body { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; font-size: 13px; }
+.rules-cards { display: flex; gap: 6px; }
+.rules-card { display: inline-flex; flex-direction: column; justify-content: space-between; width: 32px; height: 44px; padding: 3px; border-radius: 4px; background: #ffffff; color: #111827; font: 600 10px var(--sans); line-height: 1; }
+.rules-card.red { color: #c81e3a; }
+.rules-card-suit { align-self: center; font-size: 18px; }
+.rules-footnote { margin: 16px 0 0; font-size: 12px; }
+
+.rules-guide { list-style: none; margin: 16px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.rules-guide-card { width: 100%; height: 100%; padding: 14px 16px; border: 1px solid transparent; border-radius: 8px; background: var(--surface); color: var(--text); font: inherit; text-align: left; cursor: pointer; }
+.rules-guide-card:hover { border-color: var(--accent); }
+.rules-guide-card p { margin: 6px 0 0; font-size: 13px; line-height: 1.5; }
+
+@media (max-width: 1000px) {
+  .rules-learning { grid-template-columns: minmax(0, 1fr); }
+  .rules-hands { grid-template-columns: minmax(0, 1fr); }
+  .rules-guide { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 600px) { .rules-guide { grid-template-columns: minmax(0, 1fr); } }

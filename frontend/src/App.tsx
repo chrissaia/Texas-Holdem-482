@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 import {
   BrowserRouter,
   Link,
+  Navigate,
   Outlet,
   Route,
   Routes,
@@ -29,6 +30,7 @@ import { AchievementsPage } from "./features/achievements/AchievementsPage";
 import { LeaderboardPage } from "./features/leaderboard/LeaderboardPage";
 import { RewardNotifications } from "./features/achievements/RewardNotifications";
 import { StatisticsPage } from "./features/statistics/StatisticsPage";
+import { RulesPage } from "./features/rules/RulesPage";
 import { PrivateTablesPage } from "./features/tables/PrivateTablesPage";
 import { SpectatorPage } from "./features/tables/SpectatorPage";
 import "./App.css";
@@ -110,6 +112,8 @@ export function AppRoutes() {
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/lobby" element={<LobbyPage />} />
             <Route path="/friends" element={<FriendsPage />} />
+            <Route path="/tutorial" element={<RulesPage />} />
+            <Route path="/rules" element={<Navigate to="/tutorial" replace />} />
             <Route
               path="/"
               element={
