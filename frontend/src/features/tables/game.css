@@ -283,6 +283,51 @@
   gap: 14px;
   padding: 18px;
 }
+.my-hand-panel {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 18px;
+  border-color: color-mix(in srgb, var(--cyan) 42%, var(--border));
+}
+.my-hand-panel h2 {
+  margin: 4px 0 0;
+  font-size: 16px;
+}
+.my-hand-panel > .muted {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 12px;
+}
+.my-hole-cards {
+  display: flex;
+  gap: 7px;
+}
+.my-hole-cards .game-card {
+  width: 43px;
+  height: 60px;
+}
+.my-hand-strength {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+.my-hand-strength > span {
+  color: var(--muted);
+  font-size: 10px;
+}
+.my-hand-strength > strong {
+  color: var(--cyan);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.my-hand-strength > p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 10px;
+}
 .game-side-panel .panel-heading a {
   font-size: 11px;
 }
@@ -448,5 +493,8 @@
   }
   .game-side-column {
     grid-template-columns: 1fr;
+  }
+  .my-hand-panel {
+    grid-template-columns: auto 1fr;
   }
 }

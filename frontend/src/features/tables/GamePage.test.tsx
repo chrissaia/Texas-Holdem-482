@@ -62,6 +62,7 @@ const state = {
     viewer: {
       user_id: 10,
       hole_cards: ['As', 'Kh'],
+      hand: null,
       legal_actions: {
         fold: true,
         check: false,
@@ -106,8 +107,43 @@ test('shows the active game, identifies the viewer, and hides opponent cards', a
   expect(screen.getByText('Player One (You)')).toBeVisible()
   expect(screen.getByText('Player Two')).toBeVisible()
   expect(screen.getAllByLabelText('Hidden card').length).toBeGreaterThan(0)
+  expect(screen.getByRole('region', { name: 'Your poker hand' })).toHaveTextContent('Not ranked yet')
+  expect(screen.getByLabelText('Your private cards')).toBeVisible()
   expect(screen.getByRole('button', { name: 'Call 5' })).toBeEnabled()
   expect(screen.getByRole('button', { name: 'All-in' })).toBeEnabled()
+})
+
+test('shows the server-evaluated best hand after the flop', async () => {
+  const flopState = {
+    ...state,
+    game: {
+      ...state.game,
+      street: 'flop',
+      board: ['2d', '3c', '4h'],
+      viewer: { ...state.game.viewer, hand: 'One Pair - Aces' },
+    },
+  }
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response(flopState)))
+  renderGame()
+
+  expect(await screen.findByText('One Pair - Aces')).toBeVisible()
+  expect(screen.getByText('This may improve as more community cards are dealt.')).toBeVisible()
+})
+
+test('explains that a player who joins mid-hand receives cards next hand', async () => {
+  const waitingState = {
+    ...state,
+    game: {
+      ...state.game,
+      players: state.game.players.filter(player => player.user_id !== state.viewer_id),
+      waiting_players: [{ user_id: state.viewer_id, username: 'Player One', stack: 95, waiting: true as const }],
+      viewer: { ...state.game.viewer, hole_cards: null, hand: null },
+    },
+  }
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response(waitingState)))
+  renderGame()
+
+  expect(await screen.findByText(/You joined during this hand/)).toBeVisible()
 })
 
 test('sends an action with the private CSRF token and server route', async () => {

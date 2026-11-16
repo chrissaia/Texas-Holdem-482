@@ -114,6 +114,46 @@ function PokerTableView({ state, game }: { state: GameState; game: ActivePokerGa
   )
 }
 
+function MyHandPanel({ game, viewerId }: { game: ActivePokerGame | null; viewerId: number }) {
+  const viewer = game?.viewer
+  const player = game?.players.find(candidate => candidate.user_id === viewerId)
+
+  return (
+    <section className="panel my-hand-panel" aria-label="Your poker hand">
+      <div>
+        <span className="eyebrow">PRIVATE TO YOU</span>
+        <h2>Your hand</h2>
+      </div>
+      {!game ? (
+        <p className="muted">Your private cards will appear when the next hand is dealt.</p>
+      ) : !viewer?.hole_cards ? (
+        <p className="muted">You joined during this hand. Your private cards will be dealt next hand.</p>
+      ) : (
+        <>
+          <div className="my-hole-cards" aria-label="Your private cards">
+            {viewer.hole_cards.map((card, index) => (
+              <PlayingCard key={`${card}-${index}`} code={card} />
+            ))}
+          </div>
+          <div className="my-hand-strength" aria-live="polite">
+            <span>{game.board.length >= 5 ? 'Your final hand' : 'Best hand so far'}</span>
+            <strong>{viewer.hand ?? 'Not ranked yet'}</strong>
+            <p>
+              {player?.folded
+                ? 'You folded this hand; your cards stay private to you.'
+                : game.board.length < 3
+                  ? 'Your hand can be ranked after the flop is dealt.'
+                  : game.board.length < 5
+                    ? 'This may improve as more community cards are dealt.'
+                    : 'This is your best five-card hand at showdown.'}
+            </p>
+          </div>
+        </>
+      )}
+    </section>
+  )
+}
+
 function GameControls({ state, onAction, pending, secondsLeft }: {
   state: GameState
   onAction: (action: 'fold' | 'check' | 'call' | 'raise' | 'all_in', raiseTo?: number) => void
@@ -342,6 +382,7 @@ export function GamePage() {
               )}
             </div>
             <aside className="game-side-column">
+              <MyHandPanel game={state.game} viewerId={state.viewer_id} />
               <section className="panel game-side-panel">
                 <div className="panel-heading"><h2>Last hand</h2><span className="eyebrow">{state.last_hand ? `#${state.last_hand.number}` : '—'}</span></div>
                 {state.last_hand ? (
