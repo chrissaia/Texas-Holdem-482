@@ -1,0 +1,452 @@
+.game-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.game-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+.game-header h1 {
+  margin: 5px 0;
+}
+.game-header p {
+  margin: 0;
+  font-size: 13px;
+}
+.game-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 20px;
+  align-items: start;
+}
+.game-main-column,
+.game-side-column {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+.poker-table {
+  min-height: 530px;
+  padding: 18px;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at center, rgba(38, 89, 80, 0.25), transparent 68%),
+    var(--panel);
+}
+.table-rim {
+  display: grid;
+  flex: 1;
+  place-items: center;
+  min-height: 450px;
+  border: 10px solid #293a4c;
+  border-radius: 48%;
+  padding: 10px;
+  background: #182637;
+  box-shadow: inset 0 0 0 2px #526170, 0 14px 32px rgba(0, 0, 0, 0.2);
+}
+.table-felt {
+  display: flex;
+  width: 100%;
+  min-height: 410px;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 18px;
+  border: 1px solid rgba(144, 202, 177, 0.6);
+  border-radius: 48%;
+  padding: 26px 28px;
+  background:
+    radial-gradient(ellipse at center, #28745b 0, #16533f 65%, #103d32 100%);
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.23);
+}
+.table-player-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+.table-player-row.lower-row {
+  align-items: end;
+}
+.game-player {
+  position: relative;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid rgba(224, 239, 230, 0.3);
+  border-radius: 8px;
+  background: rgba(8, 18, 30, 0.88);
+  color: #f0f3f5;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.17);
+}
+.game-player.active-turn {
+  border-color: #efc96b;
+  box-shadow: 0 0 0 2px rgba(239, 201, 107, 0.38), 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+.game-player.folded {
+  opacity: 0.55;
+}
+.player-identity {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.player-avatar {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  background: #33506a;
+  color: #dceaf3;
+  font-weight: 700;
+}
+.player-identity > div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+.player-identity strong {
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.player-identity > div > span,
+.player-stack {
+  color: #b6c4cd;
+  font-size: 10px;
+}
+.player-stack {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 7px;
+}
+.player-cards {
+  display: flex;
+  gap: 5px;
+  margin-top: 9px;
+}
+.game-card {
+  display: inline-flex;
+  width: 40px;
+  height: 56px;
+  flex: 0 0 auto;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 5px;
+  border-radius: 5px;
+  background: #f8f8f4;
+  color: #16212b;
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+.game-card > span:last-child {
+  align-self: flex-end;
+  font-size: 17px;
+}
+.game-card.red-suit {
+  color: #c64048;
+}
+.game-card.face-down {
+  border: 2px solid #e6d9bb;
+  background: repeating-linear-gradient(45deg, #274a6f, #274a6f 4px, #1b3859 4px, #1b3859 8px);
+}
+.board-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #f4f4ed;
+}
+.board-caption {
+  color: #d6e5d6;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+}
+.community-cards {
+  display: flex;
+  justify-content: center;
+  gap: 7px;
+  min-height: 56px;
+}
+.pot-display {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  color: #d2e7d8;
+  font-size: 11px;
+}
+.pot-display strong {
+  color: #fff;
+  font-family: var(--mono);
+  font-size: 20px;
+}
+.table-waiting-copy {
+  max-width: 260px;
+  color: #d2e7d8;
+  font-size: 12px;
+  text-align: center;
+}
+.waiting-player-note,
+.timer-message {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+.game-controls {
+  gap: 14px;
+}
+.controls-heading,
+.game-side-panel .panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.controls-heading h2,
+.game-side-panel h2 {
+  margin: 4px 0 0;
+  font-size: 16px;
+}
+.turn-clock {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 10px;
+}
+.turn-clock strong {
+  color: var(--text);
+  font-size: 12px;
+}
+.turn-indicator {
+  display: inline-block;
+  margin-top: 6px;
+  color: #efc96b;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+}
+.game-controls .field-hint {
+  margin: 0;
+}
+.action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.all-in-button {
+  border-color: #bd6e47;
+  color: #f4b48d;
+}
+.raise-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.raise-controls label {
+  color: var(--muted);
+  font-size: 12px;
+}
+.raise-controls label strong {
+  color: var(--text);
+  font-family: var(--mono);
+}
+.raise-controls input[type='range'] {
+  height: auto;
+  padding: 0;
+  accent-color: var(--accent);
+}
+.raise-presets {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+.raise-presets .text-button {
+  font-size: 12px;
+}
+.game-side-panel {
+  gap: 14px;
+  padding: 18px;
+}
+.game-side-panel .panel-heading a {
+  font-size: 11px;
+}
+.last-pot {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 22px;
+  font-weight: 700;
+}
+.last-pot span {
+  color: var(--muted);
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 400;
+}
+.last-winners {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.last-winners p {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0;
+  font-size: 12px;
+}
+.last-winners span {
+  color: var(--green);
+  font-family: var(--mono);
+}
+.small-cards .game-card {
+  width: 31px;
+  height: 43px;
+  font-size: 11px;
+}
+.small-cards .game-card > span:last-child {
+  font-size: 13px;
+}
+.hand-guide,
+.action-history {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.hand-guide li,
+.action-history li {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.hand-guide li > span {
+  display: grid;
+  width: 19px;
+  height: 19px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--cyan);
+  font-family: var(--mono);
+  font-size: 9px;
+}
+.action-history li {
+  justify-content: space-between;
+  gap: 12px;
+}
+.action-history strong {
+  color: var(--text);
+  font-size: 10px;
+  text-align: right;
+}
+.game-error {
+  max-width: 560px;
+}
+.game-error p {
+  margin: 0;
+  color: var(--muted);
+}
+.game-error-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+@media (max-width: 1100px) {
+  .game-layout {
+    grid-template-columns: minmax(0, 1fr) 245px;
+  }
+  .table-felt {
+    padding-inline: 16px;
+  }
+}
+@media (max-width: 850px) {
+  .game-layout {
+    grid-template-columns: 1fr;
+  }
+  .game-side-column {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+}
+@media (max-width: 620px) {
+  .game-header {
+    align-items: flex-start;
+  }
+  .game-header .button {
+    flex: 0 0 auto;
+    padding-inline: 10px;
+    font-size: 12px;
+  }
+  .poker-table {
+    min-height: 445px;
+    padding: 10px;
+  }
+  .table-rim {
+    min-height: 400px;
+    border-width: 6px;
+    padding: 6px;
+  }
+  .table-felt {
+    min-height: 370px;
+    gap: 10px;
+    padding: 18px 9px;
+  }
+  .table-player-row {
+    gap: 6px;
+  }
+  .game-player {
+    padding: 7px 5px;
+  }
+  .player-avatar {
+    width: 24px;
+    height: 24px;
+    font-size: 11px;
+  }
+  .player-identity {
+    gap: 5px;
+  }
+  .player-identity strong {
+    font-size: 10px;
+  }
+  .player-identity > div > span,
+  .player-stack {
+    font-size: 8px;
+  }
+  .game-card {
+    width: 31px;
+    height: 45px;
+    padding: 4px;
+    font-size: 11px;
+  }
+  .game-card > span:last-child {
+    font-size: 13px;
+  }
+  .community-cards {
+    gap: 4px;
+  }
+  .game-side-column {
+    grid-template-columns: 1fr;
+  }
+}

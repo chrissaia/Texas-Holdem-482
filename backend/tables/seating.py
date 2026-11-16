@@ -1,4 +1,4 @@
-"""Fund public waiting-table seats under table-then-account locks."""
+"""Fund table seats and enforce in-hand cash-out rules under row locks."""
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.shortcuts import get_object_or_404
@@ -6,7 +6,7 @@ from django.utils import timezone
 from rest_framework.exceptions import APIException, PermissionDenied
 
 from profiles.rewards import MAX_BALANCE
-from .models import PokerTable, TableSeat
+from .models import HandParticipant, PokerHand, PokerTable, TableSeat
 from .access import require_table_access
 
 
@@ -25,24 +25,35 @@ def _locked_records(table_id, user_id):
 
 
 def _payload(table, user, seat):
+    can_leave = seat is None or table.status != PokerTable.Status.PLAYING
+    if not can_leave:
+        hand = PokerHand.objects.filter(table=table, status=PokerHand.Status.ACTIVE).first()
+        participant = (
+            HandParticipant.objects.filter(hand=hand, user=user).first()
+            if hand
+            else None
+        )
+        can_leave = participant is None or participant.folded
     return {
         "table_id": table.pk, "player_count": table.player_count,
+        "table_status": table.status,
         "chip_balance": user.chip_balance,
         "seat": {"id": seat.pk, "buy_in": seat.buy_in, "stack": seat.stack} if seat else None,
+        "can_leave": can_leave,
     }
 
 
 @transaction.atomic
 def join_table(table_id, user_id):
-    """Recheck affordability and capacity, then reserve chips exactly once."""
+    """Recheck affordability and capacity, then reserve chips for the next hand."""
     table, user = _locked_records(table_id, user_id)
     seat = TableSeat.objects.filter(user=user).first()
     if seat:
         if seat.table_id != table.pk:
             raise SeatingConflict("Leave your current table before joining another.")
         return _payload(table, user, seat)
-    if table.status != PokerTable.Status.WAITING:
-        raise SeatingConflict("This table is not accepting players right now.")
+    if table.status == PokerTable.Status.CLOSED:
+        raise SeatingConflict("This table is closed.")
     if table.player_count >= table.max_players:
         raise SeatingConflict("This table is full.")
     required = max(table.buy_in, table.minimum_balance)
@@ -54,6 +65,10 @@ def join_table(table_id, user_id):
     table.player_count += 1
     table.last_activity_at = timezone.now()
     table.save(update_fields=["player_count", "last_activity_at"])
+    if table.status == PokerTable.Status.WAITING:
+        from .gameplay import start_hand_if_ready
+
+        start_hand_if_ready(table)
     return _payload(table, user, seat)
 
 
@@ -65,7 +80,19 @@ def leave_table(table_id, user_id):
     if not seat:
         return _payload(table, user, None)
     if table.status == PokerTable.Status.PLAYING:
-        raise SeatingConflict("Wait for play to finish before leaving this table.")
+        hand = PokerHand.objects.filter(table=table, status=PokerHand.Status.ACTIVE).first()
+        participant = (
+            HandParticipant.objects.select_for_update()
+            .filter(hand=hand, user=user)
+            .first()
+            if hand
+            else None
+        )
+        if participant is not None and not participant.folded:
+            raise SeatingConflict("Finish or fold your hand before leaving this table.")
+        if hand and participant:
+            participant.seat = None
+            participant.save(update_fields=["seat"])
     if user.chip_balance + seat.stack > MAX_BALANCE:
         raise SeatingConflict("Your wallet is at its limit. Your table chips remain reserved.")
     if table.player_count < 1:

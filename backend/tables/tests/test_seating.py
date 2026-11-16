@@ -79,7 +79,7 @@ def test_later_loss_invalidates_previously_affordable_screen(table, registered_u
     assert not TableSeat.objects.exists()
 
 
-@pytest.mark.parametrize("fields", [{"status": "playing"}, {"status": "closed"}, {"player_count": 2}])
+@pytest.mark.parametrize("fields", [{"status": "closed"}, {"player_count": 2}])
 def test_unavailable_table_does_not_take_chips(table, registered_user, fields):
     PokerTable.objects.filter(pk=table.pk).update(**fields)
     with pytest.raises(SeatingConflict):
@@ -149,12 +149,10 @@ def test_failed_seat_creation_rolls_back_wallet(table, registered_user, monkeypa
     assert table.player_count == 0
 
 
-@pytest.mark.parametrize("change", ["playing", "limit", "occupancy"])
+@pytest.mark.parametrize("change", ["limit", "occupancy"])
 def test_unsafe_leave_keeps_reserved_chips(table, registered_user, change):
     join_table(table.pk, registered_user.pk)
-    if change == "playing":
-        PokerTable.objects.filter(pk=table.pk).update(status="playing")
-    elif change == "limit":
+    if change == "limit":
         get_user_model().objects.filter(pk=registered_user.pk).update(chip_balance=MAX_BALANCE)
     else:
         PokerTable.objects.filter(pk=table.pk).update(player_count=0)

@@ -53,15 +53,17 @@ export function SeatPanel({ table, onOccupancy }: {
       <p>Available wallet: <strong>{status.chip_balance.toLocaleString('en-US')} chips</strong></p>
       {status.seat ? <>
         <p role="status">You have a seat. Reserved at this table: <strong>{status.seat.stack.toLocaleString('en-US')} chips</strong>.</p>
-        <button className="button" disabled={pending || table.status === 'playing'} onClick={() => void act('DELETE')}>Leave table and return chips</button>
-        {table.status === 'playing' && <p className="field-hint">Wait for play to finish before leaving.</p>}
+        <button className="button" disabled={pending || !status.can_leave} onClick={() => void act('DELETE')}>Leave table and return chips</button>
+        {table.status === 'playing' && !status.can_leave && <p className="field-hint">Finish or fold your hand before leaving.</p>}
+        {table.status === 'playing' && status.can_leave && <p className="field-hint">You can leave now; remaining table chips return to your wallet.</p>}
       </> : status.other_table_id ? <p className="notice">You already have a seat. <Link to={`/tables/${status.other_table_id}`}>Go to your table</Link> to leave first.</p> : <>
         <p className="field-hint">Joining reserves {table.buy_in.toLocaleString('en-US')} chips from your wallet. Leaving the waiting table returns them.</p>
         {insufficient && <p className="notice">You need at least {required.toLocaleString('en-US')} chips to join. <Link to="/rewards">Get chips</Link></p>}
-        <button className="button primary" disabled={pending || insufficient || table.status !== 'waiting' || status.player_count >= table.max_players} onClick={() => void act('POST')}>
+        <button className="button primary" disabled={pending || insufficient || table.status === 'closed' || status.player_count >= table.max_players} onClick={() => void act('POST')}>
           Join table · {table.buy_in.toLocaleString('en-US')} chips
         </button>
-        {table.status !== 'waiting' && <p className="field-hint">This table is not accepting players right now.</p>}
+        {table.status === 'playing' && <p className="field-hint">You can join now; you will be dealt into the next hand.</p>}
+        {table.status === 'closed' && <p className="field-hint">This table is not accepting players right now.</p>}
         {status.player_count >= table.max_players && <p className="field-hint">This table is full.</p>}
       </>}
     </>}
