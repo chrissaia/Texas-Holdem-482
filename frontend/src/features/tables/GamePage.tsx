@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { getGame, submitGameAction, submitGameTimeout } from './api'
+import { gameUpdatesUrl, getGame, submitGameAction, submitGameTimeout } from './api'
 import type { ActivePokerGame, GamePlayer, GameState } from './types'
 import './game.css'
 
@@ -253,6 +253,8 @@ export function GamePage() {
   const [attempt, setAttempt] = useState(0)
   const [loadedAttempt, setLoadedAttempt] = useState(-1)
   const [clock, setClock] = useState<{ deadline: string; seconds: number } | null>(null)
+  const [liveConnected, setLiveConnected] = useState(false)
+  const hasGameAccess = state !== null
 
   useEffect(() => {
     let active = true
@@ -280,6 +282,38 @@ export function GamePage() {
       })
     return () => { active = false }
   }, [id, attempt])
+
+  useEffect(() => {
+    if (!hasGameAccess || typeof WebSocket === 'undefined') return
+
+    let active = true
+    let reconnectTimer = 0
+    let reconnectDelay = 1000
+    let socket: WebSocket
+    const connect = () => {
+      if (!active) return
+      socket = new WebSocket(gameUpdatesUrl(id))
+      socket.onopen = () => {
+        reconnectDelay = 1000
+        if (active) setLiveConnected(true)
+      }
+      socket.onmessage = () => { if (active) setAttempt(value => value + 1) }
+      socket.onclose = () => {
+        if (!active) return
+        setLiveConnected(false)
+        reconnectTimer = window.setTimeout(connect, reconnectDelay)
+        reconnectDelay = Math.min(reconnectDelay * 2, 15000)
+      }
+      socket.onerror = () => socket.close()
+    }
+
+    connect()
+    return () => {
+      active = false
+      window.clearTimeout(reconnectTimer)
+      socket.close()
+    }
+  }, [id, hasGameAccess])
 
   const deadline = state?.game?.turn_deadline
   const csrfToken = state?.csrf_token
@@ -362,6 +396,9 @@ export function GamePage() {
               <p className="muted">{state.table.small_blind} / {state.table.big_blind} blinds · {state.table.player_count}/{state.table.max_players} players</p>
             </div>
             <button className="button" disabled={pending || loading} onClick={refresh}>Refresh table</button>
+            <span className={`live-status${liveConnected ? ' connected' : ''}`} aria-live="polite">
+              {liveConnected ? 'Live updates on' : 'Reconnecting to live updates…'}
+            </span>
           </header>
           {error && <p className="notice error-notice" role="alert">{error}</p>}
           <div className="game-layout">

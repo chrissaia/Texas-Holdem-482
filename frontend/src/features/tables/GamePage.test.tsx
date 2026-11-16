@@ -6,6 +6,32 @@ import { GamePage } from './GamePage'
 const response = (data: unknown, status = 200) =>
   new Response(JSON.stringify(data), { status })
 
+const sockets: MockWebSocket[] = []
+
+class MockWebSocket {
+  onopen: ((event: Event) => void) | null = null
+  onmessage: ((event: MessageEvent) => void) | null = null
+  onerror: ((event: Event) => void) | null = null
+  onclose: ((event: CloseEvent) => void) | null = null
+  readonly url: string
+
+  constructor(url: string) {
+    this.url = url
+    sockets.push(this)
+    queueMicrotask(() => this.onopen?.(new Event('open')))
+  }
+
+  close() {
+    this.onclose?.(new CloseEvent('close'))
+  }
+
+  send() {}
+
+  notify() {
+    this.onmessage?.(new MessageEvent('message', { data: '{"type":"game.updated"}' }))
+  }
+}
+
 const state = {
   viewer_id: 10,
   table: {
@@ -87,6 +113,7 @@ const state = {
 afterEach(() => {
   vi.unstubAllGlobals()
   vi.clearAllMocks()
+  sockets.length = 0
 })
 
 function renderGame() {
@@ -164,11 +191,33 @@ test('sends an action with the private CSRF token and server route', async () =>
   })
 })
 
+test('refreshes the private game state when another player changes the game', async () => {
+  const updatedState = {
+    ...state,
+    game: { ...state.game, pot: 25, turn_user_id: 20 },
+  }
+  const fetch = vi.fn()
+    .mockResolvedValueOnce(response(state))
+    .mockResolvedValueOnce(response(updatedState))
+  vi.stubGlobal('fetch', fetch)
+  vi.stubGlobal('WebSocket', MockWebSocket)
+  renderGame()
+
+  expect(await screen.findByText('Live updates on')).toBeVisible()
+  expect(sockets[0].url).toBe('ws://localhost:3000/ws/tables/1/game/')
+  sockets[0].notify()
+
+  expect(await screen.findByText('25')).toBeVisible()
+  expect(fetch).toHaveBeenCalledTimes(2)
+})
+
 test('failed table access explains that sign-in and a seat are required', async () => {
+  vi.stubGlobal('WebSocket', MockWebSocket)
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response({ detail: 'Sign in with an active registered account to play.' }, 403)))
   renderGame()
 
   expect(await screen.findByRole('heading', { name: 'Table unavailable' })).toBeVisible()
   expect(screen.getByRole('link', { name: 'Sign in' })).toHaveAttribute('href', '/login')
   expect(screen.getByRole('link', { name: 'Table details' })).toHaveAttribute('href', '/tables/1')
+  expect(sockets).toHaveLength(0)
 })

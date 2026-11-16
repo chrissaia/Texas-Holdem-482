@@ -237,10 +237,14 @@ through the progression hook. Players who join during a hand are seated for the
 next hand. Chips remain reserved in `TableSeat.stack`; payouts return to that
 table stack and never directly alter the wallet.
 
-The gameplay screen is `/tables/<id>/play`. It refreshes manually and after the
-viewer's own actions; push-based live synchronization remains S12 scope. The
-read-only spectator endpoint remains a separate projection and never receives
-this seated-player payload.
+The gameplay screen is `/tables/<id>/play`. It bootstraps and recovers through
+the private REST endpoint, and receives authenticated table-scoped WebSocket
+change signals after committed seating, action, and timeout updates. Each client
+then fetches its own authorized state; WebSocket messages never contain cards or
+other private game state. Redis backs the shared Channels layer in Compose and
+multi-process deployments. The in-memory layer supports native single-process
+development only. The read-only spectator endpoint remains a separate
+projection and never receives this seated-player payload.
 
 
 ## S7 private poker hand view

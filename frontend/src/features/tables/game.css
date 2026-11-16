@@ -10,6 +10,13 @@
   flex-wrap: wrap;
   gap: 20px;
 }
+.live-status {
+  color: var(--muted);
+  font-size: 12px;
+}
+.live-status.connected {
+  color: #43c794;
+}
 .game-header h1 {
   margin: 5px 0;
 }

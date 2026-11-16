@@ -50,6 +50,11 @@ export const changeSeat = (id: number, method: 'POST' | 'DELETE', token: string)
 export const getGame = (id: string) =>
   request<GameState>(`/api/tables/${id}/game/`)
 
+export const gameUpdatesUrl = (id: string) => {
+  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+  return `${protocol}//${window.location.host}/ws/tables/${id}/game/`
+}
+
 export const submitGameAction = (
   id: string,
   action: 'fold' | 'check' | 'call' | 'raise' | 'all_in',

@@ -19,6 +19,7 @@ export default defineConfig(/* Handle the defineConfig callback using the curren
         "/admin": { target: env.API_PROXY_TARGET || "http://127.0.0.1:8000" },
         "/media": { target: env.API_PROXY_TARGET || "http://127.0.0.1:8000" },
         "/static": { target: env.API_PROXY_TARGET || "http://127.0.0.1:8000" },
+        "/ws": { target: env.API_PROXY_TARGET || "http://127.0.0.1:8000", ws: true },
       },
     },
     test: {
