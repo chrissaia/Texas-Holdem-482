@@ -11,6 +11,7 @@ from rest_framework.exceptions import PermissionDenied
 from .access import require_table_access
 from .models import HandParticipant, PokerAction, PokerHand, PokerTable, TableSeat
 from .poker import CATEGORY_CODES, best_hand, hand_description, new_deck
+from .live_updates import queue_game_update
 
 TURN_SECONDS = 30
 
@@ -596,8 +597,10 @@ def apply_game_action(table_id, user_id, action, raise_to=None):
     if hand.turn_deadline and now >= hand.turn_deadline:
         timeout_kind = "check" if actor.round_contribution == hand.current_bet else "fold"
         _apply_action(hand, table, actor, timeout_kind, now, timed_out=True)
+        queue_game_update(table.pk)
         return _game_payload(table, user_id), "Your turn expired; the automatic action was applied."
     _apply_action(hand, table, actor, action, now, raise_to=raise_to)
+    queue_game_update(table.pk)
     return _game_payload(table, user_id), None
 
 
@@ -616,4 +619,5 @@ def advance_game_timeout(table_id, user_id):
         if actor:
             kind = "check" if actor.round_contribution == hand.current_bet else "fold"
             _apply_action(hand, table, actor, kind, timezone.now(), timed_out=True)
+            queue_game_update(table.pk)
     return _game_payload(table, user.pk)

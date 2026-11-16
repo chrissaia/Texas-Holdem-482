@@ -8,6 +8,7 @@ from rest_framework.exceptions import APIException, PermissionDenied
 from profiles.rewards import MAX_BALANCE
 from .models import HandParticipant, PokerHand, PokerTable, TableSeat
 from .access import require_table_access
+from .live_updates import queue_game_update
 
 
 class SeatingConflict(APIException):
@@ -69,6 +70,7 @@ def join_table(table_id, user_id):
         from .gameplay import start_hand_if_ready
 
         start_hand_if_ready(table)
+    queue_game_update(table.pk)
     return _payload(table, user, seat)
 
 
@@ -103,4 +105,5 @@ def leave_table(table_id, user_id):
     table.player_count -= 1
     table.last_activity_at = timezone.now()
     table.save(update_fields=["player_count", "last_activity_at"])
+    queue_game_update(table.pk)
     return _payload(table, user, None)
