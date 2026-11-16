@@ -10,7 +10,7 @@ from rest_framework.exceptions import PermissionDenied
 
 from .access import require_table_access
 from .models import HandParticipant, PokerAction, PokerHand, PokerTable, TableSeat
-from .poker import CATEGORY_CODES, best_hand, new_deck
+from .poker import CATEGORY_CODES, best_hand, hand_description, new_deck
 
 TURN_SECONDS = 30
 
@@ -534,6 +534,7 @@ def _game_payload(table, viewer_id):
             "viewer": {
                 "user_id": viewer_id,
                 "hole_cards": me.hole_cards if me else None,
+                "hand": hand_description([*me.hole_cards, *current.board]) if me and len(current.board) >= 3 else None,
                 "legal_actions": legal,
             },
             "actions": [

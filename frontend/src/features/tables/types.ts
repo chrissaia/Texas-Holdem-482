@@ -81,6 +81,7 @@ export type ActivePokerGame = {
   viewer: {
     user_id: number
     hole_cards: string[] | null
+    hand: string | null
     legal_actions: GameLegalActions
   }
   actions: { username: string; kind: string; amount: number; street: string }[]
