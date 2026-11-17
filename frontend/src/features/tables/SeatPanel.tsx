@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { ApiError } from '../../api/client'
+import { DisclaimerDialog } from '../disclaimer/Disclaimer'
 import { useProfile } from '../profile/context'
 import { changeSeat, getSeat } from './api'
 import type { SeatStatus } from './api'
@@ -15,6 +17,7 @@ export function SeatPanel({ table, onOccupancy }: {
   const [pending, setPending] = useState(false)
   const [attempt, setAttempt] = useState(0)
   const [loadedAttempt, setLoadedAttempt] = useState(-1)
+  const [askDisclaimer, setAskDisclaimer] = useState(false)
   useEffect(() => {
     if (!registered) return
     let active = true
@@ -28,16 +31,22 @@ export function SeatPanel({ table, onOccupancy }: {
     return () => { active = false }
   }, [table.id, registered, attempt])
   const refresh = () => { setError(''); setAttempt(n => n + 1) }
-  const act = async (method: 'POST' | 'DELETE') => {
-    if (!status || pending) return
+  const act = async (method: 'POST' | 'DELETE', current = status) => {
+    if (!current || pending) return
     setPending(true)
     setError('')
     try {
-      const value = await changeSeat(table.id, method, status.csrf_token)
+      const value = await changeSeat(table.id, method, current.csrf_token)
       setStatus(value)
       onOccupancy(value.player_count)
       refreshProfile()
     } catch (reason) {
+      // S3: the server refuses seats until the disclaimer is accepted.
+      if (reason instanceof ApiError && reason.body.code === 'disclaimer_required') {
+        setStatus({ ...current, disclaimer_accepted: false })
+        setAskDisclaimer(true)
+        return
+      }
       setError(reason instanceof Error ? reason.message : 'Your seat could not be changed.')
     } finally { setPending(false) }
   }
@@ -46,6 +55,17 @@ export function SeatPanel({ table, onOccupancy }: {
   const loading = loadedAttempt !== attempt
   const required = Math.max(table.buy_in, table.minimum_balance)
   const insufficient = status !== null && status.chip_balance < required
+  const join = () => {
+    if (status && !status.disclaimer_accepted) setAskDisclaimer(true)
+    else void act('POST')
+  }
+  const accepted = () => {
+    if (!status) return
+    const next = { ...status, disclaimer_accepted: true }
+    setStatus(next)
+    setAskDisclaimer(false)
+    void act('POST', next)
+  }
   return <section className="seat-panel" aria-label="Your seat">
     <h2>Your seat</h2>
     {error && <p role="alert" className="notice error-notice">{error}</p>}
@@ -58,14 +78,16 @@ export function SeatPanel({ table, onOccupancy }: {
       </> : status.other_table_id ? <p className="notice">You already have a seat. <Link to={`/tables/${status.other_table_id}`}>Go to your table</Link> to leave first.</p> : <>
         <p className="field-hint">Joining reserves {table.buy_in.toLocaleString('en-US')} chips from your wallet. Leaving the waiting table returns them.</p>
         {insufficient && <p className="notice">You need at least {required.toLocaleString('en-US')} chips to join. <Link to="/rewards">Get chips</Link></p>}
-        <button className="button primary" disabled={pending || insufficient || table.status !== 'waiting' || status.player_count >= table.max_players} onClick={() => void act('POST')}>
+        <button className="button primary" disabled={pending || insufficient || table.status !== 'waiting' || status.player_count >= table.max_players} onClick={join}>
           Join table · {table.buy_in.toLocaleString('en-US')} chips
         </button>
+        {!status.disclaimer_accepted && <p className="field-hint">You’ll be asked to accept the play-money disclaimer before joining.</p>}
         {table.status !== 'waiting' && <p className="field-hint">This table is not accepting players right now.</p>}
         {status.player_count >= table.max_players && <p className="field-hint">This table is full.</p>}
       </>}
     </>}
     <button className="button" disabled={pending || loading} onClick={refresh}>Refresh seat</button>
     {pending && <p role="status">Saving your seat…</p>}
+    {askDisclaimer && status && <DisclaimerDialog csrfToken={status.csrf_token} onAccepted={accepted} onClose={() => setAskDisclaimer(false)} />}
   </section>
 }

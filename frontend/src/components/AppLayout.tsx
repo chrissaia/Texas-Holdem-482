@@ -113,6 +113,7 @@ export function AppLayout({
         <div className="sidebar-note">
           <span className="eyebrow">PLAY MONEY ONLY</span>
           <p>All stakes use virtual chips.</p>
+          <Link to="/disclaimer">Read the disclaimer</Link>
         </div>
         <div className="account-summary">
           <div className="avatar avatar-large">

@@ -31,6 +31,7 @@ import { LeaderboardPage } from "./features/leaderboard/LeaderboardPage";
 import { RewardNotifications } from "./features/achievements/RewardNotifications";
 import { StatisticsPage } from "./features/statistics/StatisticsPage";
 import { RulesPage } from "./features/rules/RulesPage";
+import { DisclaimerPage } from "./features/disclaimer/DisclaimerPage";
 import { PrivateTablesPage } from "./features/tables/PrivateTablesPage";
 import { SpectatorPage } from "./features/tables/SpectatorPage";
 import "./App.css";
@@ -113,6 +114,7 @@ export function AppRoutes() {
             <Route path="/lobby" element={<LobbyPage />} />
             <Route path="/friends" element={<FriendsPage />} />
             <Route path="/tutorial" element={<RulesPage />} />
+            <Route path="/disclaimer" element={<DisclaimerPage />} />
             <Route path="/rules" element={<Navigate to="/tutorial" replace />} />
             <Route
               path="/"

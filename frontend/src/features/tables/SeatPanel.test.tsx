@@ -6,7 +6,7 @@ import { SeatPanel } from './SeatPanel'
 import type { PokerTable } from './types'
 
 const table: PokerTable = { id: 1, name: 'Test table', host: { id: 1, username: 'host' }, is_public: true, max_players: 2, buy_in: 100, minimum_balance: 200, small_blind: 5, big_blind: 10, player_count: 0, status: 'waiting', created_at: '', last_activity_at: '' }
-const status = { table_id: 1, player_count: 0, chip_balance: 1000, seat: null, other_table_id: null, csrf_token: 'server-token' }
+const status = { table_id: 1, player_count: 0, chip_balance: 1000, disclaimer_accepted: true, seat: null, other_table_id: null, csrf_token: 'server-token' }
 const response = (body: unknown, code = 200) => new Response(JSON.stringify(body), { status: code })
 const refresh = vi.fn()
 const occupancy = vi.fn()
@@ -99,4 +99,60 @@ test('seated players cannot leave a playing table', async () => {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response({ ...status, seat: { id: 2, stack: 100, buy_in: 100 } })))
   render(page(true, { ...table, status: 'playing' }))
   expect(await screen.findByRole('button', { name: /Leave table/ })).toBeDisabled()
+})
+
+test('S3: joining asks for the disclaimer first, then saves acceptance and joins', async () => {
+  const fetch = vi.fn().mockResolvedValueOnce(response({ ...status, disclaimer_accepted: false }))
+    .mockResolvedValueOnce(response({ state: 'registered', disclaimer_accepted: true, csrf_token: 'server-token' }))
+    .mockResolvedValueOnce(response({ ...status, player_count: 1, chip_balance: 900, seat: { id: 1, buy_in: 100, stack: 100 } }))
+  vi.stubGlobal('fetch', fetch)
+  render(page())
+  expect(await screen.findByText(/asked to accept the play-money disclaimer/)).toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: /Join table/ }))
+  const dialog = screen.getByRole('dialog', { name: 'Before you take a seat' })
+  expect(dialog).toHaveTextContent('no real-world monetary value')
+  expect(fetch).toHaveBeenCalledTimes(1)
+
+  const accept = screen.getByRole('button', { name: 'I accept' })
+  expect(accept).toBeDisabled()
+  fireEvent.click(screen.getByRole('checkbox', { name: /minimum age requirement/ }))
+  fireEvent.click(accept)
+  expect(await screen.findByText(/You have a seat/)).toBeInTheDocument()
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  expect(fetch.mock.calls[1][0]).toBe('/api/auth/disclaimer/')
+  expect(fetch.mock.calls[1][1]).toMatchObject({ method: 'POST', body: '{}', headers: { 'X-CSRFToken': 'server-token' } })
+  expect(fetch.mock.calls[2][1]).toMatchObject({ method: 'POST' })
+})
+
+test('S3: closing the disclaimer does not join', async () => {
+  const fetch = vi.fn().mockResolvedValue(response({ ...status, disclaimer_accepted: false }))
+  vi.stubGlobal('fetch', fetch)
+  render(page())
+  fireEvent.click(await screen.findByRole('button', { name: /Join table/ }))
+  fireEvent.click(screen.getByRole('button', { name: 'Not now' }))
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: /Join table/ }))
+  fireEvent.keyDown(document, { key: 'Escape' })
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  expect(fetch).toHaveBeenCalledTimes(1)
+})
+
+test('S3: a server disclaimer refusal opens the dialog instead of an error', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(response(status))
+    .mockResolvedValueOnce(response({ detail: 'Accept the play-money disclaimer before joining a table.', code: 'disclaimer_required' }, 403)))
+  render(page())
+  fireEvent.click(await screen.findByRole('button', { name: /Join table/ }))
+  expect(await screen.findByRole('dialog')).toBeInTheDocument()
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+})
+
+test('S3: a failed acceptance shows an error and keeps the dialog open', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(response({ ...status, disclaimer_accepted: false }))
+    .mockResolvedValueOnce(response({ detail: 'Server error' }, 500)))
+  render(page())
+  fireEvent.click(await screen.findByRole('button', { name: /Join table/ }))
+  fireEvent.click(screen.getByRole('checkbox'))
+  fireEvent.click(screen.getByRole('button', { name: 'I accept' }))
+  expect(await screen.findByRole('alert')).toHaveTextContent('could not save your acceptance')
+  expect(screen.getByRole('dialog')).toBeInTheDocument()
 })

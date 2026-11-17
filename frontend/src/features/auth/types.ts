@@ -13,6 +13,8 @@ export type Session = {
   state: 'anonymous' | 'guest' | 'registered'
   user: SessionUser | null
   guest: { name: string } | null
+  /** S3: whether this account or guest session accepted the play-money disclaimer. */
+  disclaimer_accepted: boolean
   csrf_token: string
 }
 export type RegisterInput = { username: string; email: string; password: string }

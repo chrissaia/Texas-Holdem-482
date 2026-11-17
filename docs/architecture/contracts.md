@@ -24,6 +24,7 @@ Every response returns the session contract, including the current `csrf_token` 
 {"state": "anonymous" | "guest" | "registered",
  "user": {"id": 1, "username": "...", "email": "...", "is_admin": false} | null,
  "guest": {"name": "..."} | null,
+ "disclaimer_accepted": true | false,
  "csrf_token": "..."}
 ```
 
@@ -34,6 +35,14 @@ Registration runs inside `accounts.services.register_user`, a single transaction
 Shared pytest fixtures live in `backend/conftest.py`: `registered_user`, `rivr_admin` (a superuser), `registered_client`, `rivr_admin_client`, and `guest_client`. The clients sign in through the real endpoints with CSRF enforced. They are named to avoid pytest-django's built-in `admin_user`/`admin_client`.
 
 Open decisions: these username, guest-name, and guest-lifetime rules are Finn's implementation choices pending team agreement. Login rate limiting is not implemented.
+
+## S3 play-money disclaimer
+
+Finn owns the disclaimer. `accounts.User.disclaimer_accepted_at` (migration `accounts.0004`) is null until the account accepts. `POST /api/auth/disclaimer/` takes an empty JSON object `{}` and enforces CSRF. It records acceptance and returns the session contract with `disclaimer_accepted: true`. The first acceptance time is kept, so repeating the request is safe. Guests are stored only in the session (`guest_disclaimer_accepted`), and that is cleared on logout or login, so an account always accepts for itself. Anonymous callers get 403, and a non-empty body gets 400.
+
+Seating (S15) depends on this. `join_table` refuses a new seat with HTTP 403 `{"detail": "...", "code": "disclaimer_required"}` until the account has accepted, and moves no chips. Leaving and already-held seats are not affected. The seat payload adds `disclaimer_accepted`. Table tests use `backend/tables/tests/conftest.py`, which overrides `registered_user` with an account that has already accepted. Users created directly in tests must set `disclaimer_accepted_at` before they join.
+
+Open decisions: the disclaimer text has no version number, so changing it does not ask players to accept again. The age statement is self-declared, and no birth date is stored.
 
 ## S13 public-table creation
 

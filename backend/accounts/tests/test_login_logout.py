@@ -17,7 +17,7 @@ def test_anonymous_session_sets_csrf_cookie():
     response = client.get(SESSION)
     assert response.status_code == 200
     assert response.data == {
-        "state": "anonymous", "user": None, "guest": None, "csrf_token": response.data["csrf_token"],
+        "state": "anonymous", "user": None, "guest": None, "disclaimer_accepted": False, "csrf_token": response.data["csrf_token"],
     }
     assert "csrftoken" in client.cookies
     assert "no-cache" in response["Cache-Control"]
