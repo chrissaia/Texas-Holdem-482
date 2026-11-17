@@ -1,0 +1,12 @@
+/* S3: play-money disclaimer dialog and page. No dedicated Figma frame; uses the shared panel, button and notice styles. */
+.disclaimer-points { margin: 16px 0; padding-left: 20px; display: grid; gap: 10px; line-height: 1.55; }
+.disclaimer-form { display: grid; gap: 16px; }
+.disclaimer-check { display: flex; align-items: flex-start; gap: 10px; color: var(--muted); font-size: 14px; line-height: 1.5; cursor: pointer; }
+.disclaimer-check input { width: 18px; height: 18px; margin: 2px 0 0; flex-shrink: 0; accent-color: var(--accent); }
+.disclaimer-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.disclaimer-backdrop { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 16px; background: rgb(0 0 0 / 0.6); }
+.disclaimer-dialog { width: min(560px, 100%); max-height: calc(100vh - 32px); overflow-y: auto; }
+.disclaimer-dialog:focus { outline: none; }
+.disclaimer-dialog h2 { margin: 6px 0 0; font-size: 20px; }
+.disclaimer-page { display: flex; flex-direction: column; gap: 26px; max-width: 760px; }
+.disclaimer-page .page-intro { margin: 0; }

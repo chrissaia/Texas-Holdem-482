@@ -2,6 +2,7 @@
 import pytest
 from django.contrib.auth import get_user_model
 from django.urls import reverse
+from django.utils import timezone
 from rest_framework.test import APIClient
 
 from friends.models import Friendship
@@ -20,7 +21,8 @@ def private_table(registered_user):
 @pytest.fixture
 def friend(registered_user):
     """Create an active accepted friend with enough chips for the waiting table."""
-    user = get_user_model().objects.create_user(username="invited-friend", chip_balance=1000)
+    user = get_user_model().objects.create_user(username="invited-friend", chip_balance=1000,
+                                                disclaimer_accepted_at=timezone.now())
     Friendship.objects.create(from_user=registered_user, to_user=user, status="accepted")
     return user
 

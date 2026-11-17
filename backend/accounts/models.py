@@ -13,6 +13,8 @@ class User(AbstractUser):
     chip_balance = models.PositiveBigIntegerField(default=0, editable=False)
     starting_chips_granted_at = models.DateTimeField(null=True, blank=True, editable=False)
     daily_chips_claimed_at = models.DateTimeField(null=True, blank=True, editable=False)
+    # S3: when the account accepted the play-money and age disclaimer; null until then.
+    disclaimer_accepted_at = models.DateTimeField(null=True, blank=True, editable=False)
 
     class Meta(AbstractUser.Meta):
         """Declare Django model or serializer metadata for the enclosing class."""

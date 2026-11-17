@@ -64,6 +64,10 @@
   color: var(--subtle);
   letter-spacing: 0.6px;
 }
+.sidebar-note a {
+  color: var(--cyan);
+  font-size: 12px;
+}
 .sidebar-note p {
   color: var(--muted);
   font-size: 12px;

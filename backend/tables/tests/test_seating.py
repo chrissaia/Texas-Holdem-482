@@ -128,7 +128,8 @@ def test_other_table_requires_leaving_first(table, registered_user, registered_c
 
 
 def test_no_other_account_seat_or_wallet_exposed(table, registered_client):
-    other = get_user_model().objects.create_user(username="other-seat-player", chip_balance=500)
+    other = get_user_model().objects.create_user(username="other-seat-player", chip_balance=500,
+                                                 disclaimer_accepted_at=timezone.now())
     join_table(table.pk, other.pk)
     result = registered_client.get(url(table))
     assert result.data["seat"] is None
@@ -189,7 +190,8 @@ def test_cleanup_skips_funded_seat(table, registered_user, rivr_admin):
 def test_concurrent_seating_preserves_money_and_capacity(scenario):
     assert connection.vendor == "postgresql"
     User = get_user_model()
-    users = [User.objects.create_user(username=f"seat-race-{i}", chip_balance=1000) for i in range(2)]
+    users = [User.objects.create_user(username=f"seat-race-{i}", chip_balance=1000,
+                                     disclaimer_accepted_at=timezone.now()) for i in range(2)]
     table = make_table(users[0], player_count=1 if scenario == "last_seat" else 0)
     other = make_table(users[0])
     if scenario == "same_leave":

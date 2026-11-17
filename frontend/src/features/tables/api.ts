@@ -32,6 +32,7 @@ export type SeatStatus = {
   table_id: number
   player_count: number
   chip_balance: number
+  disclaimer_accepted: boolean
   seat: { id: number; buy_in: number; stack: number } | null
   other_table_id: number | null
   csrf_token: string

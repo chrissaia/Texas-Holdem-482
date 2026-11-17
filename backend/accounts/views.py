@@ -12,7 +12,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from .serializers import GuestSerializer, LoginSerializer, RegistrationSerializer
-from .services import clear_guest, register_user, session_payload, start_guest
+from .services import accept_disclaimer, clear_guest, register_user, session_payload, start_guest
 
 INVALID_LOGIN = "Invalid username or password."
 
@@ -111,3 +111,14 @@ def guest(request):
     serializer.is_valid(raise_exception=True)
     start_guest(request.session, serializer.validated_data["name"])
     return session_response(request, status.HTTP_201_CREATED)
+
+
+@auth_view(["POST"])
+def disclaimer(request):
+    """S3: accept the play-money and age disclaimer for this account or guest session."""
+    if not request.user.is_authenticated and not request.session.get("is_guest"):
+        return error("Sign in or continue as a guest first.", status.HTTP_403_FORBIDDEN)
+    if not isinstance(request.data, dict) or request.data:
+        return error("Send an empty JSON object to accept the disclaimer.")
+    accept_disclaimer(request)
+    return session_response(request)

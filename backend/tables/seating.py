@@ -10,6 +10,17 @@ from .models import PokerTable, TableSeat
 from .access import require_table_access
 
 
+class DisclaimerRequired(APIException):
+    """S3: a player must accept the play-money disclaimer before taking a seat."""
+    status_code = 403
+    default_code = "disclaimer_required"
+
+    def __init__(self):
+        # A dict detail puts a machine-readable code in the body for the frontend.
+        super().__init__({"detail": "Accept the play-money disclaimer before joining a table.",
+                          "code": self.default_code})
+
+
 class SeatingConflict(APIException):
     status_code = 409
     default_detail = "The seat could not be changed. Refresh and try again."
@@ -28,6 +39,7 @@ def _payload(table, user, seat):
     return {
         "table_id": table.pk, "player_count": table.player_count,
         "chip_balance": user.chip_balance,
+        "disclaimer_accepted": user.disclaimer_accepted_at is not None,
         "seat": {"id": seat.pk, "buy_in": seat.buy_in, "stack": seat.stack} if seat else None,
     }
 
@@ -37,6 +49,8 @@ def join_table(table_id, user_id):
     """Recheck affordability and capacity, then reserve chips exactly once."""
     table, user = _locked_records(table_id, user_id)
     seat = TableSeat.objects.filter(user=user).first()
+    if not seat and user.disclaimer_accepted_at is None:
+        raise DisclaimerRequired()
     if seat:
         if seat.table_id != table.pk:
             raise SeatingConflict("Leave your current table before joining another.")
