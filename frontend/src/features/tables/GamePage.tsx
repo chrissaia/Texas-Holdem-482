@@ -381,7 +381,10 @@ export function GamePage() {
         <section className="panel game-error" role="alert">
           <h1>Table unavailable</h1>
           <p>{error}</p>
-          <p>Sign in with a registered account and join this table before playing.</p>
+          <p>
+            You need to sign in with a registered account and have a seat at this table.
+            Return to table details and select Join table before opening the game.
+          </p>
           <div className="game-error-links">
             <Link className="button primary" to="/login">Sign in</Link>
             <Link className="button" to={`/tables/${id}`}>Table details</Link>

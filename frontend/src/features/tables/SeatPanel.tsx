@@ -53,6 +53,7 @@ export function SeatPanel({ table, onOccupancy }: {
       <p>Available wallet: <strong>{status.chip_balance.toLocaleString('en-US')} chips</strong></p>
       {status.seat ? <>
         <p role="status">You have a seat. Reserved at this table: <strong>{status.seat.stack.toLocaleString('en-US')} chips</strong>.</p>
+        <Link className="button primary" to={`/tables/${table.id}/play`}>Open poker table</Link>
         <button className="button" disabled={pending || !status.can_leave} onClick={() => void act('DELETE')}>Leave table and return chips</button>
         {table.status === 'playing' && !status.can_leave && <p className="field-hint">Finish or fold your hand before leaving.</p>}
         {table.status === 'playing' && status.can_leave && <p className="field-hint">You can leave now; remaining table chips return to your wallet.</p>}

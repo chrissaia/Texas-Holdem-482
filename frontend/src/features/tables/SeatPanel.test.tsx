@@ -23,6 +23,7 @@ test('joins and leaves using only server buy-in, CSRF and fresh balances', async
   render(page())
   fireEvent.click(await screen.findByRole('button', { name: /Join table/ }))
   expect(await screen.findByText(/You have a seat/)).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'Open poker table' })).toHaveAttribute('href', '/tables/1/play')
   expect(fetch.mock.calls[1][1]).toMatchObject({ method: 'POST', body: '{}', headers: { 'X-CSRFToken': 'server-token' } })
   expect(occupancy).toHaveBeenCalledWith(1)
   fireEvent.click(screen.getByRole('button', { name: /Leave table/ }))
@@ -44,6 +45,7 @@ test('exact minimum balance allows requesting a seat', async () => {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response({ ...status, chip_balance: 200 })))
   render(page())
   expect(await screen.findByRole('button', { name: /Join table/ })).toBeEnabled()
+  expect(screen.queryByRole('link', { name: 'Open poker table' })).not.toBeInTheDocument()
 })
 
 test('server rejection after a stale balance is visible and refresh recovers', async () => {

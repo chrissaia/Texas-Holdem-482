@@ -217,6 +217,7 @@ test('failed table access explains that sign-in and a seat are required', async 
   renderGame()
 
   expect(await screen.findByRole('heading', { name: 'Table unavailable' })).toBeVisible()
+  expect(screen.getByText(/Return to table details and select Join table/)).toBeVisible()
   expect(screen.getByRole('link', { name: 'Sign in' })).toHaveAttribute('href', '/login')
   expect(screen.getByRole('link', { name: 'Table details' })).toHaveAttribute('href', '/tables/1')
   expect(sockets).toHaveLength(0)

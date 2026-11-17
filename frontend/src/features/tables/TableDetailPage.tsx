@@ -73,7 +73,6 @@ function TableRecord({ id }: { id: string }) {
               <dd>{table.minimum_balance.toLocaleString('en-US')}</dd>
             </div>
           </dl>
-          <Link className="button primary" to={`/tables/${table.id}/play`}>Open poker table</Link>
           <Link className="button" to={`/tables/${table.id}/watch`}>Watch table without taking a seat</Link>
           {!table.is_public && <InvitationPanel table={table} />}
           <SeatPanel table={table} onOccupancy={count => setTable(current => current ? { ...current, player_count: count } : current)} />
