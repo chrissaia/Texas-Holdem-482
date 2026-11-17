@@ -14,6 +14,8 @@ export default defineConfig(/* Handle the defineConfig callback using the curren
       host: "127.0.0.1",
       port: 5173,
       strictPort: true,
+      // Docker Desktop bind mounts can miss Windows filesystem change events.
+      watch: { usePolling: process.env.VITE_USE_POLLING === "true", interval: 300 },
       proxy: {
         "/api": { target: env.API_PROXY_TARGET || "http://127.0.0.1:8000" },
         "/admin": { target: env.API_PROXY_TARGET || "http://127.0.0.1:8000" },

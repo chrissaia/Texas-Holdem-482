@@ -146,6 +146,49 @@
   font-size: 12px;
   overflow-wrap: anywhere;
 }
+.profile-menu { position: relative; margin-left: auto; }
+.profile-menu-trigger {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 4px;
+  border: 0;
+  border-radius: 8px;
+  color: var(--text);
+  background: transparent;
+}
+.profile-menu-trigger:hover, .profile-menu-trigger[aria-expanded="true"] {
+  background: var(--surface);
+}
+.profile-menu-chevron { width: 16px; height: 16px; }
+.profile-menu-trigger[aria-expanded="true"] .profile-menu-chevron { transform: rotate(180deg); }
+.profile-menu-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 20;
+  width: min(240px, calc(100vw - 32px));
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--panel);
+  box-shadow: 0 12px 28px #0004;
+}
+.profile-menu-panel a, .profile-menu-panel button {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+.profile-menu-panel a:hover, .profile-menu-panel button:hover { background: var(--surface); }
+.profile-menu-panel p { padding: 8px 12px; color: var(--error); }
 .page-content {
   padding: 32px;
 }
