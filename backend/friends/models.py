@@ -47,3 +47,16 @@ class Friendship(models.Model):
     def __str__(self):
         """Return the human-readable label used by Django administration and diagnostics."""
         return f"{self.from_user} -> {self.to_user} ({self.status})"
+
+
+class Presence(models.Model):
+    """S20: when a registered player was last active. Kept off the user row so frequent
+    activity writes never wait on the account row locks used for chip balances."""
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, primary_key=True, related_name="presence"
+    )
+    last_seen_at = models.DateTimeField(default=timezone.now, db_index=True)
+
+    def __str__(self):
+        return f"{self.user} seen {self.last_seen_at:%Y-%m-%d %H:%M}"

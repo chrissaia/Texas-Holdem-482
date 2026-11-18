@@ -96,3 +96,9 @@ def search_players(request):
     players = (get_user_model().objects.filter(is_active=True, username__icontains=query)
                .exclude(pk=request.user.pk).order_by(Lower("username"), "pk")[:5])
     return Response({"results": [services.player(player) for player in players]})
+
+
+@friends_view(["GET"])
+def online(request):
+    """S20: how many accepted friends are online, for the top bar. Polling this keeps the caller online."""
+    return Response({"online_count": services.online_count(request.user)})

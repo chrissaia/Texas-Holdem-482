@@ -11,6 +11,7 @@ import {
 } from '@testing-library/react'
 import { MemoryRouter, useNavigate } from 'react-router-dom'
 import { afterEach, expect, test, vi } from 'vitest'
+import { stubFetch } from '../../test/fetch'
 import { AppRoutes } from '../../App'
 
 // Background rewards are tested separately; keep table API fixtures scoped here.
@@ -75,7 +76,7 @@ function setup(
               : handler(url, init),
       )
     })
-  vi.stubGlobal('fetch', fetch)
+  stubFetch(fetch)
   render(
     <MemoryRouter initialEntries={[path]}>
       <AppRoutes />

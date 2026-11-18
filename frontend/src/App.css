@@ -581,3 +581,21 @@ input[aria-invalid='true'] {
   .account-controls .mobile-lobby-link { margin-right: 0; }
   .account-controls .avatar { margin-left: auto; }
 }
+
+
+/* S20: "N friends online" in the top bar (Figma 18:15681). */
+.friends-online-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--green);
+  font-size: 13px;
+  white-space: nowrap;
+}
+.friends-online-link::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+}

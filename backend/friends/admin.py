@@ -2,7 +2,7 @@
 
 from django.contrib import admin
 
-from .models import Friendship
+from .models import Friendship, Presence
 
 
 @admin.register(Friendship)
@@ -12,3 +12,11 @@ class FriendshipAdmin(admin.ModelAdmin):
     list_filter = ("status",)
     search_fields = ("from_user__username", "to_user__username")
     readonly_fields = ("created_at",)
+
+
+@admin.register(Presence)
+class PresenceAdmin(admin.ModelAdmin):
+    """Read-only view of when registered players were last active (S20)."""
+    list_display = ("user", "last_seen_at")
+    search_fields = ("user__username",)
+    readonly_fields = ("user", "last_seen_at")

@@ -39,3 +39,7 @@ export const searchPlayers = (query: string) =>
   request<{ results: { id: number; username: string }[] }>(
     `/api/friends/search/?${new URLSearchParams({ q: query })}`,
   )
+
+/** S20: number of friends online, for the top bar. Polling it also keeps the caller online. */
+export const getOnlineCount = () =>
+  request<{ online_count: number }>('/api/friends/online/')
