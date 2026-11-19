@@ -106,7 +106,7 @@ Coordinate user field and migration changes before implementation. Royal and Kel
 
 ## Scope and known document differences
 
-The system design’s 60% coverage baseline is superseded for Sprint 1 by above 80% statement and above 50% branch coverage. Privacy options, bots, gameplay, joining tables, social features beyond S19 friends, and WebSocket synchronization remain future work. S13 now has a working form/API and tests; professor acceptance remains pending. S10 now provides real public browsing, filters, sorting, and pagination; other owners’ stories remain separate. The Create Table layout uses inspected Figma frame 12:1619, adapting private/bot areas to the approved public-only scope.
+The system design’s 60% coverage baseline is superseded for Sprint 1 by above 80% statement and above 50% branch coverage. Privacy options, bots, gameplay, joining tables, social features beyond S19 friends and S20 online status, and WebSocket synchronization remain future work. S13 now has a working form/API and tests; professor acceptance remains pending. S10 now provides real public browsing, filters, sorting, and pagination; other owners’ stories remain separate. The Create Table layout uses inspected Figma frame 12:1619, adapting private/bot areas to the approved public-only scope.
 
 ## S5/S14/S29 profiles and virtual chips
 
@@ -149,11 +149,22 @@ A request or friendship that does not exist, is not yours, or is in the wrong st
 
 Storage is `friends.Friendship`: `from_user`, `to_user` (both `settings.AUTH_USER_MODEL`, `CASCADE`), `status` (`pending` or `accepted`), and `created_at`. Database constraints block self-friending and invalid statuses, and allow one row per pair in either direction. Declining, cancelling, and removing delete the row, so either player may send a new request later. Sending locks the pair's row; a concurrent duplicate caught by the unique constraint continues with the row that won. Deleting an account deletes its friendships.
 
-For later stories: S20 (online status), S21 (messaging), and S27 (private-table invitations) can read accepted friends through `friends.services.involving(user).filter(status="accepted")`. On the page, the Online and Recently Played tabs and the Message and Invite to Table buttons are shown but disabled until those stories land. The layout follows Figma frame 18:15681.
+For later stories: S20 (online status), S21 (messaging), and S27 (private-table invitations) can read accepted friends through `friends.services.involving(user).filter(status="accepted")`. On the page, the Recently Played tab and the Message and Invite to Table buttons are shown but disabled until those stories land. S20 enabled the Online tab (see below). The layout follows Figma frame 18:15681.
 
 Tests: `backend/friends/tests/` (model constraints and API) and `frontend/src/features/friends/FriendsPage.test.tsx`.
 
 Open decisions: request-and-accept (rather than instant follow), auto-accepting crossed requests, and allowing a new request after a decline are Finn's implementation choices pending team agreement. There is no blocking or request rate limit. Professor acceptance remains pending.
+
+## S20 friends online
+
+Finn owns `friends.presence`. `friends.Presence` (`user` one-to-one primary key, `last_seen_at`; migration `friends.0002`) stores when a registered player was last active. It is kept off `accounts.User` so frequent activity writes never wait on the account-row locks used for chip balances. Deleting an account deletes its presence.
+
+- **Activity:** `friends.presence.PresenceMiddleware`, placed after `AuthenticationMiddleware`, refreshes presence on every `/api/` request from an active registered session. It writes at most once a minute. Logging in marks the player online, and logging out deletes their presence so they go offline immediately. Guests and anonymous visitors have no presence.
+- **Online:** seen within the last 3 minutes (`ONLINE_WINDOW`). The frontend keeps an open tab online by polling: the top bar every 30 seconds and the friends page every 15 seconds.
+- **Statuses:** each accepted friend in `GET /api/friends/` now includes `presence: {status: "at_table" | "online" | "offline", table: {id, name, player_count, max_players, status} | null}`, and the response adds `online_count`. `at_table` means online and seated at a table the viewer can see (`tables.access.visible_tables`). A seat at a private table the viewer was not invited to shows as plain `online`, with no table. A seated friend who has gone quiet is `offline`. Pending requests never include presence.
+- **`GET /api/friends/online/`:** registered-only and uncached. Returns `{online_count}` for the top-bar "N friends online" link.
+
+Open decisions: there is no "appear offline" privacy setting, and the 3-minute window and polling intervals are Finn's choices pending team agreement.
 
 ## S32 XP and achievements
 

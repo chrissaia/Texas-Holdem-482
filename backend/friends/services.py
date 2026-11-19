@@ -6,6 +6,7 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404
 
 from .models import Friendship
+from .presence import OFFLINE, presence_for
 
 ACCEPTED = Friendship.Status.ACCEPTED
 PENDING = Friendship.Status.PENDING
@@ -36,18 +37,32 @@ def player(user):
 
 
 def friends_payload(user):
-    """Friends payload."""
-    friends, incoming, outgoing = [], [], []
+    """Friends payload. Accepted friends include S20 presence; pending requests never do."""
+    friends, incoming, outgoing, others = [], [], [], []
     for row in involving(user).select_related("from_user", "to_user"):
         sent = row.from_user_id == user.pk
         other = row.to_user if sent else row.from_user
         entry = {"id": row.pk, "player": player(other), "created_at": row.created_at}
         if row.status == ACCEPTED:
             friends.append(entry)
+            others.append(other)
         else:
             (outgoing if sent else incoming).append(entry)
+    statuses = presence_for(user, others)
+    for entry in friends:
+        entry["presence"] = statuses[entry["player"]["id"]]
     friends.sort(key=lambda entry: entry["player"]["username"].lower())
-    return {"friends": friends, "incoming": incoming, "outgoing": outgoing}
+    online_count = sum(entry["presence"]["status"] != OFFLINE for entry in friends)
+    return {"friends": friends, "incoming": incoming, "outgoing": outgoing, "online_count": online_count}
+
+
+def online_count(user):
+    """Number of accepted friends currently online or at a table."""
+    friends = [
+        row.to_user if row.from_user_id == user.pk else row.from_user
+        for row in involving(user).filter(status=ACCEPTED).select_related("from_user", "to_user")
+    ]
+    return sum(entry["status"] != OFFLINE for entry in presence_for(user, friends).values())
 
 
 @transaction.atomic

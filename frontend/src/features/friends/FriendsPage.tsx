@@ -16,10 +16,16 @@ import {
   sendFriendRequest,
   searchPlayers,
 } from './api'
-import type { FriendEntry, FriendsResponse, RequestAction } from './types'
+import type { Friend, FriendEntry, FriendsResponse, RequestAction } from './types'
 import './friends.css'
 
 const LATER = 'Coming in a later story'
+/** S20: how often the open page refreshes friends' online status. */
+export const PRESENCE_POLL_MS = 15_000
+
+const STATUS_LABEL = { at_table: 'Playing', online: 'Online', offline: 'Offline' } as const
+/** Online-tab order: friends at a table first, then online, then by name. */
+const RANK = { at_table: 0, online: 1, offline: 2 } as const
 
 /** Format the friendship request timestamp as a short display date. */
 const sentOn = (entry: FriendEntry) =>
@@ -36,13 +42,24 @@ function firstMessage(value: unknown) {
 }
 
 /** Render the player initials using the shared friend-avatar artwork. */
-function Avatar({ username, size }: { username: string; size: 38 | 44 }) {
+function Avatar({ username, size, online = false }: { username: string; size: 38 | 44; online?: boolean }) {
   return (
     <div className={`avatar friend-avatar-${size}`}>
       <img src={size === 44 ? avatar44 : avatar38} alt="" />
       <span>{username.slice(0, 2).toUpperCase()}</span>
+      {online && <i className="friend-presence-dot" aria-hidden="true" />}
     </div>
   )
+}
+
+/** One line describing where an online friend is. */
+function activity(friend: Friend) {
+  const { status, table } = friend.presence
+  if (status === 'at_table' && table) {
+    const seats = table.player_count >= table.max_players ? 'Table full' : `${table.player_count} / ${table.max_players} players`
+    return `${table.name} · ${seats}`
+  }
+  return status === 'online' ? 'Browsing RIVR' : 'Not online right now'
 }
 
 /** Render the friends page interface and its current state. */
@@ -51,7 +68,7 @@ export function FriendsPage() {
   const [loadError, setLoadError] = useState('')
   const [signedOut, setSignedOut] = useState(false)
   const [attempt, setAttempt] = useState(0)
-  const [tab, setTab] = useState<'all' | 'requests'>('all')
+  const [tab, setTab] = useState<'online' | 'all' | 'requests'>('all')
   const [username, setUsername] = useState('')
   const [suggestions, setSuggestions] = useState<{ id: number; username: string }[]>([])
   const [fieldError, setFieldError] = useState('')
@@ -81,6 +98,18 @@ export function FriendsPage() {
       active = false
     }
   }, [attempt])
+
+  // S20: keep online status current while the page is open. Skip a refresh that would
+  // overwrite the result of a write in progress; errors wait for the next tick.
+  useEffect(() => {
+    if (!data || signedOut) return
+    const timer = window.setInterval(() => {
+      getFriends()
+        .then((value) => { if (!busy.current) setData(value) })
+        .catch(() => {})
+    }, PRESENCE_POLL_MS)
+    return () => window.clearInterval(timer)
+  }, [data, signedOut])
 
   useEffect(() => {
     let active = true
@@ -219,12 +248,80 @@ export function FriendsPage() {
 
   const { friends, incoming, outgoing } = data
   const requestCount = incoming.length + outgoing.length
+  const online = friends
+    .filter((f) => f.presence.status !== 'offline')
+    .sort((a, b) => RANK[a.presence.status] - RANK[b.presence.status]
+      || a.player.username.localeCompare(b.player.username, undefined, { sensitivity: 'base' }))
+
+  /** S19 friend card with S20 presence; shared by the All Friends and Online tabs. */
+  const renderCard = (entry: Friend) => (
+    <li key={entry.id} className="friend-card">
+      <div className="friend-row">
+        <Avatar username={entry.player.username} size={44} online={entry.presence.status !== 'offline'} />
+        <div className="friend-name">
+          <h2>{entry.player.username}</h2>
+          <p className="muted">Registered player</p>
+        </div>
+        <span className={`friend-status ${entry.presence.status}`}>
+          {STATUS_LABEL[entry.presence.status]}
+        </span>
+      </div>
+      <p className="friend-activity">{activity(entry)}</p>
+      <div className="friend-actions">
+        <button className="button quiet" type="button" disabled title={LATER}>
+          Message
+        </button>
+        <button className="button" type="button" disabled title={LATER}>
+          Invite to Table
+        </button>
+        {entry.presence.table && (
+          entry.presence.table.player_count >= entry.presence.table.max_players
+            ? <span className="button disabled-link" aria-disabled="true">Table full</span>
+            : <Link
+                className="button primary"
+                to={`/tables/${entry.presence.table.id}`}
+                aria-label={`Join Game with ${entry.player.username}`}
+              >
+                Join Game
+              </Link>
+        )}
+      </div>
+      {confirming === entry.id ? (
+        <div className="friend-confirm" role="group" aria-label={`Remove ${entry.player.username}?`}>
+          <span>Remove {entry.player.username}?</span>
+          <button
+            className="link-action danger"
+            type="button"
+            disabled={pending}
+            onClick={/* Return the derived value for the enclosing operation. */ () => remove(entry)}
+          >
+            Yes, remove
+          </button>
+          <button
+            className="link-action"
+            type="button"
+            onClick={/* Return the derived value for the enclosing operation. */ () => setConfirming(null)}
+          >
+            Keep
+          </button>
+        </div>
+      ) : (
+        <button
+          className="link-action"
+          type="button"
+          onClick={/* Return the derived value for the enclosing operation. */ () => setConfirming(entry.id)}
+        >
+          Remove Friend
+        </button>
+      )}
+    </li>
+  )
   return (
     <div className="friends-page">
       <div className="friends-intro">
         <p className="friends-eyebrow">
           YOUR CREW · {friends.length}{' '}
-          {friends.length === 1 ? 'FRIEND' : 'FRIENDS'}
+          {friends.length === 1 ? 'FRIEND' : 'FRIENDS'} · {data.online_count} ONLINE
         </p>
         <div className="friends-heading">
           <h1>Better hands. Better company.</h1>
@@ -242,9 +339,14 @@ export function FriendsPage() {
       </div>
 
       <div className="friends-tabs" aria-label="Friend lists">
-        <span className="friends-tab unavailable" aria-disabled="true" title={LATER}>
-          Online
-        </span>
+        <button
+          type="button"
+          className={`friends-tab ${tab === 'online' ? 'active' : ''}`}
+          aria-pressed={tab === 'online'}
+          onClick={() => setTab('online')}
+        >
+          Online · {data.online_count}
+        </button>
         <button
           type="button"
           className={`friends-tab ${tab === 'all' ? 'active' : ''}`}
@@ -307,59 +409,27 @@ export function FriendsPage() {
       {tab === 'all' &&
         (friends.length ? (
           <ul className="friend-grid" aria-label="Your friends">
-            {friends.map(/* Convert this item into the value or UI element expected by the collection. */ (entry) => (
-              <li key={entry.id} className="friend-card">
-                <div className="friend-row">
-                  <Avatar username={entry.player.username} size={44} />
-                  <div className="friend-name">
-                    <h2>{entry.player.username}</h2>
-                    <p className="muted">Registered player</p>
-                  </div>
-                </div>
-                <div className="friend-actions">
-                  <button className="button quiet" type="button" disabled title={LATER}>
-                    Message
-                  </button>
-                  <button className="button" type="button" disabled title={LATER}>
-                    Invite to Table
-                  </button>
-                </div>
-                {confirming === entry.id ? (
-                  <div className="friend-confirm" role="group" aria-label={`Remove ${entry.player.username}?`}>
-                    <span>Remove {entry.player.username}?</span>
-                    <button
-                      className="link-action danger"
-                      type="button"
-                      disabled={pending}
-                      onClick={/* Return the derived value for the enclosing operation. */ () => remove(entry)}
-                    >
-                      Yes, remove
-                    </button>
-                    <button
-                      className="link-action"
-                      type="button"
-                      onClick={/* Return the derived value for the enclosing operation. */ () => setConfirming(null)}
-                    >
-                      Keep
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    className="link-action"
-                    type="button"
-                    onClick={/* Return the derived value for the enclosing operation. */ () => setConfirming(entry.id)}
-                  >
-                    Remove Friend
-                  </button>
-                )}
-              </li>
-            ))}
+            {friends.map(renderCard)}
           </ul>
         ) : (
           <div className="panel friends-empty">
             <p>No friends yet.</p>
             <p className="muted">
               Search for a player by username above to send your first request.
+            </p>
+          </div>
+        ))}
+
+      {tab === 'online' &&
+        (online.length ? (
+          <ul className="friend-grid" aria-label="Friends online">
+            {online.map(renderCard)}
+          </ul>
+        ) : (
+          <div className="panel friends-empty">
+            <p>None of your friends are online right now.</p>
+            <p className="muted">
+              This list updates on its own. Friends at a table you can join appear first.
             </p>
           </div>
         ))}

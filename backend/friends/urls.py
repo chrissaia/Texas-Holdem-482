@@ -8,6 +8,7 @@ app_name = "friends"
 urlpatterns = [
     path("", views.friend_list, name="list"),
     path("search/", views.search_players, name="search"),
+    path("online/", views.online, name="online"),
     path("<int:pk>/", views.remove_friend, name="remove"),
     path("requests/", views.send_request, name="send"),
     path("requests/<int:pk>/accept/", views.accept_request, name="accept"),

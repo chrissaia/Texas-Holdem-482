@@ -5,6 +5,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, expect, test, vi } from 'vitest'
+import { stubFetch } from '../../test/fetch'
 import { AppRoutes } from '../../App'
 
 // Background rewards are tested separately; keep table API fixtures scoped here.
@@ -58,7 +59,7 @@ test('creates a real-shaped public table request with CSRF and reads saved detai
     .mockResolvedValueOnce(respond(context))
     .mockResolvedValueOnce(respond(table, 201))
     .mockResolvedValueOnce(respond(table))
-  vi.stubGlobal('fetch', fetch)
+  stubFetch(fetch)
   start()
   await submit()
   expect(await screen.findByText('Table created!')).toBeVisible()
@@ -84,7 +85,7 @@ test('creates a real-shaped public table request with CSRF and reads saved detai
 
 test('validates empty name and minimum balance before sending', async () => {
   const fetch = vi.fn().mockResolvedValue(respond(context))
-  vi.stubGlobal('fetch', fetch)
+  stubFetch(fetch)
   start()
   const button = await screen.findByRole('button', { name: 'Create Table →' })
   await waitFor(/* Wait for the expected asynchronous UI or request state. */ () => expect(button).toBeEnabled())
@@ -110,7 +111,7 @@ test('seat selection updates summary, and create another resets the form', /* Ve
     .fn()
     .mockResolvedValueOnce(respond(context))
     .mockResolvedValueOnce(respond(table, 201))
-  vi.stubGlobal('fetch', fetch)
+  stubFetch(fetch)
   start()
   fireEvent.click(screen.getByRole('radio', { name: '9 seats' }))
   expect(screen.getByText('0 / 9')).toBeVisible()
@@ -127,7 +128,7 @@ test('anonymous users may configure but cannot submit', /* Verify anonymous user
   const fetch = vi
     .fn()
     .mockResolvedValue(respond({ host: null, csrf_token: 'token' }))
-  vi.stubGlobal('fetch', fetch)
+  stubFetch(fetch)
   start()
   expect(await screen.findByRole('link', { name: 'Sign in' })).toHaveAttribute(
     'href',
@@ -143,7 +144,7 @@ test('context error is retryable and loading disables creation', /* Verify conte
     .fn()
     .mockRejectedValueOnce(new TypeError('offline'))
     .mockResolvedValueOnce(respond(context))
-  vi.stubGlobal('fetch', fetch)
+  stubFetch(fetch)
   start()
   expect(screen.getByText('Checking your session…')).toBeVisible()
   expect(await screen.findByRole('alert')).toHaveTextContent(
@@ -169,8 +170,7 @@ test.each([
   'handles server error %s without losing form values',
   /* Handle the enclosing callback using the current operation's state. */
   async (status, body, message) => {
-    vi.stubGlobal(
-      'fetch',
+    stubFetch(
       vi
         .fn()
         .mockResolvedValueOnce(respond(context))
@@ -197,7 +197,7 @@ test('network failure reports a useful error without automatic POST retry', /* V
     .fn()
     .mockResolvedValueOnce(respond(context))
     .mockRejectedValueOnce(new TypeError('offline'))
-  vi.stubGlobal('fetch', fetch)
+  stubFetch(fetch)
   start()
   await submit()
   expect(await screen.findByRole('alert')).toHaveTextContent(
@@ -218,7 +218,7 @@ test('disables duplicate submissions while waiting', /* Verify disables duplicat
           finish = resolve
         }),
     )
-  vi.stubGlobal('fetch', fetch)
+  stubFetch(fetch)
   start()
   await submit()
   expect(screen.getByRole('button', { name: 'Creating table…' })).toBeDisabled()
@@ -232,7 +232,7 @@ test('disables duplicate submissions while waiting', /* Verify disables duplicat
 
 test('cancel returns home without creating, and home opens creation', /* Verify cancel returns home without creating, and home opens creation. */ async () => {
   const fetch = vi.fn().mockResolvedValue(respond(context))
-  vi.stubGlobal('fetch', fetch)
+  stubFetch(fetch)
   start()
   fireEvent.click(screen.getByRole('link', { name: 'Cancel' }))
   expect(screen.getByText('Make room for your next poker night.')).toBeVisible()
@@ -242,8 +242,7 @@ test('cancel returns home without creating, and home opens creation', /* Verify 
 })
 
 test('missing table and unknown route have useful recovery links', /* Verify missing table and unknown route have useful recovery links. */ async () => {
-  vi.stubGlobal(
-    'fetch',
+  stubFetch(
     vi
       .fn()
       .mockImplementation(/* Handle the mockImplementation callback using the current operation's state. */ (path: string) =>
@@ -260,7 +259,7 @@ test('missing table and unknown route have useful recovery links', /* Verify mis
     'This table could not be loaded',
   )
   view.unmount()
-  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(respond(context)))
+  stubFetch(vi.fn().mockResolvedValue(respond(context)))
   start('/missing')
   expect(screen.getByText('Page not found')).toBeVisible()
 })
@@ -268,7 +267,7 @@ test('missing table and unknown route have useful recovery links', /* Verify mis
 
 test('small blind updates the read-only big blind and submits matching whole-chip amounts', async () => {
   const fetch = vi.fn().mockResolvedValueOnce(respond(context)).mockResolvedValueOnce(respond(table, 201))
-  vi.stubGlobal('fetch', fetch)
+  stubFetch(fetch)
   start()
   await screen.findByLabelText('Small blind')
   const small = screen.getByLabelText('Small blind')
@@ -287,7 +286,7 @@ test('small blind updates the read-only big blind and submits matching whole-chi
 /** Private creation must use its protected endpoint without client-owned host fields. */
 test('creates an invite-only table using the private creation endpoint', async () => {
   const fetch = vi.fn().mockResolvedValueOnce(respond(context)).mockResolvedValueOnce(respond({ ...table, is_public: false }, 201))
-  vi.stubGlobal('fetch', fetch)
+  stubFetch(fetch)
   start()
   fireEvent.click(await screen.findByRole('checkbox', { name: /Private table/ }))
   await submit()

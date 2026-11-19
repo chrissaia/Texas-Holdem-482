@@ -2,11 +2,12 @@
  * Regression tests: friends/FriendsPage.test.tsx.
  * Exercises observable behavior and isolates API or browser dependencies.
  */
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, expect, test, vi } from 'vitest'
 import { AppRoutes } from '../../App'
-import type { FriendEntry, FriendsResponse } from './types'
+import { PRESENCE_POLL_MS } from './FriendsPage'
+import type { Friend, FriendEntry, FriendsResponse, Presence } from './types'
 
 const me = { id: 1, username: 'alice' }
 const context = { host: me, csrf_token: 'context-csrf' }
@@ -16,9 +17,16 @@ const entry = (id: number, username: string): FriendEntry => ({
   player: { id: id + 100, username },
   created_at: '2026-11-02T12:00:00Z',
 })
+const OFFLINE: Presence = { status: 'offline', table: null }
+/** An accepted friend; offline unless a presence is given (S20). */
+const friend = (id: number, username: string, presence: Presence = OFFLINE): Friend => ({
+  ...entry(id, username),
+  presence,
+})
 /** Lists for this module's test scenario. */
 const lists = (overrides: Partial<FriendsResponse> = {}): FriendsResponse => ({
-  friends: [entry(1, 'Mira')],
+  friends: [friend(1, 'Mira')],
+  online_count: 0,
   incoming: [entry(2, 'Eli')],
   outgoing: [entry(3, 'Rowan')],
   csrf_token: 'csrf-1',
@@ -70,7 +78,7 @@ test('shows friends, incoming and sent requests from the API', /* Verify shows f
   setup()
   const grid = await screen.findByRole('list', { name: 'Your friends' })
   expect(within(grid).getByRole('heading', { name: 'Mira' })).toBeVisible()
-  expect(screen.getByText('YOUR CREW · 1 FRIEND')).toBeVisible()
+  expect(screen.getByText('YOUR CREW · 1 FRIEND · 0 ONLINE')).toBeVisible()
   expect(screen.getByRole('button', { name: 'All Friends · 1' })).toHaveAttribute('aria-pressed', 'true')
   expect(screen.getByRole('button', { name: 'Requests · 2' })).toBeVisible()
   const incoming = screen.getByRole('region', { name: 'Friend requests' })
@@ -85,7 +93,6 @@ test('shows friends, incoming and sent requests from the API', /* Verify shows f
 test('features from later stories are visible but unavailable', /* Verify features from later stories are visible but unavailable. */ async () => {
   setup()
   await screen.findByRole('list', { name: 'Your friends' })
-  expect(screen.getByText('Online')).toHaveAttribute('aria-disabled', 'true')
   expect(screen.getByText('Recently Played')).toHaveAttribute('aria-disabled', 'true')
   expect(screen.getByRole('button', { name: 'Message' })).toBeDisabled()
   expect(screen.getByRole('button', { name: 'Invite to Table' })).toBeDisabled()
@@ -110,7 +117,7 @@ test('sends a trimmed username with the CSRF token and shows the result', /* Ver
 })
 
 test('a crossed request reports the new friendship', /* Verify a crossed request reports the new friendship. */ async () => {
-  setup(/* Handle the setup callback using the current operation's state. */ () => respond(lists({ friends: [entry(1, 'Mira'), entry(5, 'Bob')] })))
+  setup(/* Handle the setup callback using the current operation's state. */ () => respond(lists({ friends: [friend(1, 'Mira'), friend(5, 'Bob')] })))
   await screen.findByRole('list', { name: 'Your friends' })
   sendTo('bob')
   expect(await screen.findByText('You and bob are now friends.')).toBeVisible()
@@ -172,7 +179,7 @@ test('removing a friend asks for confirmation first', /* Verify removing a frien
   expect(await screen.findByText('Removed Mira from your friends.')).toBeVisible()
   expect(writes(fetch)[0]).toEqual(['/api/friends/1/', expect.objectContaining({ method: 'DELETE' })])
   expect(screen.getByText('No friends yet.')).toBeVisible()
-  expect(screen.getByText('YOUR CREW · 0 FRIENDS')).toBeVisible()
+  expect(screen.getByText('YOUR CREW · 0 FRIENDS · 0 ONLINE')).toBeVisible()
 })
 
 test('a request answered elsewhere shows a message and reloads the lists', /* Verify a request answered elsewhere shows a message and reloads the lists. */ async () => {
@@ -289,4 +296,77 @@ test('friend search offers up to five matching names and selected name is submit
   fireEvent.change(search(), { target: { value: 'Match2' } })
   fireEvent.click(screen.getByRole('button', { name: 'Send Request' }))
   await waitFor(() => expect(fetch.mock.calls.some(([path, init]) => path === '/api/friends/requests/' && init?.body === JSON.stringify({ username: 'Match2' }))).toBe(true))
+})
+
+const blueHour = { id: 9, name: 'Blue Hour', player_count: 4, max_players: 6, status: 'waiting' as const }
+
+test('S20: friends show Playing, Online or Offline with the table they are at', async () => {
+  setup(undefined, lists({
+    friends: [
+      friend(1, 'Mira', { status: 'at_table', table: blueHour }),
+      friend(5, 'Sage', { status: 'online', table: null }),
+      friend(6, 'Kai'),
+      friend(7, 'Nova', { status: 'at_table', table: { ...blueHour, id: 10, name: 'After Hours', player_count: 6 } }),
+    ],
+    online_count: 3,
+  }))
+  const grid = await screen.findByRole('list', { name: 'Your friends' })
+  const card = (name: string) => within(grid).getByRole('heading', { name }).closest('li') as HTMLElement
+  expect(within(card('Mira')).getByText('Playing')).toBeVisible()
+  expect(within(card('Mira')).getByText('Blue Hour · 4 / 6 players')).toBeVisible()
+  expect(within(card('Mira')).getByRole('link', { name: 'Join Game with Mira' })).toHaveAttribute('href', '/tables/9')
+  expect(within(card('Sage')).getByText('Online')).toBeVisible()
+  expect(within(card('Sage')).getByText('Browsing RIVR')).toBeVisible()
+  expect(within(card('Sage')).queryByRole('link', { name: /Join Game/ })).not.toBeInTheDocument()
+  expect(within(card('Kai')).getByText('Offline')).toBeVisible()
+  expect(within(card('Nova')).getByText('After Hours · Table full')).toBeVisible()
+  expect(within(card('Nova')).queryByRole('link', { name: /Join Game/ })).not.toBeInTheDocument()
+  expect(within(card('Nova')).getByText('Table full', { selector: '.button' })).toHaveAttribute('aria-disabled', 'true')
+  expect(screen.getByText('YOUR CREW · 4 FRIENDS · 3 ONLINE')).toBeVisible()
+  expect(await screen.findByRole('link', { name: '3 friends online' })).toHaveAttribute('href', '/friends')
+})
+
+test('S20: the Online tab lists friends at a table first, then online, and hides offline friends', async () => {
+  setup(undefined, lists({
+    friends: [
+      friend(5, 'sage', { status: 'online', table: null }),
+      friend(6, 'Kai'),
+      friend(1, 'Mira', { status: 'at_table', table: blueHour }),
+      friend(8, 'Bea', { status: 'online', table: null }),
+    ],
+    online_count: 3,
+  }))
+  fireEvent.click(await screen.findByRole('button', { name: 'Online · 3' }))
+  expect(screen.getByRole('button', { name: 'Online · 3' })).toHaveAttribute('aria-pressed', 'true')
+  const online = screen.getByRole('list', { name: 'Friends online' })
+  expect(within(online).getAllByRole('heading').map((h) => h.textContent)).toEqual(['Mira', 'Bea', 'sage'])
+  expect(screen.queryByRole('list', { name: 'Your friends' })).not.toBeInTheDocument()
+})
+
+test('S20: the Online tab explains when nobody is online', async () => {
+  setup()
+  fireEvent.click(await screen.findByRole('button', { name: 'Online · 0' }))
+  expect(screen.getByText('None of your friends are online right now.')).toBeVisible()
+})
+
+test('S20: the page refreshes online status while open', async () => {
+  vi.useFakeTimers({ shouldAdvanceTime: true })
+  try {
+    let online = false
+    const fetch = vi.fn().mockImplementation((path: string) => {
+      if (String(path).includes('creation-context')) return Promise.resolve(respond(context))
+      const presence: Presence = online ? { status: 'online', table: null } : OFFLINE
+      return Promise.resolve(respond(lists({ friends: [friend(1, 'Mira', presence)], online_count: online ? 1 : 0 })))
+    })
+    vi.stubGlobal('fetch', fetch)
+    render(<MemoryRouter initialEntries={['/friends']}><AppRoutes /></MemoryRouter>)
+    const grid = await screen.findByRole('list', { name: 'Your friends' })
+    expect(within(grid).getByText('Offline')).toBeVisible()
+    online = true
+    await act(async () => { await vi.advanceTimersByTimeAsync(PRESENCE_POLL_MS) })
+    expect(await within(grid).findByText('Online')).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Online · 1' })).toBeVisible()
+  } finally {
+    vi.useRealTimers()
+  }
 })

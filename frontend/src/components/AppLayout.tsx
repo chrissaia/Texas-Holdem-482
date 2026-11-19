@@ -8,6 +8,7 @@ import "../features/profile/profile.css";
 import type { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import type { Host } from "../features/tables/types";
+import { FriendsOnline } from "../features/friends/FriendsOnline";
 import logo from "../assets/figma/geometric-chip-mark.svg";
 import house from "../assets/figma/house.svg";
 import spade from "../assets/figma/spade.svg";
@@ -179,6 +180,7 @@ export function AppLayout({
             <span className="unavailable" title="Notifications coming later">
               <img src={bell} alt="Notifications unavailable" />
             </span>
+            {host && <FriendsOnline key={host.id} />}
             {host && account && (
               <Link className="shell-balance" to="/rewards">
                 {account.chip_balance.toLocaleString("en-US")} chips
