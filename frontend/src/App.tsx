@@ -91,6 +91,7 @@ export function AppRoutes() {
               <AppLayout
                 host={context?.host ?? null}
                 summary={context?.profile_summary}
+                onSignedOut={() => { setContext(null); refresh(); }}
               >
                 <Outlet />
               </AppLayout>

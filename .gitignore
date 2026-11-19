@@ -52,3 +52,4 @@ docs/report/
 *.toc
 *.synctex.gz
 *overleaf*.zip
+/tmp

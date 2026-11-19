@@ -25,7 +25,7 @@ import avatarSmall from "../assets/figma/avatar-surface1.svg";
 import online from "../assets/figma/online-presence.svg";
 import search from "../assets/figma/search.svg";
 import bell from "../assets/figma/bell.svg";
-import chevron from "../assets/figma/chevron-down.svg";
+import { ProfileMenu } from "./ProfileMenu";
 
 const navigation = [
   ["Play Poker", spade],
@@ -45,10 +45,12 @@ export function AppLayout({
   host,
   summary,
   children,
+  onSignedOut,
 }: {
   host: Host | null;
   summary?: ProfileSummary | null;
   children: ReactNode;
+  onSignedOut: () => void;
 }) {
   const { pathname } = useLocation();
   const { profile } = useProfile();
@@ -116,7 +118,7 @@ export function AppLayout({
           <Link to="/disclaimer">Read the disclaimer</Link>
         </div>
         <div className="account-summary">
-          <div className="avatar avatar-large">
+          <Link to={host ? "/settings" : "/login"} aria-label={host ? "Edit profile and avatar" : "Sign in to your account"} className="avatar avatar-large">
             <img
               src={account?.avatar_url || avatar}
               alt=""
@@ -126,7 +128,7 @@ export function AppLayout({
             />
             {!account?.avatar_url && <span>{initials}</span>}
             {host && <img className="presence" src={online} alt="Signed in" />}
-          </div>
+          </Link>
           {host && account && (
             <Link className="shell-balance" to="/rewards">
               {account.chip_balance.toLocaleString("en-US")} virtual chips
@@ -185,7 +187,8 @@ export function AppLayout({
             <span className="account-label">
               {host?.username || "Welcome to RIVR"}
             </span>
-            <div className="avatar avatar-small">
+            <ProfileMenu key={`${host?.id ?? "anonymous"}:${pathname}`} signedIn={!!host} onSignedOut={onSignedOut}>
+            <span className="avatar avatar-small">
               <img
                 src={account?.avatar_url || avatarSmall}
                 alt=""
@@ -194,8 +197,8 @@ export function AppLayout({
                 }
               />
               {!account?.avatar_url && <span>{initials}</span>}
-            </div>
-            <img src={chevron} alt="" />
+            </span>
+            </ProfileMenu>
           </div>
         </header>
         <main id="main-content" className="page-content">
