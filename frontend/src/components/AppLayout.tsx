@@ -85,6 +85,7 @@ export function AppLayout({
               Leaderboard: "/leaderboard",
               Statistics: "/statistics",
               Tutorial: "/tutorial",
+              Messages: "/messages",
             };
             const route = routes[label];
             const active =
@@ -158,6 +159,9 @@ export function AppLayout({
             </Link>
             <Link className="mobile-settings-link" to="/friends">
               Friends
+            </Link>
+            <Link className="mobile-settings-link" to="/messages">
+              Messages
             </Link>
             <Link className="mobile-settings-link" to="/rewards">
               Chips

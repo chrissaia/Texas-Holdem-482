@@ -268,9 +268,9 @@ export function FriendsPage() {
       </div>
       <p className="friend-activity">{activity(entry)}</p>
       <div className="friend-actions">
-        <button className="button quiet" type="button" disabled title={LATER}>
+        <Link className="button quiet" to={`/messages?with=${entry.player.id}`} aria-label={`Message ${entry.player.username}`}>
           Message
-        </button>
+        </Link>
         <button className="button" type="button" disabled title={LATER}>
           Invite to Table
         </button>

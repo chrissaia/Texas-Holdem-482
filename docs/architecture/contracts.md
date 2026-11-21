@@ -106,7 +106,7 @@ Coordinate user field and migration changes before implementation. Royal and Kel
 
 ## Scope and known document differences
 
-The system design’s 60% coverage baseline is superseded for Sprint 1 by above 80% statement and above 50% branch coverage. Privacy options, bots, gameplay, joining tables, social features beyond S19 friends and S20 online status, and WebSocket synchronization remain future work. S13 now has a working form/API and tests; professor acceptance remains pending. S10 now provides real public browsing, filters, sorting, and pagination; other owners’ stories remain separate. The Create Table layout uses inspected Figma frame 12:1619, adapting private/bot areas to the approved public-only scope.
+The system design’s 60% coverage baseline is superseded for Sprint 1 by above 80% statement and above 50% branch coverage. Privacy options, bots, gameplay, joining tables, social features beyond S19 friends, S20 online status and S21 messaging, and WebSocket synchronization remain future work. S13 now has a working form/API and tests; professor acceptance remains pending. S10 now provides real public browsing, filters, sorting, and pagination; other owners’ stories remain separate. The Create Table layout uses inspected Figma frame 12:1619, adapting private/bot areas to the approved public-only scope.
 
 ## S5/S14/S29 profiles and virtual chips
 
@@ -149,7 +149,7 @@ A request or friendship that does not exist, is not yours, or is in the wrong st
 
 Storage is `friends.Friendship`: `from_user`, `to_user` (both `settings.AUTH_USER_MODEL`, `CASCADE`), `status` (`pending` or `accepted`), and `created_at`. Database constraints block self-friending and invalid statuses, and allow one row per pair in either direction. Declining, cancelling, and removing delete the row, so either player may send a new request later. Sending locks the pair's row; a concurrent duplicate caught by the unique constraint continues with the row that won. Deleting an account deletes its friendships.
 
-For later stories: S20 (online status), S21 (messaging), and S27 (private-table invitations) can read accepted friends through `friends.services.involving(user).filter(status="accepted")`. On the page, the Recently Played tab and the Message and Invite to Table buttons are shown but disabled until those stories land. S20 enabled the Online tab (see below). The layout follows Figma frame 18:15681.
+For later stories: S20 (online status), S21 (messaging), and S27 (private-table invitations) can read accepted friends through `friends.services.involving(user).filter(status="accepted")`. On the page, the Recently Played tab and the Invite to Table button are shown but disabled until those stories land. S20 enabled the Online tab and S21 the Message button (see below). The layout follows Figma frame 18:15681.
 
 Tests: `backend/friends/tests/` (model constraints and API) and `frontend/src/features/friends/FriendsPage.test.tsx`.
 
@@ -165,6 +165,20 @@ Finn owns `friends.presence`. `friends.Presence` (`user` one-to-one primary key,
 - **`GET /api/friends/online/`:** registered-only and uncached. Returns `{online_count}` for the top-bar "N friends online" link.
 
 Open decisions: there is no "appear offline" privacy setting, and the 3-minute window and polling intervals are Finn's choices pending team agreement.
+
+## S21 messages and table chat
+
+Finn owns `backend/messaging/` (migration `messaging.0001`), `/messages` and the table chat panel. All endpoints live under `/api/messages/`, require an active registered session (guests and anonymous visitors get 403), set the CSRF cookie, are never cached, and return `csrf_token`. Writes take `{body}` only: trimmed, 1–500 characters. Unknown fields get 400. Each sender may post at most 5 direct messages and 5 table messages per 10 seconds, and more returns 429. Only `{id, username}` is exposed for players.
+
+- `GET /api/messages/`: `{conversations: [{friend, presence, last_message | null, unread_count}], unread_count}` for every accepted friend. Conversations with messages come first, newest first, then friends you haven't messaged, by name. `presence` is the S20 shape.
+- `GET /api/messages/<friend_id>/[?after=<id>]`: `{friend, presence, messages}`. Without `after` it returns the latest 50 in time order. With `after` it returns up to 100 newer messages, for polling. Opening a conversation marks the friend's messages to you as read. A message is `{id, sender, body, created_at, read}`.
+- `POST /api/messages/<friend_id>/`: returns 201 `{message}`. Anyone who is not an accepted friend, including after unfriending, gets 404, so other players' IDs reveal nothing. History is kept but cannot be read until you are friends again. A player's first direct message calls `progression.services.record_event(user, "message", "first-direct-message")` in the same transaction, which earns "Say Hello".
+- `GET /api/messages/tables/<table_id>/[?after=<id>]`: `{table_id, can_post, player_count, messages}`, for any table the caller may see (`tables.access.visible_tables`). Private tables are 404 to uninvited players.
+- `POST /api/messages/tables/<table_id>/`: seated players only (`TableSeat`). Anyone else who can see the table gets 403 `"Take a seat at this table to join the chat."`.
+
+Storage: `messaging.DirectMessage` (`sender`, `recipient`, `body`, `created_at`, `read_at`; no self-messages) and `messaging.TableMessage` (`table`, `sender`, `body`, `created_at`). User and table foreign keys use `CASCADE`, so deleting an account or an S23-cleaned table deletes its messages. Staff can read both in the Django admin. Only `?after` is accepted as a query parameter, and anything else returns 400.
+
+The frontend polls: open conversations and table chat every 4 seconds, and the conversation list every 15. Open decisions: there is no blocking, reporting, muting, or deleting messages, and no profanity filter. Rate limits and the 500-character limit are Finn's choices. The Figma table-invite card belongs to S27.
 
 ## S32 XP and achievements
 

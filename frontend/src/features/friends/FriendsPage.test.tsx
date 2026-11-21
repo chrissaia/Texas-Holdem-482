@@ -90,11 +90,11 @@ test('shows friends, incoming and sent requests from the API', /* Verify shows f
   expect(within(nav).getByRole('link', { name: 'Friends' })).toHaveAttribute('aria-current', 'page')
 })
 
-test('features from later stories are visible but unavailable', /* Verify features from later stories are visible but unavailable. */ async () => {
+test('Message opens the conversation; later-story features stay unavailable', /* Verify features from later stories are visible but unavailable. */ async () => {
   setup()
   await screen.findByRole('list', { name: 'Your friends' })
   expect(screen.getByText('Recently Played')).toHaveAttribute('aria-disabled', 'true')
-  expect(screen.getByRole('button', { name: 'Message' })).toBeDisabled()
+  expect(screen.getByRole('link', { name: 'Message Mira' })).toHaveAttribute('href', '/messages?with=101')
   expect(screen.getByRole('button', { name: 'Invite to Table' })).toBeDisabled()
 })
 

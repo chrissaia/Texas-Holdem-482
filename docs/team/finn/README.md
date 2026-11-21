@@ -11,3 +11,4 @@ Ownership follows the supplied iteration plans; it does not transfer credit for 
 - [S8: see poker rules](s08-see-poker-rules.md)
 - [S19: add and remove friends](s19-add-and-remove-friends.md)
 - [S20: see friends online](s20-see-friends-online.md)
+- [S21: message other players](s21-message-other-players.md)

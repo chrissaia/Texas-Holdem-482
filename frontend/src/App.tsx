@@ -32,6 +32,7 @@ import { RewardNotifications } from "./features/achievements/RewardNotifications
 import { StatisticsPage } from "./features/statistics/StatisticsPage";
 import { RulesPage } from "./features/rules/RulesPage";
 import { DisclaimerPage } from "./features/disclaimer/DisclaimerPage";
+import { MessagesPage } from "./features/messages/MessagesPage";
 import { PrivateTablesPage } from "./features/tables/PrivateTablesPage";
 import { SpectatorPage } from "./features/tables/SpectatorPage";
 import "./App.css";
@@ -114,6 +115,7 @@ export function AppRoutes() {
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/lobby" element={<LobbyPage />} />
             <Route path="/friends" element={<FriendsPage />} />
+            <Route path="/messages" element={<MessagesPage key={context?.host?.id ?? "anonymous"} />} />
             <Route path="/tutorial" element={<RulesPage />} />
             <Route path="/disclaimer" element={<DisclaimerPage />} />
             <Route path="/rules" element={<Navigate to="/tutorial" replace />} />

@@ -71,6 +71,8 @@ function setup(
           ? respond(context)
           : url.pathname.endsWith('/seat/')
             ? respond({ table_id: blue.id, player_count: blue.player_count, chip_balance: 2000, seat: null, other_table_id: null, csrf_token: 'test-csrf' })
+            : url.pathname.startsWith('/api/messages/tables/')
+              ? respond({ table_id: blue.id, can_post: false, player_count: blue.player_count, messages: [], csrf_token: 'test-csrf' })
             : url.pathname === '/api/profile/'
               ? respond({ id: host.id, username: host.username, avatar_url: null, chip_balance: 2000, starting_chips_granted_at: null, daily_reward: { amount: 500, available: false, next_claim_at: null }, csrf_token: 'test-csrf' })
               : handler(url, init),

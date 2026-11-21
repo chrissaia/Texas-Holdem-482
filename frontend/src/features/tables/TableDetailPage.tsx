@@ -7,6 +7,7 @@ import { Link, useParams } from 'react-router-dom'
 import { getTable } from './api'
 import { InvitationPanel } from './InvitationPanel'
 import { SeatPanel } from './SeatPanel'
+import { TableChat } from '../messages/TableChat'
 import type { PokerTable } from './types'
 
 /** Render the table detail page interface and its current state. */
@@ -79,6 +80,7 @@ function TableRecord({ id }: { id: string }) {
           <p className="field-hint">
             Your seat and buy-in can be saved here. Poker hands are not available yet.
           </p>
+          <TableChat tableId={table.id} />
         </section>
       )}
     </>
