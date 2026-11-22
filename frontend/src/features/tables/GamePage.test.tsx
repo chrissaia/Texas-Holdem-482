@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { afterEach, expect, test, vi } from 'vitest'
 import { GamePage } from './GamePage'
+import { HINTS_STORAGE_KEY } from './hintsPreference'
 
 const response = (data: unknown, status = 200) =>
   new Response(JSON.stringify(data), { status })
@@ -111,6 +112,7 @@ const state = {
 }
 
 afterEach(() => {
+  localStorage.removeItem(HINTS_STORAGE_KEY)
   vi.unstubAllGlobals()
   vi.clearAllMocks()
   sockets.length = 0
@@ -221,4 +223,84 @@ test('failed table access explains that sign-in and a seat are required', async 
   expect(screen.getByRole('link', { name: 'Sign in' })).toHaveAttribute('href', '/login')
   expect(screen.getByRole('link', { name: 'Table details' })).toHaveAttribute('href', '/tables/1')
   expect(sockets).toHaveLength(0)
+})
+
+test('hints can be turned off without disabling moves and the choice survives a reload', async () => {
+  vi.stubGlobal('fetch', vi.fn(async () => response(state)))
+  const first = renderGame()
+  const toggle = await screen.findByRole('button', { name: 'Hints', pressed: true })
+  expect(screen.getByRole('region', { name: 'Action hints' })).toHaveTextContent('Match the bet by adding 5 chips.')
+  fireEvent.click(toggle)
+  expect(screen.queryByRole('region', { name: 'Action hints' })).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Call 5' })).toBeEnabled()
+  first.unmount()
+  renderGame()
+  fireEvent.click(await screen.findByRole('button', { name: 'Hints', pressed: false }))
+  expect(screen.getByRole('region', { name: 'Action hints' })).toBeVisible()
+})
+
+test('live state replaces old hints and hides them when the other player acts', async () => {
+  const changed = {
+    ...state,
+    game: {
+      ...state.game,
+      viewer: { ...state.game.viewer, legal_actions: {
+        ...state.game.viewer.legal_actions,
+        check: true, call: false, raise: false, all_in: false, amount_to_call: 0,
+      } },
+    },
+  }
+  vi.stubGlobal('fetch', vi.fn()
+    .mockResolvedValueOnce(response(state))
+    .mockResolvedValueOnce(response(changed))
+    .mockResolvedValueOnce(response({ ...changed, game: { ...changed.game, turn_user_id: 20 } })))
+  vi.stubGlobal('WebSocket', MockWebSocket)
+  renderGame()
+  expect(await screen.findByText('Live updates on')).toBeVisible()
+  expect(screen.getByRole('region', { name: 'Action hints' })).toHaveTextContent('adding 5 chips')
+  sockets[0].notify()
+  expect(await screen.findByText('Stay in the hand without adding chips.')).toBeVisible()
+  expect(screen.getByRole('region', { name: 'Action hints' })).not.toHaveTextContent('Raise.')
+  expect(screen.getByRole('region', { name: 'Action hints' })).not.toHaveTextContent('Call.')
+  sockets[0].notify()
+  await screen.findByRole('heading', { name: 'Waiting for your turn' })
+  expect(screen.queryByRole('region', { name: 'Action hints' })).not.toBeInTheDocument()
+})
+
+test('a short-stacked call hint explains the actual amount at stake', async () => {
+  vi.stubGlobal('fetch', vi.fn(async () => response({
+    ...state,
+    game: { ...state.game, players: [{ ...state.game.players[0], stack: 3 }, state.game.players[1]] },
+  })))
+  renderGame()
+  expect(await screen.findByRole('region', { name: 'Action hints' })).toHaveTextContent('Put in your remaining 3 chips to call all-in.')
+})
+
+test('the toggle remains usable when browser storage is blocked', async () => {
+  const storage = {
+    getItem: () => { throw new Error('Storage blocked') },
+    setItem: () => { throw new Error('Storage blocked') },
+    removeItem: () => {},
+  }
+  vi.stubGlobal('localStorage', storage)
+  vi.stubGlobal('fetch', vi.fn(async () => response(state)))
+  renderGame()
+  fireEvent.click(await screen.findByRole('button', { name: 'Hints', pressed: true }))
+  expect(screen.getByRole('button', { name: 'Hints', pressed: false })).toBeVisible()
+  expect(screen.queryByRole('region', { name: 'Action hints' })).not.toBeInTheDocument()
+})
+
+test('a single legal raise size is explained as one total', async () => {
+  vi.stubGlobal('fetch', vi.fn(async () => response({
+    ...state,
+    game: {
+      ...state.game,
+      viewer: { ...state.game.viewer, legal_actions: {
+        ...state.game.viewer.legal_actions, min_raise_to: 20, max_raise_to: 20,
+      } },
+    },
+  })))
+  renderGame()
+  expect(await screen.findByRole('region', { name: 'Action hints' }))
+    .toHaveTextContent('Raise your total bet this round to 20 chips.')
 })

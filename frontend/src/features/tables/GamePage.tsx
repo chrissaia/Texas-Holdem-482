@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { gameUpdatesUrl, getGame, submitGameAction, submitGameTimeout } from './api'
+import { GameHints } from './GameHints'
+import { readHintsPreference, saveHintsPreference } from './hintsPreference'
 import type { ActivePokerGame, GamePlayer, GameState } from './types'
 import './game.css'
 
@@ -154,11 +156,12 @@ function MyHandPanel({ game, viewerId }: { game: ActivePokerGame | null; viewerI
   )
 }
 
-function GameControls({ state, onAction, pending, secondsLeft }: {
+function GameControls({ state, onAction, pending, secondsLeft, showHints }: {
   state: GameState
   onAction: (action: 'fold' | 'check' | 'call' | 'raise' | 'all_in', raiseTo?: number) => void
   pending: boolean
   secondsLeft: number | null
+  showHints: boolean
 }) {
   const game = state.game
   const legal = game?.viewer.legal_actions
@@ -187,21 +190,10 @@ function GameControls({ state, onAction, pending, secondsLeft }: {
           <strong>{game.turn_deadline ? 'Time remaining' : 'No active turn'}</strong>
         </div>
       </div>
-      <p className="field-hint">
-        {isTurn
-          ? legal.amount_to_call > 0
-            ? `Call ${legal.amount_to_call.toLocaleString('en-US')} chips or fold.`
-            : 'No bet to match; check or bet.'
-          : !me
-            ? 'You joined during this hand and will be dealt into the next one.'
-            : me.folded
-              ? 'Your cards are folded; wait for the next hand.'
-              : me.all_in
-                ? 'Your chips are committed; the remaining board will be dealt automatically.'
-                : `Current bet: ${game.current_bet.toLocaleString('en-US')} chips`}
-      </p>
+      <p className="field-hint">Current bet: {game.current_bet.toLocaleString('en-US')} chips</p>
       {isTurn && canAct ? (
         <>
+          {showHints && me && !me.folded && !me.all_in && <GameHints legal={legal} stack={me.stack} />}
           <div className="action-buttons">
             {legal.fold && <button className="button" disabled={pending} onClick={() => onAction('fold')}>Fold</button>}
             {legal.check && <button className="button" disabled={pending} onClick={() => onAction('check')}>Check</button>}
@@ -254,6 +246,7 @@ export function GamePage() {
   const [loadedAttempt, setLoadedAttempt] = useState(-1)
   const [clock, setClock] = useState<{ deadline: string; seconds: number } | null>(null)
   const [liveConnected, setLiveConnected] = useState(false)
+  const [showHints, setShowHints] = useState(readHintsPreference)
   const hasGameAccess = state !== null
 
   useEffect(() => {
@@ -398,6 +391,10 @@ export function GamePage() {
               <h1>{state.table.name}</h1>
               <p className="muted">{state.table.small_blind} / {state.table.big_blind} blinds · {state.table.player_count}/{state.table.max_players} players</p>
             </div>
+            <button type="button" className="button" aria-label="Hints" aria-pressed={showHints} onClick={() => {
+              setShowHints(!showHints)
+              saveHintsPreference(!showHints)
+            }}>Hints: {showHints ? 'On' : 'Off'}</button>
             <button className="button" disabled={pending || loading} onClick={refresh}>Refresh table</button>
             <span className={`live-status${liveConnected ? ' connected' : ''}`} aria-live="polite">
               {liveConnected ? 'Live updates on' : 'Reconnecting to live updates…'}
@@ -412,6 +409,7 @@ export function GamePage() {
                   state={state}
                   pending={pending}
                   secondsLeft={secondsLeft}
+                  showHints={showHints}
                   onAction={(action, amount) => void act(action, amount)}
                 />
               )}
