@@ -1,5 +1,20 @@
 # Shared foundation and handoff
 
+## S28 in-app moderation milestone
+
+Kelechi's `/moderation` dashboard uses staff-only `/api/moderation/` routes in
+`core.moderation`. User/table reads and writes additionally require their Django
+view/change model permissions; audit reads require `admin.view_logentry`.
+Writes require CSRF, a reason and expected state. Regular unseated accounts can
+be suspended/reactivated; self/admin targets are protected. Empty non-playing
+tables can close/reopen under the same table lock as seating. No funds are moved.
+Changes and existing Django LogEntry audit rows commit atomically. Every response
+is private/no-store; no email, password or wallet fields are returned.
+Creation-context adds top-level `is_admin` for the current viewer's navigation;
+public `{id, username}` host shapes are unchanged. No models/migrations change.
+Gameplay management and forced seat settlement remain engine dependencies.
+See [S28 guide](../team/kelechi/s28-admin-dashboard.md) for access, API and demo.
+
 ## Implemented interfaces
 
 - User: `accounts.User`, Django `AbstractUser` with avatar, chip balance, and reward timestamps. Its primary key is an integer (`BigAutoField`). Finn owns account validation, uniqueness policies, registration, login/logout, guest representation, and the eventual session endpoint. Usernames and non-blank emails are unique case-insensitively at the database level; see the accounts section below.

@@ -11,6 +11,7 @@ from progression.views import collection
 from progression.leaderboard import LeaderboardView
 
 urlpatterns = [
+    path("api/moderation/", include("core.moderation_urls")),
     path("api/leaderboard/", LeaderboardView.as_view(), name="leaderboard"),
     path("api/achievements/", collection, name="achievements"),
     path("api/profile/", include("profiles.urls")),
