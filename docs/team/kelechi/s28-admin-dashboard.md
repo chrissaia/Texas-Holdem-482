@@ -112,23 +112,31 @@ requests, field privacy, invalid inputs, atomic audit rollback and a PostgreSQL
 join/close race. UI tests cover confirmation, cancellation, search, errors,
 expired-session clearing, stale responses and escaped audit content.
 Automated DOM tests do not prove visual/responsive browser compatibility.
-Browser automation was unavailable during this milestone; a manual visual
-walkthrough remains pending, as do review, hosted CI and professor acceptance.
+Browser automation was unavailable during this milestone. The student later
+confirmed a successful manual admin walkthrough: searching records, suspending
+and reactivating a demo user, closing and reopening an empty table, and checking
+the audit trail. This is student-reported functional verification, not an
+automated visual/responsive or cross-browser check. Peer review, hosted CI and
+professor acceptance remain pending.
 
 ### Local results (November 21, 2026)
+
+[S28 coverage images and measurement summary](s28-testing/README.md)
+identify measured source commit `855d5a1`. Bulky raw reports remain local;
+images, a compact manifest and testing notes provide repository evidence.
 
 - Final full backend suite: 589 passed, including 32 focused moderation checks.
 - Final full frontend suite: 199 passed, including 12 dashboard/navigation tests.
 - Backend full-scope coverage: 98.62% statements, 96.89% branches.
-- Frontend full-scope coverage: 95.25% statements, 90.30% branches.
+- Frontend full-scope coverage (fresh evidence run): 95.09% statements, 90.20% branches.
 - Dashboard component: 86.40% statements, 86.15% branches; admin link: 100% each.
 - Build, lint, Django system check, migration drift and whitespace checks passed.
 - Live server returned 200 for `/moderation`, served the new dashboard source,
   and returned 403 for anonymous `/api/moderation/` access. An existing active
   local staff account was available; no accounts or privileges were created.
 
-These measurements describe the uncommitted working-tree milestone, not hosted
-CI or proof of browser layout. Raw/HTML reports were regenerated locally; the
-tracked `backend/coverage.json` changed. Existing Iteration 2 screenshots were
-not replaced. Release evidence should be exported after review with the actual
-source revision using the repository's quality workflow.
+These measurements describe application source commit `855d5a1`, not hosted CI
+or proof of browser layout. Coverage images and a compact manifest are in
+`s28-testing/`; bulky raw reports remain local and are ignored by Git. The tracked `backend/coverage.json` was also refreshed. Existing
+Iteration 2 screenshots were not replaced. After changes to application source,
+regenerate evidence using the repository's quality workflow.
