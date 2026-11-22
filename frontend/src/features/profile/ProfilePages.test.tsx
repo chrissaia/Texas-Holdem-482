@@ -50,7 +50,9 @@ function setup(
               csrf_token: 'token',
               profile_summary: registered ? initial : null,
             })
-          : handler(path, init),
+          : path === '/api/profile/ads/'
+            ? respond({ ads: [], daily_limit: 3, remaining: 3 })
+            : handler(path, init),
       ),
     )
   vi.stubGlobal('fetch', fetch)

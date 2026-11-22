@@ -4,9 +4,9 @@ import { afterEach, expect, test, vi } from 'vitest'
 import { ProfileMenu } from './ProfileMenu'
 
 function Location() { return <p>{useLocation().pathname}</p> }
-function setup(signedIn = true) {
+function setup(signedIn = true, canManageAds = false) {
   const onSignedOut = vi.fn()
-  render(<MemoryRouter><ProfileMenu signedIn={signedIn} onSignedOut={onSignedOut}>
+  render(<MemoryRouter><ProfileMenu signedIn={signedIn} canManageAds={canManageAds} onSignedOut={onSignedOut}>
     <span>Avatar</span>
   </ProfileMenu><Location /><button>Outside</button></MemoryRouter>)
   return onSignedOut
@@ -51,7 +51,7 @@ test('sign out obtains fresh CSRF, ends the session and navigates to login', asy
   await waitFor(() => expect(onSignedOut).toHaveBeenCalledOnce())
   expect(fetch.mock.calls[1][0]).toBe('/api/auth/logout/')
   expect(new Headers(fetch.mock.calls[1][1].headers).get('X-CSRFToken')).toBe('fresh-token')
-  expect(screen.getByText('/login')).toBeVisible()
+  expect(await screen.findByText('/login')).toBeVisible()
 })
 test('failed sign out leaves the session intact and offers retry', async () => {
   vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('Offline')))
@@ -61,4 +61,12 @@ test('failed sign out leaves the session intact and offers retry', async () => {
   expect(await screen.findByRole('alert')).toHaveTextContent('We could not sign you out')
   expect(onSignedOut).not.toHaveBeenCalled()
   expect(screen.getByRole('button', { name: 'Sign out' })).toBeEnabled()
+})
+
+test.each([true, false])('Manage ads shortcut follows the permission flag (%s)', canManageAds => {
+  setup(true, canManageAds)
+  fireEvent.click(screen.getByRole('button', { name: 'Account options' }))
+  const link = screen.queryByRole('link', { name: 'Manage ads' })
+  if (canManageAds) expect(link).toHaveAttribute('href', '/manage-ads')
+  else expect(link).not.toBeInTheDocument()
 })

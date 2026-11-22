@@ -4,9 +4,10 @@ import { getSession, logout } from '../features/auth/api'
 import chevron from '../assets/figma/chevron-down.svg'
 
 /** Account shortcuts with native keyboard navigation and session-safe sign out. */
-export function ProfileMenu({ children, signedIn, onSignedOut }: {
+export function ProfileMenu({ children, signedIn, canManageAds = false, onSignedOut }: {
   children: React.ReactNode
   signedIn: boolean
+  canManageAds?: boolean
   onSignedOut: () => void
 }) {
   const [open, setOpen] = useState(false)
@@ -68,6 +69,7 @@ export function ProfileMenu({ children, signedIn, onSignedOut }: {
       {signedIn ? <>
         <Link to="/statistics">My statistics</Link>
         <Link to="/rewards">Chips &amp; rewards</Link>
+        {canManageAds && <Link to="/manage-ads" onClick={() => setOpen(false)}>Manage ads</Link>}
         <button type="button" disabled={pending} onClick={() => void signOut()}>
           {pending ? 'Signing out…' : 'Sign out'}
         </button>
