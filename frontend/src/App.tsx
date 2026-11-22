@@ -25,6 +25,7 @@ import type { CreationContext } from "./features/tables/types";
 import { ThemeProvider } from "./features/themes/ThemeProvider";
 import { SettingsPage } from "./features/themes/SettingsPage";
 import { ProfileProvider } from "./features/profile/ProfileProvider";
+import { ManageAdsPage } from "./features/profile/ManageAdsPage";
 import { RewardsPage } from "./features/profile/RewardsPage";
 import { AchievementsPage } from "./features/achievements/AchievementsPage";
 import { LeaderboardPage } from "./features/leaderboard/LeaderboardPage";
@@ -92,6 +93,7 @@ export function AppRoutes() {
               <AppLayout
                 host={context?.host ?? null}
                 summary={context?.profile_summary}
+                canManageAds={context?.can_manage_ads}
                 isAdmin={context?.is_admin ?? false}
                 onSignedOut={() => { setContext(null); refresh(); }}
               >
@@ -113,8 +115,9 @@ export function AppRoutes() {
             />
             <Route path="/statistics" element={<StatisticsPage key={context?.host?.id ?? "anonymous"} />} />
             <Route path="/rewards" element={<RewardsPage />} />
+            <Route path="/manage-ads" element={<ManageAdsPage key={context?.host?.id ?? "anonymous"} />} />
             <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/lobby" element={<LobbyPage />} />
+            <Route path="/lobby" element={<LobbyPage accountId={context?.host?.id} />} />
             <Route path="/moderation" element={<AdminDashboard key={context?.host?.id ?? "anonymous"} />} />
             <Route path="/friends" element={<FriendsPage />} />
             <Route path="/tutorial" element={<RulesPage />} />

@@ -73,7 +73,9 @@ function setup(
             ? respond({ table_id: blue.id, player_count: blue.player_count, chip_balance: 2000, seat: null, other_table_id: null, csrf_token: 'test-csrf' })
             : url.pathname === '/api/profile/'
               ? respond({ id: host.id, username: host.username, avatar_url: null, chip_balance: 2000, starting_chips_granted_at: null, daily_reward: { amount: 500, available: false, next_claim_at: null }, csrf_token: 'test-csrf' })
-              : handler(url, init),
+              : url.pathname === '/api/profile/ads/'
+                ? respond({ ads: [], daily_limit: 3, remaining: 3 })
+                : handler(url, init),
       )
     })
   stubFetch(fetch)

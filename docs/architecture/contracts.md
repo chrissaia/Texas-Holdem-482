@@ -125,6 +125,23 @@ The system design’s 60% coverage baseline is superseded for Sprint 1 by above 
 
 ## S5/S14/S29 profiles and virtual chips
 
+S30 adds `GET /api/profile/ads/` (active ads, remaining daily claims and CSRF token),
+`POST /api/profile/ads/<id>/start/` (account-bound playback token and current
+media), and `POST /api/profile/ads/claim/<uuid>/` (profile and awarded amount).
+Both writes accept only an empty JSON object and use existing session/CSRF
+rules. The shared account row lock serializes claims and all wallet writes.
+There is one award per ad per UTC day and an admin-configured daily cap
+(default three, range 1–30). Inactive or
+changed ads and expired/different-account tokens cannot award chips. See the
+[S30 guide](../team/kelechi/s30-rewarded-ads.md) for media and playback behavior.
+
+The `/manage-ads` page reads and creates ads at `/api/profile/ads/manage/`,
+edits via `POST /api/profile/ads/manage/<id>/`, and updates the daily cap at
+`POST /api/profile/ads/manage/policy/`. Ad writes use multipart uploads and
+edits include the returned revision. Management requires an active staff
+session with ad and policy add/change permissions, with CSRF on writes.
+Creation context adds `can_manage_ads` for account menu navigation.
+
 Implemented on `saia` at Chris's request, covering Royal's three feature stories. Human story ownership and professor acceptance remain unchanged. See [the feature guide](../team/royal/profile-rewards.md).
 
 `accounts.User` adds `avatar`, `chip_balance`, `starting_chips_granted_at`, and `daily_chips_claimed_at` in migration `0003`. Existing accounts retain their balance (initially zero); no retroactive starting grant runs. Real registration grants 1,000 chips in the account-creation transaction. `profiles.rewards.grant_starting_chips` is retry-safe through a locked timestamp marker. Every future balance writer must lock the same user row and update atomically. Balances are nonnegative integers capped at 9,007,199,254,740,991.

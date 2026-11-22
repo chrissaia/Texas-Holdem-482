@@ -10,6 +10,7 @@ import inset50 from '../../assets/figma/reward-chip-inset-50.svg'
 import chip38 from '../../assets/figma/reward-chip-38.png'
 import inset28 from '../../assets/figma/reward-chip-inset-28.svg'
 import { claimDaily } from './api'
+import { AdRewards } from './AdRewards'
 import { ProfileGate } from './ProfileGate'
 import { useProfile } from './context'
 import './profile.css'
@@ -102,6 +103,7 @@ function RewardCards() {
           </p>
         </div>
       </section>
+      <AdRewards />
       <section className="panel daily-panel" aria-labelledby="daily-title">
         <div className="reward-heading">
           <h2 id="daily-title">Daily Reward - +{reward.amount} Chips</h2>

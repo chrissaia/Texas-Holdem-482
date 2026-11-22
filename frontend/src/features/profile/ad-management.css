@@ -1,0 +1,15 @@
+﻿.ad-manager { display: grid; gap: 16px; max-width: 880px; }
+.ad-manager .page-intro { margin-bottom: 0; }
+.ad-manager-heading, .ad-manager-actions, .ad-manager-limit {
+  display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px;
+}
+.ad-manager-heading { justify-content: space-between; padding-bottom: 12px; }
+.ad-manager-limit { margin-top: 12px; }
+.ad-editor fieldset { display: grid; gap: 12px; margin: 12px 0; }
+.ad-manager label { display: grid; gap: 5px; color: var(--muted); }
+.ad-manager input:not([type="checkbox"]), .ad-manager select {
+  width: 100%; min-width: 0; padding: 8px 10px; border: 1px solid var(--border);
+  border-radius: 6px; color: var(--text); background: var(--bg);
+}
+.ad-manager-numbers { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 12px; }
+.ad-manager label.ad-manager-check { display: flex; align-items: center; gap: 8px; }

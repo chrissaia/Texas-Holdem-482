@@ -48,12 +48,14 @@ export function AppLayout({
   summary,
   children,
   onSignedOut,
+  canManageAds = false,
   isAdmin = false,
 }: {
   host: Host | null;
   summary?: ProfileSummary | null;
   children: ReactNode;
   onSignedOut: () => void;
+  canManageAds?: boolean;
   isAdmin?: boolean;
 }) {
   const { pathname } = useLocation();
@@ -194,7 +196,7 @@ export function AppLayout({
             <span className="account-label">
               {host?.username || "Welcome to RIVR"}
             </span>
-            <ProfileMenu key={`${host?.id ?? "anonymous"}:${pathname}`} signedIn={!!host} onSignedOut={onSignedOut}>
+            <ProfileMenu key={`${host?.id ?? "anonymous"}:${pathname}`} signedIn={!!host} canManageAds={canManageAds} onSignedOut={onSignedOut}>
             <span className="avatar avatar-small">
               <img
                 src={account?.avatar_url || avatarSmall}

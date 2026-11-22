@@ -7,6 +7,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { ApiError } from '../../api/client'
 import info from '../../assets/figma/info.svg'
 import zap from '../../assets/figma/zap.svg'
+import { AdRewards } from '../profile/AdRewards'
 import { listTables } from './api'
 import type { TableList } from './types'
 import { SEAT_OPTIONS } from './validation'
@@ -16,7 +17,7 @@ import './lobby.css'
 const format = (n: number) => n.toLocaleString('en-US')
 
 /** Render the lobby page interface and its current state. */
-export function LobbyPage() {
+export function LobbyPage({ accountId }: { accountId?: number } = {}) {
   const [params, setParams] = useSearchParams()
   const [attempt, setAttempt] = useState(0)
   const [response, setResponse] = useState<{
@@ -147,6 +148,7 @@ export function LobbyPage() {
         </button>
       </div>
       <Link className="button" to="/tables/private">My private tables and invitations</Link>
+      <AdRewards key={accountId} placement="lobby" />
       <section className="panel lobby-filters" aria-labelledby="filters-title">
         <div className="panel-heading">
           <h2 id="filters-title">Table filters</h2>

@@ -9,4 +9,5 @@ Ownership follows the supplied iteration plans; it does not transfer credit for 
 - [S17: see my stats](s17-see-my-stats.md)
 - [S23: clean up empty tables](s23-clean-up-empty-tables.md)
 - [S28: in-app administrator dashboard](s28-admin-dashboard.md)
+- [S30: get chips from ads](s30-rewarded-ads.md)
 - [S35: change the theme](s35-change-the-theme.md)

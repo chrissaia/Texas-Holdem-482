@@ -4,6 +4,7 @@ from django.middleware.csrf import get_token
 from django.utils.decorators import method_decorator
 from django.db import transaction
 from progression.services import record_event
+from profiles.ad_permissions import can_manage_ads
 from django.db.models import Count, F, Q, Sum
 from django.db.models.functions import Coalesce, Lower
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -98,4 +99,5 @@ def creation_context(request):
         summary = {"avatar_url": request.user.avatar.url if request.user.avatar else None,
                    "chip_balance": request.user.chip_balance}
     return Response({"host": host, "csrf_token": get_token(request), "profile_summary": summary,
-                     "is_admin": bool(host and request.user.is_staff)})
+                     "is_admin": bool(host and request.user.is_staff),
+                     "can_manage_ads": bool(host and can_manage_ads(request))})
