@@ -4,6 +4,7 @@
  */
 export type Host = { id: number; username: string }
 export type CreationContext = {
+  is_admin?: boolean
   host: Host | null
   csrf_token: string
   profile_summary?: { avatar_url: string | null; chip_balance: number } | null
