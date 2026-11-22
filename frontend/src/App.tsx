@@ -35,6 +35,7 @@ import { RulesPage } from "./features/rules/RulesPage";
 import { DisclaimerPage } from "./features/disclaimer/DisclaimerPage";
 import { PrivateTablesPage } from "./features/tables/PrivateTablesPage";
 import { SpectatorPage } from "./features/tables/SpectatorPage";
+import { AdminDashboard } from "./features/moderation/AdminDashboard";
 import "./App.css";
 
 /** Render the app routes interface and its current state. */
@@ -93,6 +94,7 @@ export function AppRoutes() {
                 host={context?.host ?? null}
                 summary={context?.profile_summary}
                 canManageAds={context?.can_manage_ads}
+                isAdmin={context?.is_admin ?? false}
                 onSignedOut={() => { setContext(null); refresh(); }}
               >
                 <Outlet />
@@ -116,6 +118,7 @@ export function AppRoutes() {
             <Route path="/manage-ads" element={<ManageAdsPage key={context?.host?.id ?? "anonymous"} />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/lobby" element={<LobbyPage accountId={context?.host?.id} />} />
+            <Route path="/moderation" element={<AdminDashboard key={context?.host?.id ?? "anonymous"} />} />
             <Route path="/friends" element={<FriendsPage />} />
             <Route path="/tutorial" element={<RulesPage />} />
             <Route path="/disclaimer" element={<DisclaimerPage />} />

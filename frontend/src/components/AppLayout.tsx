@@ -7,6 +7,7 @@ import type { ProfileSummary } from "../features/profile/types";
 import "../features/profile/profile.css";
 import type { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { AdminLink } from "../features/moderation/AdminLink";
 import type { Host } from "../features/tables/types";
 import { FriendsOnline } from "../features/friends/FriendsOnline";
 import logo from "../assets/figma/geometric-chip-mark.svg";
@@ -48,12 +49,14 @@ export function AppLayout({
   children,
   onSignedOut,
   canManageAds = false,
+  isAdmin = false,
 }: {
   host: Host | null;
   summary?: ProfileSummary | null;
   children: ReactNode;
   onSignedOut: () => void;
   canManageAds?: boolean;
+  isAdmin?: boolean;
 }) {
   const { pathname } = useLocation();
   const { profile } = useProfile();
@@ -114,6 +117,7 @@ export function AppLayout({
               </span>
             );
           })}
+          <AdminLink isAdmin={!!host && isAdmin} className="nav-item" />
         </nav>
         <div className="sidebar-note">
           <span className="eyebrow">PLAY MONEY ONLY</span>
@@ -155,6 +159,7 @@ export function AppLayout({
             <span className="shortcut">⌘ K</span>
           </div>
           <div className="account-controls">
+            <AdminLink isAdmin={!!host && isAdmin} className="mobile-settings-link" />
             <Link className="mobile-lobby-link" to="/lobby">
               Lobby
             </Link>

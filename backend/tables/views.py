@@ -99,4 +99,5 @@ def creation_context(request):
         summary = {"avatar_url": request.user.avatar.url if request.user.avatar else None,
                    "chip_balance": request.user.chip_balance}
     return Response({"host": host, "csrf_token": get_token(request), "profile_summary": summary,
+                     "is_admin": bool(host and request.user.is_staff),
                      "can_manage_ads": bool(host and can_manage_ads(request))})
