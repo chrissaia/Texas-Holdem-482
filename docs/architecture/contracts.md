@@ -121,7 +121,7 @@ Coordinate user field and migration changes before implementation. Royal and Kel
 
 ## Scope and known document differences
 
-The system design’s 60% coverage baseline is superseded for Sprint 1 by above 80% statement and above 50% branch coverage. Privacy options, bots, gameplay, joining tables, social features beyond S19 friends and S20 online status, and WebSocket synchronization remain future work. S13 now has a working form/API and tests; professor acceptance remains pending. S10 now provides real public browsing, filters, sorting, and pagination; other owners’ stories remain separate. The Create Table layout uses inspected Figma frame 12:1619, adapting private/bot areas to the approved public-only scope.
+The system design’s 60% coverage baseline is superseded for Sprint 1 by above 80% statement and above 50% branch coverage. Bots and direct messaging remain future work. S13 now has a working form/API and tests; professor acceptance remains pending. S10 now provides real public browsing, filters, sorting, and pagination; other owners’ stories remain separate. The Create Table layout uses inspected Figma frame 12:1619, adapting private/bot areas to the approved public-only scope.
 
 ## S5/S14/S29 profiles and virtual chips
 
@@ -230,20 +230,23 @@ and account fields are unchanged. The only new schema is chips.0001_initial.
 ## S15 public-table buy-in and funded seats
 
 `GET/POST/DELETE /api/tables/<id>/seat/` requires an active registered session.
-GET returns only the viewer's seat, wallet, table occupancy, other_table_id (if
-already seated elsewhere), and CSRF token. POST/DELETE require CSRF plus `{}`.
-Join rechecks current wallet >= max(buy_in, minimum_balance), waiting status, and
-capacity under table-then-user row locks. It debits buy-in into TableSeat.stack;
+GET returns only the viewer's seat, whether they may leave, wallet, table
+occupancy, other_table_id (if already seated elsewhere), and CSRF token.
+POST/DELETE require CSRF plus `{}`.
+Join rechecks current wallet >= max(buy_in, minimum_balance), non-closed status,
+and capacity under table-then-user row locks. It debits buy-in into TableSeat.stack;
 OneToOne user prevents two active seats. Identical joins/leaves are repeat-safe.
-Leave returns reserved stack and deletes the seat atomically, except during play.
+Leave returns the reserved stack and deletes the seat atomically. During an active
+hand, a player who has not folded cannot leave; a folded player or a player waiting
+for the next hand may cash out. Only table-reserved chips return to the wallet.
 Money bounds and failed writes retain all funds. Occupancy/activity update in the
 same transaction; S23 checks seat existence as well as its occupancy counter.
 TableSeat and referenced accounts/tables are protected from accidental deletion.
 
-Future gameplay must adopt table-then-user locking, serialize stack/pot updates,
-and preserve reserved funds. S16's account-wallet delta must not repeat a buy-in
-or credit chips that remain reserved at a table. Joining is not gameplay; guest,
-private-table and in-hand cash-out policies remain separate integration work.
+Gameplay uses the same table-then-user locking order, serializes stack/pot updates,
+and preserves reserved funds. S16's account-wallet delta must not repeat a buy-in
+or credit chips that remain reserved at a table. Guests remain ineligible; private
+table access follows the host-or-invitation policy above.
 
 
 ## S17 private all-time hand statistics
@@ -256,12 +259,68 @@ splits are not wins. An empty ledger returns zero counts and 0.0%. Responses are
 private/no-store; queries and writes are rejected. `/statistics` supplies refresh,
 retry, guest gating and an empty state; it exposes no event write/claim UI.
 
-The existing progression hand hook remains the authoritative writer. The poker
-engine must supply verified completed-hand events exactly once per participant
-and stable hand ID. Chip rewards, wallet deltas, table creation and joining alone
-must not be converted into hand participation. No invented game/action/pot history
-or time-series is derived from missing facts. Actual gameplay integration remains
-a separately planned engine dependency.
+The existing progression hand hook remains the authoritative writer. The S6 poker
+engine supplies verified completed-hand events exactly once per participant and
+stable hand ID. Chip rewards, wallet deltas, table creation and joining alone must
+not be converted into hand participation. No invented game/action/pot history or
+time-series is derived from missing facts.
+
+
+## S6 authoritative Texas Hold'em gameplay
+
+`GET /api/tables/<id>/game/` requires an active registered player seated at a
+visible table. It returns the table, current hand (or `null` while waiting), the
+last completed-hand summary, and the viewer's identity. Only the requesting
+player receives their hole cards; opponents' cards and the shuffled deck are
+never exposed. Responses are private and non-cacheable.
+
+`POST /api/tables/<id>/game/action/` requires CSRF and accepts exactly
+`{action}` for `fold`, `check`, `call`, or `all_in`, or `{action: "raise",
+raise_to}` for a whole-chip raise target. The server validates turn ownership,
+legal actions, stack limits, minimum raises, and whether betting has reopened.
+The client cannot set cards, pot, stack, outcome, turn, or user identity.
+`POST /api/tables/<id>/game/timeout/` accepts only `{}` and applies the server's
+check-if-possible/otherwise-fold rule after the saved 30-second turn deadline.
+
+The server securely shuffles and deals a standard deck, starts a hand when two
+funded seats are available, posts blinds, advances betting streets, evaluates
+best five-card hands, settles ties and side pots, and records each completed hand
+through the progression hook. Players who join during a hand are seated for the
+next hand. Chips remain reserved in `TableSeat.stack`; payouts return to that
+table stack and never directly alter the wallet.
+
+The gameplay screen is `/tables/<id>/play`. It bootstraps and recovers through
+the private REST endpoint, and receives authenticated table-scoped WebSocket
+change signals after committed seating, action, and timeout updates. Each client
+then fetches its own authorized state; WebSocket messages never contain cards or
+other private game state. Redis backs the shared Channels layer in Compose and
+multi-process deployments. The in-memory layer supports native single-process
+development only. The read-only spectator endpoint remains a separate
+projection and never receives this seated-player payload.
+
+
+## S22 server-owned AFK handling
+
+The `turn-worker` service sweeps persisted deadlines and takes the same
+table lock as player actions. Expired turns use S6's check-or-fold rule
+and set the funded seat's `is_sitting_out` flag. Sit-outs keep reserved
+chips and skip future deals. `GET /api/tables/<id>/game/` exposes the
+flag on seated players. Seated players resume their own seat through
+`POST /api/tables/<id>/game/resume/` with CSRF and an empty object.
+The gameplay UI sends the hand ID and turn timestamp together with
+betting actions so the server can reject a stale click. When sent, both
+fields are required. See the [S22 walkthrough](../team/kelechi/s22-afk-players.md).
+
+## S7 private poker hand view
+
+The seated-player game response includes the viewer's two private cards and, once
+the flop is available, a server-evaluated description of their current best
+five-card hand. The game screen displays these in a dedicated "Your hand" panel.
+Before the flop it explains that the hand is not ranked yet; a player who joined
+during an active hand is told their cards will be dealt into the next hand.
+Opponent hole cards and hand descriptions remain private until the game rules
+allow a showdown reveal. Guests, spectators, and unseated accounts do not receive
+the seated-player hand response.
 
 
 ## S11/S27/S26 table extensions on saia

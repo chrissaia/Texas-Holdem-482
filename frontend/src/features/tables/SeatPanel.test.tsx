@@ -6,7 +6,7 @@ import { SeatPanel } from './SeatPanel'
 import type { PokerTable } from './types'
 
 const table: PokerTable = { id: 1, name: 'Test table', host: { id: 1, username: 'host' }, is_public: true, max_players: 2, buy_in: 100, minimum_balance: 200, small_blind: 5, big_blind: 10, player_count: 0, status: 'waiting', created_at: '', last_activity_at: '' }
-const status = { table_id: 1, player_count: 0, chip_balance: 1000, disclaimer_accepted: true, seat: null, other_table_id: null, csrf_token: 'server-token' }
+const status = { table_id: 1, player_count: 0, chip_balance: 1000, disclaimer_accepted: true, seat: null, can_leave: true, other_table_id: null, csrf_token: 'server-token' }
 const response = (body: unknown, code = 200) => new Response(JSON.stringify(body), { status: code })
 const refresh = vi.fn()
 const occupancy = vi.fn()
@@ -23,6 +23,7 @@ test('joins and leaves using only server buy-in, CSRF and fresh balances', async
   render(page())
   fireEvent.click(await screen.findByRole('button', { name: /Join table/ }))
   expect(await screen.findByText(/You have a seat/)).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'Open poker table' })).toHaveAttribute('href', '/tables/1/play')
   expect(fetch.mock.calls[1][1]).toMatchObject({ method: 'POST', body: '{}', headers: { 'X-CSRFToken': 'server-token' } })
   expect(occupancy).toHaveBeenCalledWith(1)
   fireEvent.click(screen.getByRole('button', { name: /Leave table/ }))
@@ -44,6 +45,7 @@ test('exact minimum balance allows requesting a seat', async () => {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response({ ...status, chip_balance: 200 })))
   render(page())
   expect(await screen.findByRole('button', { name: /Join table/ })).toBeEnabled()
+  expect(screen.queryByRole('link', { name: 'Open poker table' })).not.toBeInTheDocument()
 })
 
 test('server rejection after a stale balance is visible and refresh recovers', async () => {
@@ -87,26 +89,40 @@ test('another funded table links to the current seat', async () => {
   expect(screen.queryByRole('button', { name: /Join table/ })).not.toBeInTheDocument()
 })
 
-test('full or playing tables prevent joining', async () => {
+test('full playing tables prevent joining', async () => {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response({ ...status, player_count: 2 })))
   render(page(true, { ...table, status: 'playing' }))
   expect(await screen.findByRole('button', { name: /Join table/ })).toBeDisabled()
   expect(screen.getByText('This table is full.')).toBeInTheDocument()
-  expect(screen.getByText(/not accepting players/)).toBeInTheDocument()
+})
+
+test('players can join a playing table for its next hand', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response({ ...status, player_count: 1 })))
+  render(page(true, { ...table, status: 'playing' }))
+  expect(await screen.findByRole('button', { name: /Join table/ })).toBeEnabled()
+  expect(screen.getByText(/dealt into the next hand/)).toBeInTheDocument()
 })
 
 test('seated players cannot leave a playing table', async () => {
-  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response({ ...status, seat: { id: 2, stack: 100, buy_in: 100 } })))
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response({ ...status, can_leave: false, seat: { id: 2, stack: 100, buy_in: 100 } })))
   render(page(true, { ...table, status: 'playing' }))
   expect(await screen.findByRole('button', { name: /Leave table/ })).toBeDisabled()
+  expect(screen.getByText(/Finish or fold your hand/)).toBeInTheDocument()
 })
 
-test('S3: joining asks for the disclaimer first, then saves acceptance and joins', async () => {
-  const fetch = vi.fn().mockResolvedValueOnce(response({ ...status, disclaimer_accepted: false }))
+test('a folded player can leave during another active hand', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response({ ...status, seat: { id: 2, stack: 100, buy_in: 100 } })))
+  render(page(true, { ...table, status: 'playing' }))
+  expect(await screen.findByRole('button', { name: /Leave table/ })).toBeEnabled()
+  expect(screen.getByText(/remaining table chips return/)).toBeInTheDocument()
+})
+
+test('S3: joining a playing table saves disclaimer acceptance before buying in', async () => {
+  const fetch = vi.fn().mockResolvedValueOnce(response({ ...status, player_count: 1, disclaimer_accepted: false }))
     .mockResolvedValueOnce(response({ state: 'registered', disclaimer_accepted: true, csrf_token: 'server-token' }))
-    .mockResolvedValueOnce(response({ ...status, player_count: 1, chip_balance: 900, seat: { id: 1, buy_in: 100, stack: 100 } }))
+    .mockResolvedValueOnce(response({ ...status, player_count: 2, chip_balance: 900, seat: { id: 1, buy_in: 100, stack: 100 } }))
   vi.stubGlobal('fetch', fetch)
-  render(page())
+  render(page(true, { ...table, status: 'playing' }))
   expect(await screen.findByText(/asked to accept the play-money disclaimer/)).toBeInTheDocument()
   fireEvent.click(screen.getByRole('button', { name: /Join table/ }))
   const dialog = screen.getByRole('dialog', { name: 'Before you take a seat' })
