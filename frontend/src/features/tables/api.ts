@@ -5,6 +5,7 @@
 import { request } from '../../api/client'
 import type {
   CreationContext,
+  GameState,
   PokerTable,
   TableInput,
   TableList,
@@ -34,6 +35,7 @@ export type SeatStatus = {
   chip_balance: number
   disclaimer_accepted: boolean
   seat: { id: number; buy_in: number; stack: number } | null
+  can_leave: boolean
   other_table_id: number | null
   csrf_token: string
 }
@@ -42,6 +44,38 @@ export const getSeat = (id: number) => request<SeatStatus>(`/api/tables/${id}/se
 export const changeSeat = (id: number, method: 'POST' | 'DELETE', token: string) =>
   request<SeatStatus>(`/api/tables/${id}/seat/`, {
     method,
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': token },
+    body: JSON.stringify({}),
+  })
+
+export const getGame = (id: string) =>
+  request<GameState>(`/api/tables/${id}/game/`)
+
+export const gameUpdatesUrl = (id: string) => {
+  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+  return `${protocol}//${window.location.host}/ws/tables/${id}/game/`
+}
+
+export const submitGameAction = (
+  id: string,
+  action: 'fold' | 'check' | 'call' | 'raise' | 'all_in',
+  token: string,
+  raiseTo?: number,
+  turn?: { hand_id: number; turn_started_at: string },
+) =>
+  request<GameState>(`/api/tables/${id}/game/action/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': token },
+    body: JSON.stringify({
+      action,
+      ...(action === 'raise' && raiseTo !== undefined ? { raise_to: raiseTo } : {}),
+      ...turn,
+    }),
+  })
+
+export const resumeGamePlay = (id: string, token: string) =>
+  request<GameState>(`/api/tables/${id}/game/resume/`, {
+    method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-CSRFToken': token },
     body: JSON.stringify({}),
   })

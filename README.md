@@ -24,7 +24,7 @@ backend/                  Django, REST Framework, PostgreSQL driver, pytest
   tables/                 S13 settings, API, constraints, tests, migrations
 docs/architecture/contracts.md         Shared interfaces and teammate boundaries
 docs/reference/           System design PDF and user stories workbook
-compose.yaml              Local PostgreSQL, backend, frontend services
+compose.yaml              Local PostgreSQL, Redis, backend, frontend services
 .env.example              Configuration template (no real credentials)
 ```
 
@@ -51,7 +51,7 @@ docker compose logs -f backend
 
 Open http://localhost:5173. Readiness: http://localhost:5173/api/health/ should return `{"status":"ok","database":"ok"}`. Backend direct access: http://localhost:8000/api/health/.
 
-PostgreSQL is exposed only on `127.0.0.1:5433`; its data persists in a Docker volume. Django waits for database readiness, applies committed migrations, then starts. Frontend and backend source edits reload automatically.
+PostgreSQL is exposed only on `127.0.0.1:5433`; its data persists in a Docker volume. Redis provides the shared WebSocket channel layer for live poker updates. Django waits for database and Redis readiness, applies committed migrations, then starts the ASGI server. Frontend and backend source edits reload automatically.
 
 ```bash
 docker compose ps
@@ -70,13 +70,14 @@ Do not run native servers and the corresponding Compose services on the same por
 From the repository root, with `.env` configured:
 
 ```bash
-docker compose up -d --wait db
+docker compose up -d --wait db redis
 python3 -m venv backend/.venv
 source backend/.venv/bin/activate
 pip install -r backend/requirements.txt
-python backend/manage.py migrate
-python backend/manage.py check
-python backend/manage.py runserver
+cd backend
+python manage.py migrate
+python manage.py check
+python -m daphne -b 0.0.0.0 -p 8000 config.asgi:application
 ```
 
 In another terminal, from the repository root:

@@ -18,6 +18,14 @@ services:
       timeout: 3s
       retries: 20
 
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
   backend:
     build:
       context: .
@@ -26,6 +34,7 @@ services:
     environment:
       POSTGRES_HOST: db
       POSTGRES_PORT: "5432"
+      REDIS_URL: redis://redis:6379/0
     ports:
       - "127.0.0.1:8000:8000"
     volumes:
@@ -33,7 +42,30 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    command: sh -c "python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:8000"
+      redis:
+        condition: service_healthy
+    command: sh -c "python manage.py migrate --noinput && python -m daphne -b 0.0.0.0 -p 8000 config.asgi:application"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health/', timeout=2).close()"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  turn-worker:
+    image: rivr-backend
+    pull_policy: never
+    env_file: .env
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_PORT: "5432"
+      REDIS_URL: redis://redis:6379/0
+    volumes:
+      - ./backend:/app/backend
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    command: python manage.py watch_poker_turns
 
   frontend:
     build:

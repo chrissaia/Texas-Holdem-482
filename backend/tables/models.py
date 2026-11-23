@@ -93,6 +93,7 @@ class TableSeat(models.Model):
     buy_in = models.PositiveIntegerField()
     stack = models.PositiveBigIntegerField()
     joined_at = models.DateTimeField(auto_now_add=True)
+    is_sitting_out = models.BooleanField(default=False)
 
     class Meta:
         constraints = [
@@ -112,3 +113,110 @@ class TableInvitation(models.Model):
     class Meta:
         """Keep each private-table invitation unique."""
         constraints = [models.UniqueConstraint(fields=["table", "user"], name="unique_table_invitation")]
+
+
+class PokerHand(models.Model):
+    """Persist one server-dealt hand and its authoritative betting state."""
+
+    class Street(models.TextChoices):
+        PREFLOP = "preflop", "Pre-flop"
+        FLOP = "flop", "Flop"
+        TURN = "turn", "Turn"
+        RIVER = "river", "River"
+        COMPLETE = "complete", "Complete"
+
+    class Status(models.TextChoices):
+        ACTIVE = "active", "Active"
+        COMPLETE = "complete", "Complete"
+
+    table = models.ForeignKey(PokerTable, on_delete=models.PROTECT, related_name="hands")
+    hand_number = models.PositiveIntegerField()
+    status = models.CharField(max_length=8, choices=Status.choices, default=Status.ACTIVE)
+    street = models.CharField(max_length=8, choices=Street.choices, default=Street.PREFLOP)
+    board = models.JSONField(default=list)
+    deck = models.JSONField(default=list)
+    burned_cards = models.JSONField(default=list)
+    pot = models.PositiveBigIntegerField(default=0)
+    current_bet = models.PositiveBigIntegerField(default=0)
+    min_raise = models.PositiveBigIntegerField()
+    dealer_user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="dealer_hands"
+    )
+    dealer_seat_key = models.PositiveBigIntegerField(null=True, blank=True)
+    turn_user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True,
+        on_delete=models.PROTECT, related_name="turn_hands",
+    )
+    turn_started_at = models.DateTimeField(null=True, blank=True)
+    turn_deadline = models.DateTimeField(null=True, blank=True)
+    started_at = models.DateTimeField(default=timezone.now, editable=False)
+    completed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        indexes = [models.Index(fields=["turn_deadline"], name="tables_due_turn_idx",
+                                condition=Q(status="active", turn_deadline__isnull=False))]
+        ordering = ["-hand_number"]
+        constraints = [
+            models.UniqueConstraint(fields=["table", "hand_number"], name="unique_table_hand_number"),
+            models.UniqueConstraint(
+                fields=["table"], condition=Q(status="active"), name="one_active_hand_per_table"
+            ),
+        ]
+
+
+class HandParticipant(models.Model):
+    """Store private cards and chip contributions for one player in a hand."""
+
+    hand = models.ForeignKey(PokerHand, on_delete=models.PROTECT, related_name="participants")
+    seat = models.ForeignKey(
+        TableSeat, null=True, blank=True, on_delete=models.SET_NULL,
+        related_name="hand_participations",
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="poker_hand_participations"
+    )
+    position = models.PositiveSmallIntegerField()
+    hole_cards = models.JSONField()
+    starting_stack = models.PositiveBigIntegerField()
+    round_contribution = models.PositiveBigIntegerField(default=0)
+    total_contribution = models.PositiveBigIntegerField(default=0)
+    has_acted = models.BooleanField(default=False)
+    folded = models.BooleanField(default=False)
+    all_in = models.BooleanField(default=False)
+    preflop_all_in = models.BooleanField(default=False)
+    is_winner = models.BooleanField(default=False)
+    won_amount = models.PositiveBigIntegerField(default=0)
+    hand_category = models.CharField(max_length=20, blank=True)
+
+    class Meta:
+        ordering = ["position"]
+        constraints = [
+            models.UniqueConstraint(fields=["hand", "seat"], name="unique_hand_seat"),
+            models.UniqueConstraint(fields=["hand", "user"], name="unique_hand_user"),
+        ]
+
+
+class PokerAction(models.Model):
+    """Keep an immutable, ordered record of forced bets and player actions."""
+
+    class Kind(models.TextChoices):
+        SMALL_BLIND = "small_blind", "Small blind"
+        BIG_BLIND = "big_blind", "Big blind"
+        FOLD = "fold", "Fold"
+        CHECK = "check", "Check"
+        CALL = "call", "Call"
+        BET = "bet", "Bet"
+        RAISE = "raise", "Raise"
+        ALL_IN = "all_in", "All-in"
+        TIMEOUT_CHECK = "timeout_check", "Timed out: check"
+        TIMEOUT_FOLD = "timeout_fold", "Timed out: fold"
+
+    hand = models.ForeignKey(PokerHand, on_delete=models.PROTECT, related_name="actions")
+    participant = models.ForeignKey(HandParticipant, on_delete=models.PROTECT, related_name="actions")
+    street = models.CharField(max_length=8, choices=PokerHand.Street.choices)
+    kind = models.CharField(max_length=16, choices=Kind.choices)
+    amount = models.PositiveBigIntegerField(default=0)
+    created_at = models.DateTimeField(default=timezone.now, editable=False)
+
+    class Meta:
+        ordering = ["created_at", "pk"]

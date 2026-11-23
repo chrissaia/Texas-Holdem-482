@@ -36,6 +36,7 @@ import { DisclaimerPage } from "./features/disclaimer/DisclaimerPage";
 import { PrivateTablesPage } from "./features/tables/PrivateTablesPage";
 import { SpectatorPage } from "./features/tables/SpectatorPage";
 import { AdminDashboard } from "./features/moderation/AdminDashboard";
+import { GamePage } from "./features/tables/GamePage";
 import "./App.css";
 
 /** Render the app routes interface and its current state. */
@@ -155,6 +156,7 @@ export function AppRoutes() {
             />
             <Route path="/tables/private" element={<PrivateTablesPage key={context?.host?.id ?? "anonymous"} />} />
             <Route path="/tables/:id/watch" element={<SpectatorPage key={`${context?.host?.id ?? "anonymous"}:${pathname}`} />} />
+            <Route path="/tables/:id/play" element={<GamePage key={`${context?.host?.id ?? "anonymous"}:${pathname}`} />} />
             <Route path="/tables/:id" element={<TableDetailPage key={context?.host?.id ?? "anonymous"} />} />
             <Route
               path="*"
