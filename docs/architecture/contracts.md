@@ -247,6 +247,18 @@ development only. The read-only spectator endpoint remains a separate
 projection and never receives this seated-player payload.
 
 
+## S22 server-owned AFK handling
+
+The `turn-worker` service sweeps persisted deadlines and takes the same
+table lock as player actions. Expired turns use S6's check-or-fold rule
+and set the funded seat's `is_sitting_out` flag. Sit-outs keep reserved
+chips and skip future deals. `GET /api/tables/<id>/game/` exposes the
+flag on seated players. Seated players resume their own seat through
+`POST /api/tables/<id>/game/resume/` with CSRF and an empty object.
+The gameplay UI sends the hand ID and turn timestamp together with
+betting actions so the server can reject a stale click. When sent, both
+fields are required. See the [S22 walkthrough](../team/kelechi/s22-afk-players.md).
+
 ## S7 private poker hand view
 
 The seated-player game response includes the viewer's two private cards and, once

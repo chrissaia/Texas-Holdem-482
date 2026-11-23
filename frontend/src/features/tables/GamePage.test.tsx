@@ -175,9 +175,10 @@ test('explains that a player who joins mid-hand receives cards next hand', async
   expect(await screen.findByText(/You joined during this hand/)).toBeVisible()
 })
 
-test('sends an action with the private CSRF token and server route', async () => {
+test('sends an action with its server turn and private CSRF token', async () => {
+  const turn = '2026-11-22T12:00:00.123456Z'
   const fetch = vi.fn()
-    .mockResolvedValueOnce(response(state))
+    .mockResolvedValueOnce(response({ ...state, game: { ...state.game, turn_started_at: turn } }))
     .mockResolvedValueOnce(response({ ...state, game: { ...state.game, turn_user_id: 20 } }))
   vi.stubGlobal('fetch', fetch)
   renderGame()
@@ -189,7 +190,7 @@ test('sends an action with the private CSRF token and server route', async () =>
   expect(fetch.mock.calls[1][1]).toMatchObject({
     method: 'POST',
     headers: { 'X-CSRFToken': 'game-csrf-token' },
-    body: JSON.stringify({ action: 'call' }),
+    body: JSON.stringify({ action: 'call', hand_id: 4, turn_started_at: turn }),
   })
 })
 
@@ -303,4 +304,56 @@ test('a single legal raise size is explained as one total', async () => {
   renderGame()
   expect(await screen.findByRole('region', { name: 'Action hints' }))
     .toHaveTextContent('Raise your total bet this round to 20 chips.')
+})
+
+test('shows a sitting-out player and resumes only the viewer via CSRF-protected action', async () => {
+  const waiting = {
+    ...state, game: null,
+    seated_players: [
+      { ...state.seated_players[0], is_sitting_out: true },
+      { ...state.seated_players[1], is_sitting_out: false },
+    ],
+  }
+  const fetch = vi.fn().mockResolvedValueOnce(response(waiting)).mockResolvedValueOnce(response(state))
+  vi.stubGlobal('fetch', fetch)
+  renderGame()
+  expect(await screen.findByRole('region', { name: 'Your seat status' })).toHaveTextContent('Your chips are still at this table')
+  expect(screen.getByText('Sitting out: Player One')).toBeVisible()
+  fireEvent.click(screen.getByRole('button', { name: 'Resume play' }))
+  expect(await screen.findByRole('button', { name: 'Call 5' })).toBeEnabled()
+  expect(screen.queryByRole('region', { name: 'Your seat status' })).not.toBeInTheDocument()
+  expect(fetch.mock.calls[1]).toEqual(['/api/tables/1/game/resume/', expect.objectContaining({
+    method: 'POST', body: '{}', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': 'game-csrf-token' },
+  })])
+})
+
+test('opponent sit-out appears through live updates without exposing their resume control', async () => {
+  const waiting = {
+    ...state, game: null,
+    seated_players: [
+      { ...state.seated_players[0], is_sitting_out: false },
+      { ...state.seated_players[1], is_sitting_out: true },
+    ],
+  }
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(response(state)).mockResolvedValueOnce(response(waiting)))
+  vi.stubGlobal('WebSocket', MockWebSocket)
+  renderGame()
+  await screen.findByText('Live updates on')
+  sockets[0].notify()
+  expect(await screen.findByText('Sitting out: Player Two')).toBeVisible()
+  expect(screen.queryByRole('button', { name: 'Resume play' })).not.toBeInTheDocument()
+})
+
+test('an expired client countdown only refreshes state while the server owns the timeout', async () => {
+  const expired = {
+    ...state,
+    game: { ...state.game, turn_deadline: new Date(Date.now() - 1000).toISOString() },
+  }
+  const updated = { ...state, game: null }
+  const fetch = vi.fn().mockResolvedValueOnce(response(expired)).mockResolvedValueOnce(response(updated))
+  vi.stubGlobal('fetch', fetch)
+  renderGame()
+  await screen.findByText('Turn expired; checking or folding automatically.')
+  await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2), { timeout: 3000 })
+  expect(fetch.mock.calls.every(([path, options]) => path === '/api/tables/1/game/' && !options?.method)).toBe(true)
 })

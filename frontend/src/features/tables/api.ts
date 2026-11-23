@@ -60,6 +60,7 @@ export const submitGameAction = (
   action: 'fold' | 'check' | 'call' | 'raise' | 'all_in',
   token: string,
   raiseTo?: number,
+  turn?: { hand_id: number; turn_started_at: string },
 ) =>
   request<GameState>(`/api/tables/${id}/game/action/`, {
     method: 'POST',
@@ -67,11 +68,12 @@ export const submitGameAction = (
     body: JSON.stringify({
       action,
       ...(action === 'raise' && raiseTo !== undefined ? { raise_to: raiseTo } : {}),
+      ...turn,
     }),
   })
 
-export const submitGameTimeout = (id: string, token: string) =>
-  request<GameState>(`/api/tables/${id}/game/timeout/`, {
+export const resumeGamePlay = (id: string, token: string) =>
+  request<GameState>(`/api/tables/${id}/game/resume/`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-CSRFToken': token },
     body: JSON.stringify({}),

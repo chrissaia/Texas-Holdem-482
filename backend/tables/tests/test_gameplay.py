@@ -1,5 +1,6 @@
 from datetime import timedelta
 from types import SimpleNamespace
+from unittest.mock import patch
 
 import pytest
 from django.contrib.auth import get_user_model
@@ -10,7 +11,7 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.test import APIClient
 
 from progression.models import Event
-from tables.gameplay import GameConflict, _next_dealer, _pay_pots, _progress, apply_game_action, get_game_state
+from tables.gameplay import GameConflict, _next_dealer, _pay_pots, _progress, apply_game_action, get_game_state, process_expired_table
 from tables.models import HandParticipant, PokerAction, PokerHand, PokerTable, TableSeat
 from tables.seating import join_table
 
@@ -280,3 +281,138 @@ def test_round_runs_out_when_only_one_player_can_act():
     hand.refresh_from_db()
     assert hand.status == PokerHand.Status.COMPLETE
     assert len(hand.board) == 5
+
+def expire_turn(hand):
+    PokerHand.objects.filter(pk=hand.pk).update(turn_deadline=timezone.now() - timedelta(seconds=1))
+
+
+def test_worker_sits_out_disconnected_player_and_resume_restarts_play():
+    from io import StringIO
+
+    from django.core.management import call_command
+
+    table, users, hand = start_heads_up()
+    actor = next(user for user in users if user.pk == hand.turn_user_id)
+    output = StringIO()
+    call_command("watch_poker_turns", once=True, stdout=output)
+    assert "Processed 0" in output.getvalue()
+    expire_turn(hand)
+    with patch("tables.gameplay.queue_game_update") as notify:
+        call_command("watch_poker_turns", once=True, stdout=output)
+        notify.assert_called_once_with(table.pk)
+    assert "Processed 1" in output.getvalue()
+    hand.refresh_from_db()
+    assert hand.status == PokerHand.Status.COMPLETE
+    assert hand.actions.filter(kind=PokerAction.Kind.TIMEOUT_FOLD).count() == 1
+    assert TableSeat.objects.get(user=actor).is_sitting_out
+    assert not PokerHand.objects.filter(table=table, status=PokerHand.Status.ACTIVE).exists()
+    assert sum(TableSeat.objects.filter(table=table).values_list("stack", flat=True)) == 200
+    table.refresh_from_db()
+    assert table.status == PokerTable.Status.WAITING
+    call_command("watch_poker_turns", once=True, stdout=output)
+    assert hand.actions.filter(kind=PokerAction.Kind.TIMEOUT_FOLD).count() == 1
+
+    client = APIClient(enforce_csrf_checks=True)
+    client.force_login(actor)
+    state = client.get(reverse("tables:game", args=[table.pk])).data
+    assert next(seat for seat in state["seated_players"] if seat["user_id"] == actor.pk)["is_sitting_out"]
+    url = reverse("tables:game-resume", args=[table.pk])
+    assert client.post(url, {}, format="json").status_code == 403
+    client.credentials(HTTP_X_CSRFTOKEN=state["csrf_token"])
+    assert client.post(url, {"user_id": users[1].pk}, format="json").status_code == 400
+    resumed = client.post(url, {}, format="json")
+    assert resumed.status_code == 200, resumed.data
+    assert resumed.data["game"]["number"] == 2
+    assert not TableSeat.objects.get(user=actor).is_sitting_out
+    assert client.post(url, {}, format="json").data["game"]["number"] == 2
+
+
+def test_resume_only_changes_the_requesting_seat():
+    table, users, hand = start_heads_up()
+    expire_turn(hand)
+    process_expired_table(table.pk)
+    actor = next(user for user in users if user.pk == hand.turn_user_id)
+    other = next(user for user in users if user.pk != hand.turn_user_id)
+    client = APIClient()
+    client.force_login(other)
+    url = reverse("tables:game-resume", args=[table.pk])
+    assert client.post(url, {}, format="json").status_code == 200
+    assert TableSeat.objects.get(user=actor).is_sitting_out
+    outsider = get_user_model().objects.create_user(username="not-seated")
+    client.force_login(outsider)
+    assert client.post(url, {}, format="json").status_code == 403
+
+
+def test_worker_checks_for_free_and_excludes_afk_seat_from_next_hand():
+    table, users, hand = start_heads_up(max_players=4)
+    third = get_user_model().objects.create_user(username="ready-third", chip_balance=1000)
+    join_table(table.pk, third.pk)
+    apply_game_action(table.pk, hand.turn_user_id, "call")
+    hand.refresh_from_db()
+    missed = hand.turn_user_id
+    expire_turn(hand)
+    assert process_expired_table(table.pk)
+    assert hand.actions.filter(participant__user_id=missed, kind=PokerAction.Kind.TIMEOUT_CHECK).exists()
+    hand.refresh_from_db()
+    if hand.turn_user_id == missed:
+        assert hand.turn_deadline <= timezone.now()
+    # End this hand with one valid fold. A sitting-out player still in the
+    # current hand is allowed to receive any pot they legitimately win.
+    if hand.turn_user_id == missed:
+        assert process_expired_table(table.pk)
+        hand.refresh_from_db()
+    apply_game_action(table.pk, hand.turn_user_id, "fold")
+    next_hand = PokerHand.objects.get(table=table, status=PokerHand.Status.ACTIVE)
+    assert next_hand.hand_number == 2
+    assert set(next_hand.participants.values_list("user_id", flat=True)) == {
+        user.pk for user in [*users, third] if user.pk != missed
+    }
+
+
+@pytest.mark.django_db(transaction=True)
+def test_worker_and_late_player_action_process_deadline_once():
+    from concurrent.futures import ThreadPoolExecutor
+    from threading import Barrier
+
+    from django.db import close_old_connections
+
+    table, _, hand = start_heads_up()
+    expire_turn(hand)
+    barrier = Barrier(2)
+
+    def attempt(worker):
+        close_old_connections()
+        try:
+            barrier.wait(timeout=5)
+            if worker:
+                process_expired_table(table.pk)
+            else:
+                try:
+                    apply_game_action(table.pk, hand.turn_user_id, "call")
+                except GameConflict:
+                    pass  # The worker already finished the hand.
+        finally:
+            close_old_connections()
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        first = pool.submit(attempt, True)
+        second = pool.submit(attempt, False)
+        first.result(timeout=15)
+        second.result(timeout=15)
+    assert hand.actions.filter(kind=PokerAction.Kind.TIMEOUT_FOLD).count() == 1
+    assert not hand.actions.filter(kind=PokerAction.Kind.CALL).exists()
+    assert sum(TableSeat.objects.filter(table=table).values_list("stack", flat=True)) == 200
+
+def test_betting_action_rejects_stale_turn_before_changing_chips():
+    table, users, hand = start_heads_up()
+    client = APIClient()
+    client.force_login(next(user for user in users if user.pk == hand.turn_user_id))
+    url = reverse("tables:game-action", args=[table.pk])
+    stale = (hand.turn_started_at - timedelta(seconds=30)).isoformat()
+    assert client.post(url, {"action": "call", "hand_id": hand.pk}, format="json").status_code == 400
+    assert client.post(url, {"action": "call", "hand_id": hand.pk, "turn_started_at": stale},
+                       format="json").status_code == 409
+    assert not hand.actions.filter(kind=PokerAction.Kind.CALL).exists()
+    current = {"action": "call", "hand_id": hand.pk, "turn_started_at": hand.turn_started_at.isoformat()}
+    assert client.post(url, current, format="json").status_code == 200
+    assert hand.actions.filter(kind=PokerAction.Kind.CALL).count() == 1

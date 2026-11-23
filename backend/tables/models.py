@@ -93,6 +93,7 @@ class TableSeat(models.Model):
     buy_in = models.PositiveIntegerField()
     stack = models.PositiveBigIntegerField()
     joined_at = models.DateTimeField(auto_now_add=True)
+    is_sitting_out = models.BooleanField(default=False)
 
     class Meta:
         constraints = [
@@ -152,6 +153,8 @@ class PokerHand(models.Model):
     completed_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
+        indexes = [models.Index(fields=["turn_deadline"], name="tables_due_turn_idx",
+                                condition=Q(status="active", turn_deadline__isnull=False))]
         ordering = ["-hand_number"]
         constraints = [
             models.UniqueConstraint(fields=["table", "hand_number"], name="unique_table_hand_number"),

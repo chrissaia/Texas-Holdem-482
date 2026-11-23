@@ -8,7 +8,9 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import APIException, ValidationError
 from rest_framework.response import Response
 
-from .gameplay import GameConflict, advance_game_timeout, apply_game_action, get_game_state
+from .gameplay import (
+    GameConflict, advance_game_timeout, apply_game_action, get_game_state, resume_game_play,
+)
 from .permissions import CanHostTable
 
 
@@ -19,12 +21,16 @@ class GameActionInput(serializers.Serializer):
     raise_to = serializers.IntegerField(
         required=False, min_value=1, max_value=9_007_199_254_740_991
     )
+    hand_id = serializers.IntegerField(required=False, min_value=1)
+    turn_started_at = serializers.DateTimeField(required=False)
 
     def validate(self, attrs):
         if attrs["action"] == "raise" and "raise_to" not in attrs:
             raise serializers.ValidationError({"raise_to": ["A raise amount is required."]})
         if attrs["action"] != "raise" and "raise_to" in attrs:
             raise serializers.ValidationError({"raise_to": ["Only a raise accepts an amount."]})
+        if ("hand_id" in attrs) != ("turn_started_at" in attrs):
+            raise serializers.ValidationError("Supply both the hand and turn timestamp.")
         return attrs
 
 
@@ -57,15 +63,18 @@ def game_state(request, pk):
 @permission_classes([CanHostTable])
 def game_action(request, pk):
     """Apply one action only when the authenticated player owns the turn."""
-    _validate_exact_fields(request.data, {"action", "raise_to"})
+    _validate_exact_fields(request.data, {"action", "raise_to", "hand_id", "turn_started_at"})
     action = GameActionInput(data=request.data)
     action.is_valid(raise_exception=True)
+    values = action.validated_data
+    expected_turn = (values["hand_id"], values["turn_started_at"]) if "hand_id" in values else None
     try:
         state, detail = apply_game_action(
             pk,
             request.user.pk,
-            action.validated_data["action"],
-            raise_to=action.validated_data.get("raise_to"),
+            values["action"],
+            raise_to=values.get("raise_to"),
+            expected_turn=expected_turn,
         )
     except GameConflict as error:
         raise GameConflictResponse(str(error)) from error
@@ -83,6 +92,20 @@ def game_timeout(request, pk):
     _validate_exact_fields(request.data, set())
     try:
         state = advance_game_timeout(pk, request.user.pk)
+    except GameConflict as error:
+        raise GameConflictResponse(str(error)) from error
+    state["csrf_token"] = get_token(request)
+    return Response(state)
+
+
+@never_cache
+@api_view(["POST"])
+@permission_classes([CanHostTable])
+def game_resume(request, pk):
+    """Resume the authenticated player's own seat."""
+    _validate_exact_fields(request.data, set())
+    try:
+        state = resume_game_play(pk, request.user.pk)
     except GameConflict as error:
         raise GameConflictResponse(str(error)) from error
     state["csrf_token"] = get_token(request)
