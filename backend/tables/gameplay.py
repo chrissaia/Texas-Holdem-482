@@ -20,21 +20,26 @@ class GameConflict(Exception):
     """Signal a legal game-state conflict without changing chips or cards."""
 
 
-def _lock_table_and_seats(table_id, user_id):
-    table = get_object_or_404(PokerTable.objects.select_for_update(), pk=table_id)
-    seats = list(
+def _lock_roster(table):
+    user_ids = list(
         TableSeat.objects.filter(table=table).order_by("user_id").values_list("user_id", flat=True)
     )
     locked_users = list(
-        get_user_model().objects.select_for_update().filter(pk__in=seats).order_by("pk")
+        get_user_model().objects.select_for_update().filter(pk__in=user_ids).order_by("pk")
     )
+    seats = list(
+        TableSeat.objects.select_for_update(of=("self",)).filter(table=table).order_by("pk")
+    )
+    return locked_users, seats
+
+
+def _lock_table_and_seats(table_id, user_id):
+    table = get_object_or_404(PokerTable.objects.select_for_update(), pk=table_id)
+    locked_users, locked_seats = _lock_roster(table)
     user = next((candidate for candidate in locked_users if candidate.pk == user_id), None)
     if user is None or not user.is_active or getattr(user, "is_guest", False):
         raise PermissionDenied("Sign in with an active registered account to play.")
     require_table_access(table, user)
-    locked_seats = list(
-        TableSeat.objects.select_for_update().filter(table=table).select_related("user").order_by("pk")
-    )
     viewer_seat = next((seat for seat in locked_seats if seat.user_id == user_id), None)
     if viewer_seat is None:
         raise PermissionDenied("Join this table before opening the game.")
@@ -89,7 +94,7 @@ def start_hand_if_ready(table):
     if PokerHand.objects.filter(table=table, status=PokerHand.Status.ACTIVE).exists():
         return None
     eligible = list(
-        TableSeat.objects.filter(table=table, stack__gt=0)
+        TableSeat.objects.filter(table=table, stack__gt=0, is_sitting_out=False, user__is_active=True)
         .select_related("user")
         .order_by("pk")
     )
@@ -185,7 +190,9 @@ def _next_actor(players, current_bet, after_position, street):
 def _set_turn(hand, player, now):
     hand.turn_user = player.user if player else None
     hand.turn_started_at = now if player else None
-    hand.turn_deadline = now + timedelta(seconds=TURN_SECONDS) if player else None
+    hand.turn_deadline = None
+    if player:
+        hand.turn_deadline = now if player.seat.is_sitting_out else now + timedelta(seconds=TURN_SECONDS)
     hand.save(update_fields=["turn_user", "turn_started_at", "turn_deadline"])
 
 
@@ -474,6 +481,7 @@ def _game_payload(table, viewer_id):
             and current.turn_user_id == viewer_id
             and not me.folded
             and not me.all_in
+            and not viewer.is_sitting_out
         )
         max_raise_to = me.round_contribution + viewer.stack if me else 0
         min_raise_to = current.current_bet + current.min_raise
@@ -563,7 +571,8 @@ def _game_payload(table, viewer_id):
         "game": game,
         "last_hand": _summary(last),
         "seated_players": [
-            {"user_id": seat.user_id, "username": seat.user.username, "stack": seat.stack}
+            {"user_id": seat.user_id, "username": seat.user.username, "stack": seat.stack,
+             "is_sitting_out": seat.is_sitting_out}
             for seat in seats
         ],
         "csrf_token": "",
@@ -581,7 +590,7 @@ def get_game_state(table_id, viewer_id):
 
 
 @transaction.atomic
-def apply_game_action(table_id, user_id, action, raise_to=None):
+def apply_game_action(table_id, user_id, action, raise_to=None, expected_turn=None):
     """Validate and apply one action for the server-designated player."""
     table, user, _ = _lock_table_and_seats(table_id, user_id)
     hand = PokerHand.objects.select_for_update().filter(
@@ -589,16 +598,18 @@ def apply_game_action(table_id, user_id, action, raise_to=None):
     ).first()
     if hand is None:
         raise GameConflict("There is no active hand. Wait for another player to join.")
+    if expected_turn is not None and (hand.pk, hand.turn_started_at) != expected_turn:
+        raise GameConflict("That turn has changed. Refresh the table before acting.")
     players = _participants(hand, lock=True)
     actor = next((player for player in players if player.user_id == user_id), None)
     if actor is None or hand.turn_user_id != user_id:
         raise GameConflict("It is not your turn. Refresh the table to see the latest game state.")
     now = timezone.now()
     if hand.turn_deadline and now >= hand.turn_deadline:
-        timeout_kind = "check" if actor.round_contribution == hand.current_bet else "fold"
-        _apply_action(hand, table, actor, timeout_kind, now, timed_out=True)
-        queue_game_update(table.pk)
+        _apply_expired_turn(hand, table, actor, now)
         return _game_payload(table, user_id), "Your turn expired; the automatic action was applied."
+    if actor.seat.is_sitting_out:
+        raise GameConflict("Resume play before taking an action.")
     _apply_action(hand, table, actor, action, now, raise_to=raise_to)
     queue_game_update(table.pk)
     return _game_payload(table, user_id), None
@@ -608,16 +619,56 @@ def apply_game_action(table_id, user_id, action, raise_to=None):
 def advance_game_timeout(table_id, user_id):
     """Apply the server-selected check-or-fold after the turn deadline."""
     table, user, _ = _lock_table_and_seats(table_id, user_id)
+    _advance_expired_turn(table)
+    return _game_payload(table, user.pk)
+
+
+def _apply_expired_turn(hand, table, actor, now):
+    actor.seat.is_sitting_out = True
+    actor.seat.save(update_fields=["is_sitting_out"])
+    kind = "check" if actor.round_contribution == hand.current_bet else "fold"
+    _apply_action(hand, table, actor, kind, now, timed_out=True)
+    queue_game_update(table.pk)
+
+
+def _advance_expired_turn(table, user_id=None):
+    now = timezone.now()
     hand = PokerHand.objects.select_for_update().filter(
-        table=table, status=PokerHand.Status.ACTIVE
+        table=table, status=PokerHand.Status.ACTIVE, turn_deadline__lte=now,
+        turn_user__isnull=False,
     ).first()
-    if hand and hand.turn_deadline and timezone.now() >= hand.turn_deadline:
-        actor = next(
-            (player for player in _participants(hand, lock=True) if player.user_id == hand.turn_user_id),
-            None,
-        )
-        if actor:
-            kind = "check" if actor.round_contribution == hand.current_bet else "fold"
-            _apply_action(hand, table, actor, kind, timezone.now(), timed_out=True)
-            queue_game_update(table.pk)
+    if not hand or (user_id is not None and hand.turn_user_id != user_id):
+        return False
+    actor = next(
+        (player for player in _participants(hand, lock=True) if player.user_id == hand.turn_user_id),
+        None,
+    )
+    if actor is None or actor.seat_id is None:
+        raise GameConflict("The current turn has no funded seat.")
+    _apply_expired_turn(hand, table, actor, now)
+    return True
+
+
+@transaction.atomic
+def process_expired_table(table_id):
+    """Process one due turn under the same table lock as player actions."""
+    table = PokerTable.objects.select_for_update(skip_locked=True).filter(pk=table_id).first()
+    if table is None:
+        return False
+    _lock_roster(table)
+    return _advance_expired_turn(table)
+
+
+@transaction.atomic
+def resume_game_play(table_id, user_id):
+    """Clear only the viewer's sit-out flag and start a hand if eligible."""
+    table, user, seats = _lock_table_and_seats(table_id, user_id)
+    seat = next(seat for seat in seats if seat.user_id == user.pk)
+    if seat.is_sitting_out:
+        # Resolve an already-expired turn before restoring the seat.
+        _advance_expired_turn(table, user_id=user.pk)
+        seat.is_sitting_out = False
+        seat.save(update_fields=["is_sitting_out"])
+        start_hand_if_ready(table)
+        queue_game_update(table.pk)
     return _game_payload(table, user.pk)

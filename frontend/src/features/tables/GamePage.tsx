@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { gameUpdatesUrl, getGame, submitGameAction, submitGameTimeout } from './api'
+import { gameUpdatesUrl, getGame, submitGameAction, resumeGamePlay } from './api'
 import { GameHints } from './GameHints'
 import { readHintsPreference, saveHintsPreference } from './hintsPreference'
 import type { ActivePokerGame, GamePlayer, GameState } from './types'
@@ -99,7 +99,7 @@ function PokerTableView({ state, game }: { state: GameState; game: ActivePokerGa
                 <span>chips</span>
               </div>
             ) : (
-              <p className="table-waiting-copy">Hands start automatically when two funded players are seated.</p>
+              <p className="table-waiting-copy">Hands start automatically when two funded players are ready to play.</p>
             )}
           </div>
           <div className="table-player-row lower-row">
@@ -309,30 +309,21 @@ export function GamePage() {
   }, [id, hasGameAccess])
 
   const deadline = state?.game?.turn_deadline
-  const csrfToken = state?.csrf_token
   useEffect(() => {
-    if (!deadline || !csrfToken) return
+    if (!deadline) return
     const expiresAt = Date.parse(deadline)
-    const updateClock = () => setClock({ deadline, seconds: Math.max(0, Math.ceil((expiresAt - Date.now()) / 1000)) })
-    const interval = window.setInterval(updateClock, 1000)
-    const timeout = window.setTimeout(() => {
-      submitGameTimeout(id, csrfToken)
-        .then(value => {
-          setState(value)
-          if (value.game?.turn_deadline) {
-            setClock({
-              deadline: value.game.turn_deadline,
-              seconds: Math.max(0, Math.ceil((Date.parse(value.game.turn_deadline) - Date.now()) / 1000)),
-            })
-          }
-        })
-        .catch(reason => setError(reason instanceof Error ? reason.message : 'The turn timeout could not be processed.'))
-    }, Math.max(0, expiresAt - Date.now()))
+    const interval = window.setInterval(() => {
+      setClock({ deadline, seconds: Math.max(0, Math.ceil((expiresAt - Date.now()) / 1000)) })
+    }, 1000)
+    // Recover state if the WebSocket notification is delayed or missed.
+    const refreshAfterDeadline = window.setTimeout(
+      () => setAttempt(value => value + 1), Math.max(0, expiresAt - Date.now()) + 2000,
+    )
     return () => {
       window.clearInterval(interval)
-      window.clearTimeout(timeout)
+      window.clearTimeout(refreshAfterDeadline)
     }
-  }, [deadline, id, csrfToken])
+  }, [deadline])
 
   const loading = loadedAttempt !== attempt
   const secondsLeft = deadline
@@ -351,7 +342,9 @@ export function GamePage() {
     setPending(true)
     setError('')
     try {
-      const value = await submitGameAction(id, action, state.csrf_token, raiseTo)
+      const game = state.game
+      const turn = game?.turn_started_at ? { hand_id: game.id, turn_started_at: game.turn_started_at } : undefined
+      const value = await submitGameAction(id, action, state.csrf_token, raiseTo, turn)
       setState(value)
       if (value.game?.turn_deadline) {
         setClock({
@@ -366,6 +359,23 @@ export function GamePage() {
       setPending(false)
     }
   }
+
+  const resume = async () => {
+    if (!state || pending) return
+    setPending(true)
+    setError('')
+    try {
+      const value = await resumeGamePlay(id, state.csrf_token)
+      setState(value)
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'Could not resume play.')
+    } finally {
+      setPending(false)
+    }
+  }
+
+  const sittingOut = state?.seated_players.filter(seat => seat.is_sitting_out) ?? []
+  const viewerSittingOut = sittingOut.some(seat => seat.user_id === state?.viewer_id)
 
   return (
     <div className="game-page">
@@ -401,6 +411,15 @@ export function GamePage() {
             </span>
           </header>
           {error && <p className="notice error-notice" role="alert">{error}</p>}
+          {viewerSittingOut && <section className="panel" aria-label="Your seat status">
+            <p role="status">You missed a turn and are sitting out. Your chips are still at this table.</p>
+            <button type="button" className="button primary" disabled={pending} onClick={() => void resume()}>
+              {pending ? 'Resuming...' : 'Resume play'}
+            </button>
+          </section>}
+          {sittingOut.length > 0 && <p className="field-hint">
+            Sitting out: {sittingOut.map(seat => seat.username).join(', ')}
+          </p>}
           <div className="game-layout">
             <div className="game-main-column">
               <PokerTableView state={state} game={state.game} />

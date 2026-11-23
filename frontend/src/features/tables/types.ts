@@ -106,6 +106,6 @@ export type GameState = {
     winners: { user_id: number; username: string; amount: number; hand: string | null }[]
     board: string[]
   } | null
-  seated_players: { user_id: number; username: string; stack: number }[]
+  seated_players: { user_id: number; username: string; stack: number; is_sitting_out: boolean }[]
   csrf_token: string
 }
