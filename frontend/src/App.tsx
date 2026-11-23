@@ -25,6 +25,7 @@ import type { CreationContext } from "./features/tables/types";
 import { ThemeProvider } from "./features/themes/ThemeProvider";
 import { SettingsPage } from "./features/themes/SettingsPage";
 import { ProfileProvider } from "./features/profile/ProfileProvider";
+import { ManageAdsPage } from "./features/profile/ManageAdsPage";
 import { RewardsPage } from "./features/profile/RewardsPage";
 import { AchievementsPage } from "./features/achievements/AchievementsPage";
 import { LeaderboardPage } from "./features/leaderboard/LeaderboardPage";
@@ -35,6 +36,8 @@ import { DisclaimerPage } from "./features/disclaimer/DisclaimerPage";
 import { MessagesPage } from "./features/messages/MessagesPage";
 import { PrivateTablesPage } from "./features/tables/PrivateTablesPage";
 import { SpectatorPage } from "./features/tables/SpectatorPage";
+import { AdminDashboard } from "./features/moderation/AdminDashboard";
+import { GamePage } from "./features/tables/GamePage";
 import "./App.css";
 
 /** Render the app routes interface and its current state. */
@@ -92,6 +95,8 @@ export function AppRoutes() {
               <AppLayout
                 host={context?.host ?? null}
                 summary={context?.profile_summary}
+                canManageAds={context?.can_manage_ads}
+                isAdmin={context?.is_admin ?? false}
                 onSignedOut={() => { setContext(null); refresh(); }}
               >
                 <Outlet />
@@ -112,8 +117,10 @@ export function AppRoutes() {
             />
             <Route path="/statistics" element={<StatisticsPage key={context?.host?.id ?? "anonymous"} />} />
             <Route path="/rewards" element={<RewardsPage />} />
+            <Route path="/manage-ads" element={<ManageAdsPage key={context?.host?.id ?? "anonymous"} />} />
             <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/lobby" element={<LobbyPage />} />
+            <Route path="/lobby" element={<LobbyPage accountId={context?.host?.id} />} />
+            <Route path="/moderation" element={<AdminDashboard key={context?.host?.id ?? "anonymous"} />} />
             <Route path="/friends" element={<FriendsPage />} />
             <Route path="/messages" element={<MessagesPage key={context?.host?.id ?? "anonymous"} />} />
             <Route path="/tutorial" element={<RulesPage />} />
@@ -151,6 +158,7 @@ export function AppRoutes() {
             />
             <Route path="/tables/private" element={<PrivateTablesPage key={context?.host?.id ?? "anonymous"} />} />
             <Route path="/tables/:id/watch" element={<SpectatorPage key={`${context?.host?.id ?? "anonymous"}:${pathname}`} />} />
+            <Route path="/tables/:id/play" element={<GamePage key={`${context?.host?.id ?? "anonymous"}:${pathname}`} />} />
             <Route path="/tables/:id" element={<TableDetailPage key={context?.host?.id ?? "anonymous"} />} />
             <Route
               path="*"

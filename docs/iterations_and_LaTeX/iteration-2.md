@@ -17,7 +17,7 @@ S32's XP/achievement core and three real existing-action integrations are implem
 
 Use [the acceptance checklist](../quality/acceptance-checklist.md) and [demo runbook](../quality/demo-runbook.md). Link S32 work to [#45](https://github.com/chrissaia/Texas-Holdem-482/issues/45) and S18 to [#32](https://github.com/chrissaia/Texas-Holdem-482/issues/32). New coverage evidence measures all current app source separately for backend/frontend and includes executable launchers; source/config and report scope are recorded.
 
-The main-gameplay sequence diagram is a **proposed multiplayer design** placed in the report's System Design / Diagrams subsection. It includes validation failure, transaction boundaries, authoritative payouts, duplicate-safe progression and recipient-filtered post-commit publication. The game engine and Channels are not implemented by the diagram.
+The main-gameplay sequence diagram records the multiplayer design placed in the report's System Design / Diagrams subsection. It includes validation failure, transaction boundaries, authoritative payouts, duplicate-safe progression and recipient-filtered post-commit publication. The game engine and Channels implementation now follow this design; live messages contain only a refresh signal, and each seated player fetches their own private state.
 
 ## Process and completion
 

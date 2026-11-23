@@ -1,0 +1,18 @@
+.moderation-page { max-width: 1200px; margin: 0 auto; }
+.moderation-callout { padding: 20px; border: 1px solid var(--border); border-left: 3px solid var(--cyan); border-radius: 10px; background: var(--panel); margin-bottom: 24px; }
+.moderation-callout p { color: var(--muted); margin-top: 6px; max-width: 76ch; }
+.moderation-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+.moderation-filters { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; margin-bottom: 20px; }
+.moderation-filters label { display: grid; gap: 6px; flex: 1; min-width: 150px; color: var(--muted); }
+.moderation-filters input, .moderation-filters select, .moderation-confirm textarea { width: 100%; border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; color: var(--text); background: var(--bg); font: inherit; }
+.moderation-confirm { display: grid; gap: 12px; padding: 20px; margin: 18px 0; border: 1px solid var(--cyan); border-radius: 8px; background: var(--surface); }
+.moderation-confirm textarea { min-height: 90px; resize: vertical; }
+.moderation-actions, .moderation-pagination { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+.moderation-pagination { justify-content: flex-end; margin-top: 20px; }
+.moderation-table { overflow-x: auto; margin-top: 16px; }
+.moderation-table table { width: 100%; border-collapse: collapse; text-align: left; }
+.moderation-table th, .moderation-table td { padding: 14px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; overflow-wrap: anywhere; max-width: 320px; min-width: 100px; }
+.moderation-table thead th { color: var(--muted); font-size: 12px; font-weight: 500; white-space: nowrap; }
+.moderation-table tbody th { font-weight: 500; }
+.moderation-table small { display: block; margin-top: 4px; font-size: 11px; color: var(--muted); }
+@media (max-width: 600px) { .moderation-filters label { flex-basis: 100%; } .moderation-pagination { justify-content: space-between; } }

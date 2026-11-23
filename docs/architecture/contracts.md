@@ -1,5 +1,20 @@
 # Shared foundation and handoff
 
+## S28 in-app moderation milestone
+
+Kelechi's `/moderation` dashboard uses staff-only `/api/moderation/` routes in
+`core.moderation`. User/table reads and writes additionally require their Django
+view/change model permissions; audit reads require `admin.view_logentry`.
+Writes require CSRF, a reason and expected state. Regular unseated accounts can
+be suspended/reactivated; self/admin targets are protected. Empty non-playing
+tables can close/reopen under the same table lock as seating. No funds are moved.
+Changes and existing Django LogEntry audit rows commit atomically. Every response
+is private/no-store; no email, password or wallet fields are returned.
+Creation-context adds top-level `is_admin` for the current viewer's navigation;
+public `{id, username}` host shapes are unchanged. No models/migrations change.
+Gameplay management and forced seat settlement remain engine dependencies.
+See [S28 guide](../team/kelechi/s28-admin-dashboard.md) for access, API and demo.
+
 ## Implemented interfaces
 
 - User: `accounts.User`, Django `AbstractUser` with avatar, chip balance, and reward timestamps. Its primary key is an integer (`BigAutoField`). Finn owns account validation, uniqueness policies, registration, login/logout, guest representation, and the eventual session endpoint. Usernames and non-blank emails are unique case-insensitively at the database level; see the accounts section below.
@@ -106,154 +121,4 @@ Coordinate user field and migration changes before implementation. Royal and Kel
 
 ## Scope and known document differences
 
-The system design’s 60% coverage baseline is superseded for Sprint 1 by above 80% statement and above 50% branch coverage. Privacy options, bots, gameplay, joining tables, social features beyond S19 friends, S20 online status and S21 messaging, and WebSocket synchronization remain future work. S13 now has a working form/API and tests; professor acceptance remains pending. S10 now provides real public browsing, filters, sorting, and pagination; other owners’ stories remain separate. The Create Table layout uses inspected Figma frame 12:1619, adapting private/bot areas to the approved public-only scope.
-
-## S5/S14/S29 profiles and virtual chips
-
-Implemented on `saia` at Chris's request, covering Royal's three feature stories. Human story ownership and professor acceptance remain unchanged. See [the feature guide](../team/royal/profile-rewards.md).
-
-`accounts.User` adds `avatar`, `chip_balance`, `starting_chips_granted_at`, and `daily_chips_claimed_at` in migration `0003`. Existing accounts retain their balance (initially zero); no retroactive starting grant runs. Real registration grants 1,000 chips in the account-creation transaction. `profiles.rewards.grant_starting_chips` is retry-safe through a locked timestamp marker. Every future balance writer must lock the same user row and update atomically. Balances are nonnegative integers capped at 9,007,199,254,740,991.
-
-All `/api/profile/` endpoints require an active registered session; guests and anonymous requests receive 403. Writes enforce CSRF and use only the session's user. Responses are private and not cached.
-
-- `GET /api/profile/`: `{id, username, avatar_url, chip_balance, starting_chips_granted_at, daily_reward: {amount, available, next_claim_at}, csrf_token}`. Sets the CSRF cookie. `next_claim_at` is null when currently available.
-- `POST /api/profile/avatar/`: multipart with exactly one `avatar` file, no extra fields. JPEG/PNG/WebP, up to 2 MiB and 4096×4096 pixels. Actual content and matching MIME type are validated; animations and corrupt images are rejected. Applies EXIF orientation, strips metadata, crops/resizes to 256×256 WebP with a generated filename. Replacement deletes the old image after commit and cleans a newly written image on database failure. Returns the profile payload without `csrf_token`; invalid files return 400.
-- `POST /api/profile/daily-chips/`: empty JSON object `{}`. Server time is read after acquiring the account row lock. Grants exactly 500 once per UTC calendar date; no streak or rolling cooldown. Repeat claims and balance-limit failures return 409. Success returns the profile payload without `csrf_token`. Client-supplied user IDs, amounts, and timestamps are rejected (400).
-
-The creation-context `profile_summary` is private to the signed-in user and null for guests/anonymous users. Public table hosts remain `{id, username}`. Settings at `/settings` supports avatar changes alongside Kelechi's theme picker; `/rewards` supports claiming and refreshing the persisted balance. Uploaded media is served by Django only in DEBUG; Vite proxies `/media`. Production must supply a media-serving/storage configuration.
-
-## S19 friends
-
-Finn owns `backend/friends/` and the `/friends` page. All endpoints live under `/api/friends/` and require an active registered session; anonymous users and guests get 403. Writes enforce CSRF and act only as the session's user. Responses are private and not cached.
-
-Every successful response returns the full lists, so the page replaces its state in one step:
-
-```json
-{"friends":  [{"id": 7, "player": {"id": 2, "username": "..."}, "created_at": "..."}],
- "incoming": [...],
- "outgoing": [...],
- "csrf_token": "..."}
-```
-
-`id` is the friendship row ID that the action endpoints take; `player` is the other person. `friends` is sorted by username, case-insensitively; `incoming` and `outgoing` are newest first. Only `{id, username}` is exposed, never email.
-
-- `GET /api/friends/`: sets the CSRF cookie and returns the lists.
-- `GET /api/friends/search/?q=...`: registered-only username suggestions, at most five `{id, username}` entries in `{results}`. Case-insensitive substring matching, sorted by lowercase username then ID; excludes self and inactive accounts. Blank queries return no suggestions. Repeated/unknown parameters or queries over 150 characters return 400. The input waits 250 ms after typing, ignores stale results and uses the browser's native keyboard-accessible suggestions dropdown. Selecting a name fills the input; Send Request still performs the write.
-- `POST /api/friends/requests/`: `{username}`, matched case-insensitively against active accounts. Returns 201 when a new pending request is created. If that player has already sent you a pending request, it is accepted instead and returns 200. Unknown or inactive usernames return 400 `{"username": ["No registered player has that username."]}`. Adding yourself, an existing friend, or someone you already asked returns 400 `non_field_errors`.
-- `POST /api/friends/requests/<id>/accept/`: empty body `{}`. Only the receiver of a pending request may accept.
-- `POST /api/friends/requests/<id>/decline/`: empty body `{}`. Only the receiver; deletes the request.
-- `POST /api/friends/requests/<id>/cancel/`: empty body `{}`. Only the sender; deletes the request.
-- `DELETE /api/friends/<id>/`: either friend may remove the friendship; deletes the row.
-
-A request or friendship that does not exist, is not yours, or is in the wrong state returns 404, so the IDs of other players' rows are not revealed. A non-empty body on accept/decline/cancel returns 400; unsupported methods return 405.
-
-Storage is `friends.Friendship`: `from_user`, `to_user` (both `settings.AUTH_USER_MODEL`, `CASCADE`), `status` (`pending` or `accepted`), and `created_at`. Database constraints block self-friending and invalid statuses, and allow one row per pair in either direction. Declining, cancelling, and removing delete the row, so either player may send a new request later. Sending locks the pair's row; a concurrent duplicate caught by the unique constraint continues with the row that won. Deleting an account deletes its friendships.
-
-For later stories: S20 (online status), S21 (messaging), and S27 (private-table invitations) can read accepted friends through `friends.services.involving(user).filter(status="accepted")`. On the page, the Recently Played tab and the Invite to Table button are shown but disabled until those stories land. S20 enabled the Online tab and S21 the Message button (see below). The layout follows Figma frame 18:15681.
-
-Tests: `backend/friends/tests/` (model constraints and API) and `frontend/src/features/friends/FriendsPage.test.tsx`.
-
-Open decisions: request-and-accept (rather than instant follow), auto-accepting crossed requests, and allowing a new request after a decline are Finn's implementation choices pending team agreement. There is no blocking or request rate limit. Professor acceptance remains pending.
-
-## S20 friends online
-
-Finn owns `friends.presence`. `friends.Presence` (`user` one-to-one primary key, `last_seen_at`; migration `friends.0002`) stores when a registered player was last active. It is kept off `accounts.User` so frequent activity writes never wait on the account-row locks used for chip balances. Deleting an account deletes its presence.
-
-- **Activity:** `friends.presence.PresenceMiddleware`, placed after `AuthenticationMiddleware`, refreshes presence on every `/api/` request from an active registered session. It writes at most once a minute. Logging in marks the player online, and logging out deletes their presence so they go offline immediately. Guests and anonymous visitors have no presence.
-- **Online:** seen within the last 3 minutes (`ONLINE_WINDOW`). The frontend keeps an open tab online by polling: the top bar every 30 seconds and the friends page every 15 seconds.
-- **Statuses:** each accepted friend in `GET /api/friends/` now includes `presence: {status: "at_table" | "online" | "offline", table: {id, name, player_count, max_players, status} | null}`, and the response adds `online_count`. `at_table` means online and seated at a table the viewer can see (`tables.access.visible_tables`). A seat at a private table the viewer was not invited to shows as plain `online`, with no table. A seated friend who has gone quiet is `offline`. Pending requests never include presence.
-- **`GET /api/friends/online/`:** registered-only and uncached. Returns `{online_count}` for the top-bar "N friends online" link.
-
-Open decisions: there is no "appear offline" privacy setting, and the 3-minute window and polling intervals are Finn's choices pending team agreement.
-
-## S21 messages and table chat
-
-Finn owns `backend/messaging/` (migration `messaging.0001`), `/messages` and the table chat panel. All endpoints live under `/api/messages/`, require an active registered session (guests and anonymous visitors get 403), set the CSRF cookie, are never cached, and return `csrf_token`. Writes take `{body}` only: trimmed, 1–500 characters. Unknown fields get 400. Each sender may post at most 5 direct messages and 5 table messages per 10 seconds, and more returns 429. Only `{id, username}` is exposed for players.
-
-- `GET /api/messages/`: `{conversations: [{friend, presence, last_message | null, unread_count}], unread_count}` for every accepted friend. Conversations with messages come first, newest first, then friends you haven't messaged, by name. `presence` is the S20 shape.
-- `GET /api/messages/<friend_id>/[?after=<id>]`: `{friend, presence, messages}`. Without `after` it returns the latest 50 in time order. With `after` it returns up to 100 newer messages, for polling. Opening a conversation marks the friend's messages to you as read. A message is `{id, sender, body, created_at, read}`.
-- `POST /api/messages/<friend_id>/`: returns 201 `{message}`. Anyone who is not an accepted friend, including after unfriending, gets 404, so other players' IDs reveal nothing. History is kept but cannot be read until you are friends again. A player's first direct message calls `progression.services.record_event(user, "message", "first-direct-message")` in the same transaction, which earns "Say Hello".
-- `GET /api/messages/tables/<table_id>/[?after=<id>]`: `{table_id, can_post, player_count, messages}`, for any table the caller may see (`tables.access.visible_tables`). Private tables are 404 to uninvited players.
-- `POST /api/messages/tables/<table_id>/`: seated players only (`TableSeat`). Anyone else who can see the table gets 403 `"Take a seat at this table to join the chat."`.
-
-Storage: `messaging.DirectMessage` (`sender`, `recipient`, `body`, `created_at`, `read_at`; no self-messages) and `messaging.TableMessage` (`table`, `sender`, `body`, `created_at`). User and table foreign keys use `CASCADE`, so deleting an account or an S23-cleaned table deletes its messages. Staff can read both in the Django admin. Only `?after` is accepted as a query parameter, and anything else returns 400.
-
-The frontend polls: open conversations and table chat every 4 seconds, and the conversation list every 15. Open decisions: there is no blocking, reporting, muting, or deleting messages, and no profanity filter. Rate limits and the 500-character limit are Finn's choices. The Figma table-invite card belongs to S27.
-
-## S32 XP and achievements
-
-The twenty-four one-time achievements and their trusted backend hooks are documented in [../team/chris/s32-earn-xp-and-achievements.md](../team/chris/s32-earn-xp-and-achievements.md). `GET /api/achievements/` returns the registered account's total XP, total collection size and earned details only; locked metadata stays on the server. Avatar upload and table creation are integrated atomically. Gameplay/friend/message services must call the trusted hooks when implemented; no client event or claim endpoint exists. Each achievement grants 50 XP once; outright hand wins grant 100 XP per unique hand, while splits never count as wins. The leaderboard is outside this milestone. All progression writes lock the account row and preserve CSRF on originating actions.
-
-
-## S18 all-time XP rankings
-
-`GET /api/leaderboard/` is public, uses the authoritative progression event ledger and includes active registered accounts (including zero XP). Ties share competition rank; IDs stabilize equal-XP pagination. Query fields are only `page` and bounded `page_size`. Public rows expose ID, username, avatar URL, XP, rank and current-user flag; private account fields and chip balances are excluded. Authenticated responses add the viewer's own global rank even off page. All-time only; seasonal rankings remain S33. See [../team/chris/s18-see-the-leaderboard.md](../team/chris/s18-see-the-leaderboard.md) for response shape, limits, privacy and integration details.
-
-
-## S16 first milestone: trusted game-result chip persistence
-
-Kelechi owns chips.services.save_chip_result(user_id, source=..., delta=...).
-It records a signed whole-chip account-wallet delta with a unique (user, source)
-receipt in chips.ChipResult. Rewards and result writes lock the same accounts.User
-row. The balance and receipt are atomic; duplicate identical results do not pay
-twice, conflicting deltas are rejected, and bounds remain 0..9,007,199,254,740,991.
-A retry returns the latest account balance, not its receipt's historical snapshot.
-The existing private profile endpoint reads the current saved balance.
-
-This is a trusted Python hook, not a player-write API. The game engine must derive
-IDs/deltas from actual results, resolve wallet versus reserved-table-stack semantics,
-and use an outer transaction with ascending account lock order for multiple players.
-Do not send client-provided balance/outcome claims to this hook. No game engine or
-seating integration is claimed; gameplay acceptance remains pending. See
-[the S16 guide](../team/kelechi/s16-save-chip-balance.md). Existing reward services
-and account fields are unchanged. The only new schema is chips.0001_initial.
-
-
-## S15 public-table buy-in and funded seats
-
-`GET/POST/DELETE /api/tables/<id>/seat/` requires an active registered session.
-GET returns only the viewer's seat, wallet, table occupancy, other_table_id (if
-already seated elsewhere), and CSRF token. POST/DELETE require CSRF plus `{}`.
-Join rechecks current wallet >= max(buy_in, minimum_balance), waiting status, and
-capacity under table-then-user row locks. It debits buy-in into TableSeat.stack;
-OneToOne user prevents two active seats. Identical joins/leaves are repeat-safe.
-Leave returns reserved stack and deletes the seat atomically, except during play.
-Money bounds and failed writes retain all funds. Occupancy/activity update in the
-same transaction; S23 checks seat existence as well as its occupancy counter.
-TableSeat and referenced accounts/tables are protected from accidental deletion.
-
-Future gameplay must adopt table-then-user locking, serialize stack/pot updates,
-and preserve reserved funds. S16's account-wallet delta must not repeat a buy-in
-or credit chips that remain reserved at a table. Joining is not gameplay; guest,
-private-table and in-hand cash-out policies remain separate integration work.
-
-
-## S17 private all-time hand statistics
-
-`GET /api/profile/stats/` requires an active registered session and returns
-`{username, period: "all_time", hands_played, hands_won, hands_lost, hands_split,
-win_rate}`. It aggregates only the session user's `progression.Event(kind="hand")`
-rows. Win rate is outright wins / all dealt completed hands, rounded to one decimal;
-splits are not wins. An empty ledger returns zero counts and 0.0%. Responses are
-private/no-store; queries and writes are rejected. `/statistics` supplies refresh,
-retry, guest gating and an empty state; it exposes no event write/claim UI.
-
-The existing progression hand hook remains the authoritative writer. The poker
-engine must supply verified completed-hand events exactly once per participant
-and stable hand ID. Chip rewards, wallet deltas, table creation and joining alone
-must not be converted into hand participation. No invented game/action/pot history
-or time-series is derived from missing facts. Actual gameplay integration remains
-a separately planned engine dependency.
-
-
-## S11/S27/S26 table extensions on saia
-
-Royal's planned Iteration 2 stories now add a minimum buy-in range, private creation/invitations and a read-only spectator foundation. The detailed current boundaries are in [S11](../team/royal/s11-filter-tables.md), [S27](../team/royal/s27-make-a-private-table.md) and [S26](../team/royal/s26-watch-a-game.md). These extend the earlier public-only S13 interfaces; they do not turn public creation into private creation based on client-supplied `is_public`.
-
-`POST /api/tables/private/` uses the existing settings schema and forces private visibility. Registered `GET` lists hosted/invited private tables. Invitations are host-only grants to active accepted friends through `GET/POST/DELETE /api/tables/<id>/invitations/`, with exactly `{user_id}` for writes. Duplicate invitation grants are safe. Revocation locks the table row and rejects seated targets; seating uses the same table lock and checks invitation access before debiting. Existing join capacity, buy-in, wallet and refund rules remain authoritative.
-
-Private detail/seat/watch reads apply one shared host-or-invitation policy, returning 404 to outsiders. Public lobby queries and totals never include private tables. Responses containing private data are non-cacheable. All session-authenticated writes retain CSRF enforcement.
-
-`GET /api/tables/<id>/watch/` returns only table identity, visibility, status, host identity, capacity, blinds, seated player identities/table stacks and `gameplay_available: false`. It performs no writes and exposes no cards or account balances. This is table observation, not completed live-game spectating. Future gameplay integration must publish an explicit public projection; never reuse a private player payload for spectators.
-
-`min_buy_in` is an optional positive whole-chip lobby filter bounded by MAX_CHIPS. Combined ranges are inclusive and inverted min/max pairs return 400. Historical filtering and chip infrastructure must not be counted twice as new iteration work.
+The system design’s 60% coverage baseline is superseded for Sprint 1 by above 80% statement and above 50% branch coverage. Bots remain future work. S13 now has a working form/API and tests; professor acceptance remains pending. S10 now provides real public browsing, filters, sorting, and pagination. S21 provides direct messaging and table chat. Iteration 3 gameplay work provides joining tables, poker hands, betting, and live game synchronization. The Create Table layout uses inspected Figma frame 12:1619, adapting private/bot areas to the approved public-only scope.

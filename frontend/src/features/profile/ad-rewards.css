@@ -1,0 +1,10 @@
+﻿.ad-rewards > * + *, .ad-playback > * + * { margin-top: 12px; }
+.sponsored-offer { margin: 16px 0; }
+.sponsored-offer-content { display: flex; align-items: center; flex-wrap: wrap; gap: 14px; }
+.sponsored-offer-content > div { flex: 1 1 180px; min-width: 0; overflow-wrap: anywhere; }
+.sponsored-preview { width: 76px; height: 56px; object-fit: contain; border-radius: 6px; background: var(--bg); }
+.ad-viewer { width: min(100% - 32px, 580px); max-height: calc(100% - 32px); overflow: auto; margin: auto; color: var(--text); }
+.ad-viewer::backdrop { background: rgb(0 0 0 / 70%); }
+.ad-viewer > * + * { margin-top: 12px; }
+.ad-playback img, .ad-playback video { display: block; width: 100%; max-height: min(420px, 50vh); object-fit: contain; background: var(--bg); border-radius: 8px; }
+.ad-playback .reward-actions { display: flex; flex-wrap: wrap; gap: 8px; }

@@ -53,3 +53,11 @@ docs/report/
 *.synctex.gz
 *overleaf*.zip
 /tmp
+
+# S28 bulky coverage internals stay local; images and manifest are versioned.
+/docs/team/kelechi/s28-testing/backend-report.json
+/docs/team/kelechi/s28-testing/backend-report.xml
+/docs/team/kelechi/s28-testing/backend-tests.xml
+/docs/team/kelechi/s28-testing/frontend-report.json
+/docs/team/kelechi/s28-testing/frontend-summary.json
+/docs/team/kelechi/s28-testing/frontend-tests.xml
